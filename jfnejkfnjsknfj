@@ -1,0 +1,54 @@
+[33mcommit 3bc9d3ec1b3f3c752bc5aee04effe4fdf25bd4cc[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msaniaawale[m[33m, [m[1;31morigin/saniaawale[m[33m)[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Thu Sep 25 20:02:43 2025 +0000
+
+    after fixing all scenarios
+
+[33mcommit 31e25d1cddc78fe829402563e4d12a58474306cd[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Thu Sep 25 15:34:43 2025 +0000
+
+    Add comment for PR differentiation
+
+[33mcommit f8d43eb66f00c5aec100eb100fea70914b476e9d[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Thu Sep 25 15:25:56 2025 +0000
+
+    wordguesser game
+
+[33mcommit 5490d9df5895430fe3c86b1b89c20c5b35194a83[m
+Merge: dfab6bb 20ef5ab
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Thu Sep 25 15:07:41 2025 +0000
+
+    Merge branch 'saniaawale' of github.com:NYU-CSE-Software-Engineering/cs-uy-4513-f25-team4 into saniaawale
+
+[33mcommit dfab6bb5619e71f285c40947df2555c56b52e8ef[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Thu Sep 25 14:52:55 2025 +0000
+
+    Complete wordguesser implementation
+
+[33mcommit 20ef5ab6f958fbbed1aa5729cd927cb015a1a18b[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Sat Sep 20 01:40:00 2025 +0000
+
+    third commit
+
+[33mcommit eb6dfc5d796abdeb8083d60101768982b6409298[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Sat Sep 20 01:32:15 2025 +0000
+
+    setting up
+
+[33mcommit 9f3f257c87a27b506f8890625ecf4c7172e722c0[m
+Author: Sania Awale <ska7008@nyu.edu>
+Date:   Sat Sep 20 01:26:44 2025 +0000
+
+    set up the gemfile
+
+[33mcommit 97f389e34b69aeccd965534c288537be74c2aa80[m
+Author: TydaJL <TydaJL@users.noreply.github.com>
+Date:   Tue Jul 1 02:10:03 2025 +0000
+
+    automated commit
