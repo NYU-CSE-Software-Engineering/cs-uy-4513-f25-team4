@@ -1,6 +1,5 @@
 class WordGuesserGame
-   # add the necessary class methods, attributes, etc. 
-   #
+   # add the necessary class methods, attributes, etc.
   attr_accessor :word, :guesses, :wrong_guesses
   
   def initialize(word)
@@ -22,10 +21,35 @@ class WordGuesserGame
     
     return true
   end
-# You can test it by installing irb via $ gem install irb 
-# and then running $ irb -I. -r app.rb  
-# And then in the irb: irb(main):001:0> WordGuesserGame.get_random_word  
-#  => "cooking"   <-- some random word
+
+  def word_with_guesses
+    result = ""
+    @word.each_char do |char|
+      if @guesses.include?(char.downcase)
+        result += char
+      else
+        result += '-'
+      end
+    end
+    result
+  end
+
+  def check_win_or_lose
+    word_letters = @word.downcase.chars.uniq
+    guessed_letters = @guesses.chars
+    if (word_letters - guessed_letters).empty?
+      return :win
+    elsif @wrong_guesses.length >= 7
+      return :lose
+    else
+      return :play
+    end
+  end
+  # You acan test it by installing irb via $ gem install irb 
+  # and then running $ irb -I. -r app.rb  
+  # And then in the irb: irb(main):001:0> WordGuesserGame.get_random_word  
+  #  => "cooking"   <-- some random word
+
   def self.get_random_word
     require 'uri'
     require 'net/http'
