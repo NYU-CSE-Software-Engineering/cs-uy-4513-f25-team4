@@ -1,6 +1,6 @@
-#Buying and Selling
+# Buying and Selling
 
-##User Story
+## User Story
 As a registered investor,
 I want to view market stocks, uy and sell them easily through the platform,
 so that I can manage my investment portfolio efficiently and keep my account information up to date.
@@ -13,39 +13,39 @@ The Buying and Selling feature allows users to:
 - Execute buy and sell transactions through interactive buttons.  
 - See automatically refreshed data after each transaction (or manually refresh if needed).
 
-1. **Stock Search and Display (H)**  
+1. ** Stock Search and Display (H)**  
     Given the user is logged in,  
     When the user enters a stock name or symbol in the search box,  
     Then the system displays matching stocks from the market database along with current price and quantity available.
 
-2. **Buying Stocks (H)**  
+2. ** Buying Stocks (H)**  
     Given the user is logged in and has sufficient balance,  
     When the user selects a stock, clicks “Buy,” and enters a valid quantity,  
     Then the system locks the transaction, deducts the total amount from the user’s balance, updates the stock database (reducing available quantity), adds the purchased quantity to the user’s portfolio, unlocks the transaction, and confirms success.
 
-3. **Selling Stocks (H)**  
+3. ** Selling Stocks (H)**  
    Given the user owns sufficient quantity of a specific stock,  
    When the user clicks “Sell” and enters the desired quantity,  
    Then the system locks the transaction, removes the stock quantity from the user’s portfolio, adds the sold amount to the market database, credits the user’s balance, unlocks the transaction, and displays a confirmation.
 
-4. **Insufficient Funds or Stock Quantity (S)**  
+4. ** Insufficient Funds or Stock Quantity (S)**  
    Given the user tries to buy a stock with a cost higher than their available balance,  
    Or the user tries to sell more shares than they own,  
    Then the system prevents the transaction and displays an appropriate error message (“Insufficient balance” or “Insufficient shares”).
 
-5. **Real-Time Balance and Portfolio Refresh (H)**  
+5. ** Real-Time Balance and Portfolio Refresh (H)**  
    - After any buy or sell transaction,  
    - The system must update and refresh the user’s balance, owned stock list, and market stock list automatically (or allow manual refresh if necessary),  
    - So that the displayed data remains accurate and synchronized.
 
-6. **Concurrency and Data Integrity (H)**  
+6. ** Concurrency and Data Integrity (H)**  
    - When multiple users attempt to buy or sell the same stock simultaneously,  
    - The system must lock transactions appropriately to prevent race conditions,  
    - Ensuring that the total stock quantities and balances remain consistent.
 
-##MVC
+## MVC
 
-###Model
+### Model
 The feature will involve the following data models:
 - **User model** with attributes: `username:string`, `email:string`, `balance:decimal`.  
 - **Stock model** with attributes: `symbol:string`, `name:string`, `price:decimal`, `available_quantity:integer`.  
