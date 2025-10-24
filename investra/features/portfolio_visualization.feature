@@ -22,8 +22,7 @@ Feature: User Portfolio Analytics Dashboard
   Scenario: View portfolio diversification pie chart
     Given I have stocks from multiple sectors
     When I view the diversification chart
-    Then I should see each sector represented with a percentage of my 
-total balance
+    Then I should see each sector represented with a percentage of my total balance
 
   Scenario: Run a valid what-if simulation
     Given I am on the analytics simulation page

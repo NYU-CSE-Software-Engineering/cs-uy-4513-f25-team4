@@ -21,8 +21,7 @@ When("I select {string} from the date range filter") do |range|
   click_button "Update Chart"
 end
 
-Then("I should see a line chart displaying my portfolio value over time") 
-do
+Then("I should see a line chart displaying my portfolio value over time") do
   expect(page).to have_content("Portfolio Value Over Time")
 end
 
