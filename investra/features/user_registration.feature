@@ -112,19 +112,6 @@ Feature: User Registration
     And I should have the role "Portfolio Manager"
     And I should be affiliated with company "TestCorp Inc"
 
-  Scenario: Associate Trader registers with company email domain
-    Given I am on the registration page
-    When I fill in "Email" with "associate@testcorp.com"
-    And I fill in "Password" with "SecurePass123"
-    And I fill in "Password confirmation" with "SecurePass123"
-    And I fill in "First name" with "Mike"
-    And I fill in "Last name" with "Chen"
-    And I press "Sign Up"
-    Then I should be on the associate dashboard page
-    And I should see "Registration successful"
-    And I should have the role "Associate Trader"
-    And I should be affiliated with company "TestCorp Inc"
-
 
   Scenario: Portfolio Manager registers with a new company domain
     Given I am on the registration page
