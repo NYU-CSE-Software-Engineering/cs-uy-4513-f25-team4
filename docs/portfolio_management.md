@@ -68,8 +68,3 @@
   - `show` → Renders portfolio summary and simulation button.  
   - `simulate_sell` → POST endpoint that calls `Portfolio#simulate_sell_value`, then renders the result or error.
 
----
-
-**File location:**  
-`docs/portoflio_management.md`
-
