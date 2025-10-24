@@ -36,28 +36,27 @@ such as:
 - *(Optional)* Renders a mini chart of simulated growth.
 
 ---
+Models
+User, Portfolio, Holding, and Trade (existing models) will provide 
+portfolio and transaction data.
+Introduce a new AnalyticsService class responsible for computing total 
+portfolio value trends, profit/loss summaries, sector diversification, and 
+running “what-if” investment simulations using market data.
 
-## **MVC Outline**
+Views
+app/views/analytics/index.html.erb – main analytics dashboard displaying:
+• Portfolio trend graph (line chart)
+• Profit/Loss summary per stock (table or bar chart)
+• Portfolio diversification pie chart.
+app/views/analytics/simulate.html.erb – dedicated page for the “What-if 
+Investment Simulator” feature where users input a stock, amount, and start 
+date to simulate hypothetical returns.
 
-| **Layer** | **Description** |
-|------------|----------------|
-| **Models** | **User**, **Portfolio**, **Holding**, and **Trade** 
-(existing models) will provide portfolio and transaction 
-data.<br>Introduce a new **AnalyticsService** class responsible for 
-computing total portfolio value trends, profit/loss summaries, sector 
-diversification, and running “what-if” investment simulations using market 
-data. |
-| **Views** | `app/views/analytics/index.html.erb` – main analytics 
-dashboard displaying:<br>• Portfolio trend graph (line chart)<br>• 
-Profit/Loss summary per stock (table or bar chart)<br>• Portfolio 
-diversification pie chart.<br><br>`app/views/analytics/simulate.html.erb` 
-– dedicated page for the *“What-if Investment Simulator”* feature where 
-users input a stock, amount, and start date to simulate hypothetical 
-returns. |
-| **Controllers** | **AnalyticsController** will manage analytical data 
-display and user interactions.<br>• `index` – retrieves and visualizes 
-performance analytics, charts, and summaries.<br>• `simulate` – handles 
-the “What-if” simulation form, calls the service to calculate hypothetical 
-ROI, and renders results. |
-
+Controllers
+AnalyticsController will manage analytical data display and user 
+interactions.
+• index – retrieves and visualizes performance analytics, charts, and 
+summaries.
+• simulate – handles the “What-if” simulation form, calls the service to 
+calculate hypothetical ROI, and renders results.
 
