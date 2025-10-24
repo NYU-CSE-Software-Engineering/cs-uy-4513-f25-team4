@@ -30,7 +30,7 @@ Upon successful registration, the system automatically assigns the default "Trad
 
 * A `User` model with `email:string`, `password_digest:string`, `first_name:string`, `last_name:string`, `phone_number:string`, and `company_id:integer` attributes.
 
-* A `Role` model with `name:string` attributes.
+* A `Role` model with `name:string` and `description:string` attributes.
 
 * A `UserRole` model with `user_id:integer` and `role_id:integer` attributes.
 
