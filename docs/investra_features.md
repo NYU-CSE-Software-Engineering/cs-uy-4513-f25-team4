@@ -5,5 +5,6 @@
 2. [Buying and Selling](./buying_and_selling.md).
 3. [Portfolio Management](./portfolio_management.md).
 4. [Company Management](./company_management.md).
-5. [about this project](./about.md).
-6. [about this project](./about.md).
+5. [User Registration](./user_registration.md).
+6. [User Login/out](./user_loginlogout.md).
+7. [Portfolio Visualization](./portfolio_visualization.md).
