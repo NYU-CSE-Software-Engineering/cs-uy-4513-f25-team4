@@ -28,4 +28,4 @@ so that I can quickly evaluate a stock and reference on related news and model p
 - A `stocks/show.html.erb` view — stock detail page that includes, company header (name, ticker), current price and last updated timestamp, price trend graph with timeframe controls, small historical price table, ML prediction section, histrocial news list.
 
 ## Controllers (Avoid Fat Controller)
-- A `StocksController` with `index` (shows available stocks) and `show` (displays the stock detail page with all the including data) actions[.kamal](../investra/.kamal)
+- A `StocksController` with `index` (shows available stocks) and `show` (displays the stock detail page with all the including data) actions

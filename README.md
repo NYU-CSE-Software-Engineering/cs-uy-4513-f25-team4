@@ -30,6 +30,9 @@ This project was developed as part of **CS-UY 4513 – Software Engineering** un
 
 - **Associate Analytics**  
   Performance tracking, reporting, and dashboards for managers and system-wide analytics.
+  
+- **For detail feature setup**
+  [Check here](./docs/investra_features.md)
 
 ---
 
