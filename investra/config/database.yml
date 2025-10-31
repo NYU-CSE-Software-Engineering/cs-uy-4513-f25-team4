@@ -1,0 +1,21 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: 5
+  username: investra
+  password: investra
+  host: db
+
+development:
+  <<: *default
+  database: investra_development
+
+test:
+  <<: *default
+  database: investra_test
+
+production:
+  <<: *default
+  database: investra_production
+  username: investra
+  password: <%= ENV['INVESTRA_DATABASE_PASSWORD'] %>
