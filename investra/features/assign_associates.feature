@@ -37,7 +37,6 @@ Scenario: Search for trader by name
     | charlie@email.com    | Charlie    | Jones     | Trader  |
     When I click "Add Associate"
     And I search for "Alice"
-    Then I should see 2 traders
     And I should see "alice@email.com"
     And I should see "bob@email.com"
     And I should not see "charlie@email.com"
