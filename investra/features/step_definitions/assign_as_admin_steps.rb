@@ -6,7 +6,7 @@ Given("I am logged in as a System Administrator") do
   click_button 'Log in'
 end
 
-Given("I am on the "User Management" page") do
+Given('I am on the "User Management" page') do
   visit user_management_path
 end
 
