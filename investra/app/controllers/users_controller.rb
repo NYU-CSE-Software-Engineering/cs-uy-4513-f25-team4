@@ -18,6 +18,9 @@ class UsersController < ApplicationController
     message = flash[:notice] || flash[:alert] || "User management page placeholder"
     render plain: message
   end
-end
 
- 
+  # GET /signup
+  def new
+    @user = User.new
+  end
+end
