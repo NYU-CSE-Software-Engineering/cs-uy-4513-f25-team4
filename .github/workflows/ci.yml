@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, hanqiLiuBranch ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: investra_test
+          MYSQL_USER: investra
+          MYSQL_PASSWORD: investra
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -p'root'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
+          working-directory: investra
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential libmariadb-dev nodejs yarn
+
+      - name: Prepare database
+        working-directory: investra
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
+        run: |
+          bundle exec rails db:create db:schema:load
+
+      - name: Run RSpec tests
+        working-directory: investra
+        env:
+          RAILS_ENV: test
+        run: bundle exec rspec
+
+      - name: Run Cucumber tests
+        working-directory: investra
+        env:
+          RAILS_ENV: test
+        run: bundle exec cucumber
