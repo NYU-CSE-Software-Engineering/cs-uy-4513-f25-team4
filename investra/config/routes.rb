@@ -12,7 +12,11 @@ Rails.application.routes.draw do
   get "user_management", to: "users#index", as: :user_management
   get '/signup', to: 'users#new'
   post '/users',  to: 'users#create'
-  resources :users, only: [:create, :show]
+  resources :users, only: [:create, :show] do
+    member do
+      patch :assign_admin
+    end
+  end
 end
 
 

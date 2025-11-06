@@ -32,7 +32,21 @@ class UsersController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
+<<<<<<< HEAD
 
+=======
+  
+  def show
+    @user = User.find(params[:id])
+  end
+  
+  def assign_admin
+    @user = User.find(params[:id])
+    @user.update!(role: "admin")
+    redirect_to @user, notice: "User assigned as admin successfully."
+  end
+  
+>>>>>>> 33dd723 (Make PATCH /users/:id/assign_admin request spec pass)
   private
 
   def user_params
