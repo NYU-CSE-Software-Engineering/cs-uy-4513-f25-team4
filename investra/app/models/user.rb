@@ -9,4 +9,8 @@ class User < ApplicationRecord
     def assign_as_admin!
       update!(role: "admin")
     end
+    
+    def update_role!(new_role)
+        update!(role: new_role)
+    end
   end

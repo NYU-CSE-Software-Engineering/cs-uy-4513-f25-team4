@@ -11,11 +11,15 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+  
   get '/signup', to: 'users#new'
-  post '/users',  to: 'users#create'
+  
   resources :users, only: [:create, :show] do
     member do
       patch :assign_admin
+      patch :update_role
     end
   end
+  
+  get '/user_management', to: 'users#management', as: 'user_management'
 end
