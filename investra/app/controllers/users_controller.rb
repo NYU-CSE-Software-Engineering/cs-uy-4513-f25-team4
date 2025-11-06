@@ -14,7 +14,6 @@ class UsersController < ApplicationController
   # GET /user_management
   def index
     @users = User.all
-    # Include flash messages in the rendered response body so the test can find them
     message = flash[:notice] || flash[:alert] || "User management page placeholder"
     render plain: message
   end
@@ -22,5 +21,21 @@ class UsersController < ApplicationController
   # GET /signup
   def new
     @user = User.new
+  end
+
+  # POST /users
+  def create
+    @user = User.new(user_params)
+    if @user.save
+      redirect_to root_path, notice: "User created successfully."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:email, :first_name, :last_name, :password, :password_confirmation, :role)
   end
 end
