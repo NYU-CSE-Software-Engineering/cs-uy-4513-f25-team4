@@ -13,5 +13,9 @@ Rails.application.routes.draw do
   # root "posts#index"
   get '/signup', to: 'users#new'
   post '/users',  to: 'users#create'
-  resources :users, only: [:create, :show]
+  resources :users, only: [:create, :show] do
+    member do
+      patch :assign_admin
+    end
+  end
 end
