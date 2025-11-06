@@ -17,6 +17,11 @@ class User < ApplicationRecord
     update!(role: "trader", manager: nil, company: nil)
   end
 
+  # --- Admin assignment method ---
+  def assign_as_admin!
+    update!(role: "admin")
+  end
+
   private
 
   def downcase_email
