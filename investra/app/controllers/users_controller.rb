@@ -11,6 +11,23 @@ class UsersController < ApplicationController
     end
   end
 
+  # PATCH /users/:id/assign_admin
+  def assign_admin
+    @user = User.find(params[:id])
+    @user.update!(role: "admin")
+    redirect_to @user, notice: "User assigned as admin successfully."
+  end
+
+  # PATCH /users/:id/update_role
+  def update_role
+    @user = User.find(params[:id])
+    if @user.update(role: params[:role])
+      render json: { message: "Role updated successfully" }, status: :ok
+    else
+      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   # GET /user_management
   def index
     @users = User.all
@@ -32,21 +49,12 @@ class UsersController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
-<<<<<<< HEAD
 
-=======
-  
+  # GET /users/:id
   def show
     @user = User.find(params[:id])
   end
-  
-  def assign_admin
-    @user = User.find(params[:id])
-    @user.update!(role: "admin")
-    redirect_to @user, notice: "User assigned as admin successfully."
-  end
-  
->>>>>>> 33dd723 (Make PATCH /users/:id/assign_admin request spec pass)
+
   private
 
   def user_params

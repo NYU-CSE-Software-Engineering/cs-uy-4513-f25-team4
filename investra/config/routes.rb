@@ -5,18 +5,14 @@ Rails.application.routes.draw do
 
   resources :users, only: [:create, :show, :edit, :update] do
     member do
-      patch :assign_associate 
+      patch :assign_associate
+      patch :assign_admin
+      patch :update_role
     end
   end
 
   get "user_management", to: "users#index", as: :user_management
-  get '/signup', to: 'users#new'
-  post '/users',  to: 'users#create'
-  resources :users, only: [:create, :show] do
-    member do
-      patch :assign_admin
-    end
-  end
+  get "/signup", to: "users#new"
+  root "users#index"
 end
-
 
