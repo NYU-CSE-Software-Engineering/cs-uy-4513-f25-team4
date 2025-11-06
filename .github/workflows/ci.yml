@@ -20,10 +20,10 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -p'root'"
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - name: Checkout code
@@ -38,6 +38,19 @@ jobs:
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential libmariadb-dev nodejs yarn
+
+      # ✅ 等待 MySQL 服务完全启动
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to start..."
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -uinvestra -pinvestra --silent; then
+              echo "MySQL is up!"
+              break
+            fi
+            echo "Waiting ($i)..."
+            sleep 2
+          done
 
       - name: Prepare database
         working-directory: investra
@@ -57,4 +70,5 @@ jobs:
         working-directory: investra
         env:
           RAILS_ENV: test
+          DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
         run: bundle exec cucumber
