@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe "Users", type: :request do
+  let(:password_attrs) { { password: 'password', password_confirmation: 'password' } }
+
   describe "GET /signup" do
     it "renders the new template" do
       get signup_path
@@ -20,7 +22,7 @@ RSpec.describe "Users", type: :request do
               email: "alice#{SecureRandom.hex(3)}@example.com",
               role: "employee",
               company_id: company.id
-            }
+            }.merge(password_attrs)
           }
           
           expect {
@@ -40,11 +42,13 @@ RSpec.describe "Users", type: :request do
       company = Company.create!(name: "Investra")
       
       user = User.create!(
-        first_name: "Alice",
-        last_name: "Example",
-        email: "alice#{SecureRandom.hex(3)}@example.com",
-        role: "employee",
-        company: company
+        {
+          first_name: "Alice",
+          last_name: "Example",
+          email: "alice#{SecureRandom.hex(3)}@example.com",
+          role: "employee",
+          company: company
+        }.merge(password_attrs)
       )
       
       expect{
@@ -59,11 +63,13 @@ RSpec.describe "Users", type: :request do
     it "updates the user's role and redirects to the user management page" do
       company = Company.create!(name: "Investra")
       user = User.create!(
-        first_name: "Employee",
-        last_name: "User",
-        email: "employee@test.com",
-        role: "Employee",
-        company: company
+        {
+          first_name: "Employee",
+          last_name: "User",
+          email: "employee@test.com",
+          role: "Employee",
+          company: company
+        }.merge(password_attrs)
       )
       patch update_role_user_path(user), params: {
         user: { role: "Portfolio Manager" }

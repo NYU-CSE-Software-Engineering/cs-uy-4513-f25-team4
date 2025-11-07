@@ -2,13 +2,16 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
   let(:company) { Company.create!(name: 'Test Holdings') }
+  let(:password_attrs) { { password: 'password', password_confirmation: 'password' } }
   subject(:user) do
     described_class.new(
-      email: 'pm@example.com',
-      role: 'portfolio_manager',
-      first_name: 'Pat',
-      last_name: 'Manager',
-      company: company
+      {
+        email: 'pm@example.com',
+        role: 'portfolio_manager',
+        first_name: 'Pat',
+        last_name: 'Manager',
+        company: company
+      }.merge(password_attrs)
     )
   end
 
@@ -29,18 +32,22 @@ RSpec.describe User, type: :model do
 
     it 'is invalid when another user already uses the email (case-insensitive)' do
       described_class.create!(
-        email: 'pm@example.com',
-        role: 'portfolio_manager',
-        first_name: 'Existing',
-        last_name: 'Manager',
-        company: company
+        {
+          email: 'pm@example.com',
+          role: 'portfolio_manager',
+          first_name: 'Existing',
+          last_name: 'Manager',
+          company: company
+        }.merge(password_attrs)
       )
       duplicate = described_class.new(
-        email: 'PM@example.com',
-        role: 'associate_trader',
-        first_name: 'Alex',
-        last_name: 'Associate',
-        company: company
+        {
+          email: 'PM@example.com',
+          role: 'associate_trader',
+          first_name: 'Alex',
+          last_name: 'Associate',
+          company: company
+        }.merge(password_attrs)
       )
 
       expect(duplicate).not_to be_valid

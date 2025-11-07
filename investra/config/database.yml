@@ -13,7 +13,7 @@ development:
 test:
   <<: *default
   database: investra_test
-  host: <%= ENV['CI'] == 'true' ? '127.0.0.1' : 'db' %>
+  host: localhost
   username: investra
   password: investra
 

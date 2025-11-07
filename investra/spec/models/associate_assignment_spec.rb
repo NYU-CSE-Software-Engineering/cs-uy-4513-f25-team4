@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'Associate assignment lifecycle', type: :model do
   let(:company) { Company.create!(name: 'Investra Capital') }
-  let(:password_attrs) { { password: 'SecurePass123', password_confirmation: 'SecurePass123' } }
+  let(:password_attrs) { { password: 'password', password_confirmation: 'password' } }
 
   let(:portfolio_manager) do
     User.create!(

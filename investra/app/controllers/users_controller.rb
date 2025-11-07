@@ -21,12 +21,15 @@ class UsersController < ApplicationController
   # PATCH /users/:id/update_role
   def update_role
     @user = User.find(params[:id])
-    if @user.update(role: params[:role])
-      render json: { message: "Role updated successfully" }, status: :ok
+    new_role = params.require(:user).permit(:role)[:role]
+
+    if @user.update(role: new_role)
+      redirect_to user_management_path, notice: "User role updated successfully."
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      redirect_to user_management_path, alert: @user.errors.full_messages.to_sentence
     end
   end
+
 
   # GET /user_management
   def index
@@ -44,7 +47,7 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      redirect_to root_path, notice: "User created successfully."
+      redirect_to @user, notice: "User created successfully."
     else
       render :new, status: :unprocessable_entity
     end

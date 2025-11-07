@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  has_secure_password
+
   belongs_to :company, optional: true
   belongs_to :manager, class_name: "User", optional: true
   has_many :associates, class_name: "User", foreign_key: "manager_id"
