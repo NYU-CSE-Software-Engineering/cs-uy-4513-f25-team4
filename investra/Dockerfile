@@ -18,6 +18,8 @@ RUN bundle config set --local with 'development test' && \
 
 COPY . .
 
+RUN chmod +x bin/*
+
 EXPOSE 3000
 
 CMD ["bash", "-c", "bin/rails db:prepare && bin/rails server -b 0.0.0.0 -p 3000"]
