@@ -40,7 +40,11 @@ class UsersController < ApplicationController
     if new_role == 'Associate Trader'
       if params[:user][:manager].present?
         manager = User.find_by(email: params[:user][:manager])
-        update_params[:manager_id] = manager.id if manager
+        if manager
+          update_params[:manager_id] = manager.id
+          # Associate Trader inherits manager's company
+          update_params[:company_id] = manager.company_id
+        end
       end
     else
       # Clear manager if role is not Associate Trader
