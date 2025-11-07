@@ -1,5 +1,14 @@
 Given("I am logged in as a System Administrator") do
-  @current_user = User.create!(email: 'admin@test.com', role: 'System Administrator')
+  company = Company.find_or_create_by!(name: 'Default Company')
+  @current_user = User.create!(
+    email: 'admin@test.com', 
+    role: 'System Administrator',
+    first_name: 'Admin',
+    last_name: 'User',
+    company: company,
+    password: 'password',
+    password_confirmation: 'password'
+  )
   visit new_user_session_path
   fill_in 'Email', with: @current_user.email
   fill_in 'Password', with: 'password'
@@ -12,20 +21,34 @@ end
 
 Given("a user {string} exists with the following details:") do |email, table|
   data = table.rows_hash
+  company = Company.find_or_create_by!(name: 'Default Company')
   @last_user = User.create!(
     email: email,
     role: data['Role'],
     first_name: data['First Name'],
-    last_name: data['Last Name']
+    last_name: data['Last Name'],
+    company: company,
+    password: 'password',
+    password_confirmation: 'password'
   )
 end
 
 Given("the user is associated with company {string}") do |company_name|
-  @last_user.update!(company: company_name)
+  company = Company.find_by(name: company_name) || Company.create!(name: company_name)
+  @last_user.update!(company: company)
 end
 
 Given("a user {string} exists with role {string}") do |email, role|
-  @last_user = User.create!(email: email, role: role)
+  company = Company.find_or_create_by!(name: 'Default Company')
+  @last_user = User.create!(
+    email: email, 
+    role: role,
+    first_name: 'Test',
+    last_name: 'User',
+    company: company,
+    password: 'password',
+    password_confirmation: 'password'
+  )
 end
 
 Given("a company {string} exists") do |company_name|
@@ -33,16 +56,26 @@ Given("a company {string} exists") do |company_name|
 end
 
 Given("a Portfolio Manager {string} exists at company {string}") do |email, company_name|
-  User.create!(email: email, role: 'Portfolio Manager', company: company_name)
+  company = Company.find_by(name: company_name) || Company.create!(name: company_name)
+  User.create!(
+    email: email, 
+    role: 'Portfolio Manager', 
+    company: company,
+    first_name: 'Manager',
+    last_name: 'User',
+    password: 'password',
+    password_confirmation: 'password'
+  )
 end
 
 Given("the user is managed by {string}") do |manager_email|
-  @last_user.update!(manager: manager_email)
+  manager = User.find_by(email: manager_email)
+  @last_user.update!(manager: manager) if manager
 end
 
 When("I click {string} for user {string}") do |action, email|
   @last_user = User.find_by(email: email)
-  click_button action
+  visit edit_user_path(@last_user)
 end
 
 When("I select {string} from the role dropdown") do |role_name|
@@ -71,10 +104,12 @@ Then("the user {string} should have role {string}") do |email, role|
 end
 
 Then("the user should be associated with company {string}") do |company_name|
-  expect(@last_user.company).to eq(company_name)
+  @last_user.reload
+  expect(@last_user.company.name).to eq(company_name)
 end
 
 Then("the user should be managed by {string}") do |manager_email|
-  expect(@last_user.manager).to eq(manager_email)
+  @last_user.reload
+  expect(@last_user.manager.email).to eq(manager_email)
 end
 

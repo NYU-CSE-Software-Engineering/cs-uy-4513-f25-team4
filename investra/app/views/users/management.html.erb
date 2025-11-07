@@ -1,0 +1,29 @@
+<h1>User Management</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Role</th>
+      <th>Company</th>
+      <th>Manager</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.email %></td>
+        <td><%= user.first_name %></td>
+        <td><%= user.last_name %></td>
+        <td><%= user.role %></td>
+        <td><%= user.company&.name %></td>
+        <td><%= user.manager&.email %></td>
+        <td><%= link_to "Edit", edit_user_path(user) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
