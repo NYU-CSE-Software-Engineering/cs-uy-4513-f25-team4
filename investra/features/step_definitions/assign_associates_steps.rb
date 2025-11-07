@@ -67,10 +67,7 @@ end
 
 # Removed duplicate step - already defined in assign_as_admin_steps.rb
 
-Then("the user should be associated with company {string}") do |company_name|
-  user = User.find_by(email: @last_selected_email)
-  expect(user.company).to eq(company_name)
-end
+# Removed duplicate step - already defined in assign_as_admin_steps.rb
 
 Then("the user should not be associated with any company") do 
   user = User.find_by(email: @last_removed_email)
