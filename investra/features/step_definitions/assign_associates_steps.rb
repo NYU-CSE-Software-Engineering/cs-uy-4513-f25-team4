@@ -35,9 +35,7 @@ Given("an associate {string} exists in my team") do |email|
   )
 end
 
-When("I click {string}") do |button_text|
-  click_button button_text
-end
+# Removed duplicate step - now in common_steps.rb
 
 When("I select user {string} from the available traders list") do |email|
   @last_selected_email = email
@@ -57,9 +55,7 @@ When("I search for {string}") do |search_term|
   fill_in 'search', with: search_term
 end
 
-Then("I should see {string}") do |message|
-  expect(page).to have_content(message)
-end
+# Removed duplicate step - now in common_steps.rb
 
 Then("{string} should appear in my associates list") do |email|
   expect(page).to have_content(email)
@@ -69,15 +65,9 @@ Then("{string} should not appear in my associates list") do |email|
   expect(page).not_to have_content(email)
 end
 
-Then("the user {string} should have role {string}") do |email, role|
-  user = User.find_by(email: email)
-  expect(user.role).to eq(role)
-end
+# Removed duplicate step - already defined in assign_as_admin_steps.rb
 
-Then("the user should be associated with company {string}") do |company_name|
-  user = User.find_by(email: @last_selected_email)
-  expect(user.company).to eq(company_name)
-end
+# Removed duplicate step - already defined in assign_as_admin_steps.rb
 
 Then("the user should not be associated with any company") do 
   user = User.find_by(email: @last_removed_email)

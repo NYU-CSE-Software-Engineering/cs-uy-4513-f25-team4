@@ -38,6 +38,4 @@ When("I visit the companies management page") do
   visit companies_path
 end
 
-Then('I should see {string}') do |text|
-  expect(page).to have_content(text)
-end
+# Removed duplicate step - now in common_steps.rb

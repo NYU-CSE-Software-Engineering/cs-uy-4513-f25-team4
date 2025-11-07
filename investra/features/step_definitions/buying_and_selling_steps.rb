@@ -10,16 +10,7 @@ Given("I am a logged-in user") do
   expect(page).to have_content('Signed in successfully')
 end
 
-Given("I am on the {string} page") do |page_name|
-  case page_name
-  when "Stocks"
-    visit stocks_path
-  when "Portfolio"
-    visit portfolio_path
-  else
-    raise "Unknown page: #{page_name}"
-  end
-end
+# Removed duplicate step - now in common_steps.rb
 
 Given("I can see a list of available market stocks") do
   expect(page).to have_selector('.stock-list')
