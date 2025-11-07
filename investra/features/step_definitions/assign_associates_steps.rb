@@ -35,9 +35,7 @@ Given("an associate {string} exists in my team") do |email|
   )
 end
 
-When("I click {string}") do |button_text|
-  click_button button_text
-end
+# Removed duplicate step - now in common_steps.rb
 
 When("I select user {string} from the available traders list") do |email|
   @last_selected_email = email
@@ -57,9 +55,7 @@ When("I search for {string}") do |search_term|
   fill_in 'search', with: search_term
 end
 
-Then("I should see {string}") do |message|
-  expect(page).to have_content(message)
-end
+# Removed duplicate step - now in common_steps.rb
 
 Then("{string} should appear in my associates list") do |email|
   expect(page).to have_content(email)
