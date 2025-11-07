@@ -20,7 +20,7 @@ services:
 
   web:
     build: .
-    command: bash -c "bundle install && bin/rails db:prepare && bin/rails server -b 0.0.0.0 -p 3000"
+    command: bash -c "bundle install && bin/rails db:schema:load && bin/rails server -b 0.0.0.0 -p 3000"
     volumes:
       - .:/app
     ports:
@@ -29,8 +29,8 @@ services:
       db:
         condition: service_healthy  # ✅ 等待数据库健康后才启动
     environment:
-      RAILS_ENV: test
-      DATABASE_URL: mysql2://investra:investra@db/investra_test
+      RAILS_ENV: development
+      DATABASE_URL: mysql2://investra:investra@db/investra_development
 
 volumes:
   db_data:

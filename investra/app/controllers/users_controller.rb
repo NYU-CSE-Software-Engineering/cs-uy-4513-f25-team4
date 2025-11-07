@@ -1,5 +1,7 @@
 class UsersController < ApplicationController
   # PATCH /users/:id/assign_associate
+
+
   def assign_associate
     @user = User.find(params[:id])
     @company = Company.find_by(id: params[:company_id])

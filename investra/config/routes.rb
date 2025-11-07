@@ -8,10 +8,7 @@ Rails.application.routes.draw do
   # Users (shared across both features)
   resources :users, only: [:create, :show, :edit, :update, :index] do
     member do
-      # === Feature 2: Assign Associate ===
       patch :assign_associate   # your feature
-
-      # === Feature 1 (other team members) ===
       patch :assign_admin
       patch :update_role
     end

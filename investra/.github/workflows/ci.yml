@@ -25,6 +25,10 @@ jobs:
           --health-timeout=5s
           --health-retries=10
 
+    env:
+      RAILS_ENV: test                               # ✅ 全局设定为 test 环境
+      DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test  # ✅ 确保所有步骤共用
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,7 +49,7 @@ jobs:
           echo "Waiting for MySQL to start..."
           for i in {1..30}; do
             if mysqladmin ping -h 127.0.0.1 -uinvestra -pinvestra --silent; then
-              echo "MySQL is up!"
+              echo "✅ MySQL is up!"
               break
             fi
             echo "Waiting ($i)..."
@@ -54,21 +58,15 @@ jobs:
 
       - name: Prepare database
         working-directory: investra
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
         run: |
-          bundle exec rails db:create db:schema:load
+          bundle exec rails db:drop || true
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
 
       - name: Run RSpec tests
         working-directory: investra
-        env:
-          RAILS_ENV: test
         run: bundle exec rspec
 
       - name: Run Cucumber tests
         working-directory: investra
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
         run: bundle exec cucumber
