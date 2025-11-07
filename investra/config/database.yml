@@ -13,6 +13,9 @@ development:
 test:
   <<: *default
   database: investra_test
+  host: <%= ENV.fetch('DATABASE_HOST', ENV['DATABASE_URL'] ? '127.0.0.1' : 'db') %>
+  username: <%= ENV.fetch('DATABASE_USERNAME', ENV['DATABASE_URL'] ? 'root' : 'investra') %>
+  password: <%= ENV.fetch('DATABASE_PASSWORD', ENV['DATABASE_URL'] ? '' : 'investra') %>
 
 production:
   <<: *default
