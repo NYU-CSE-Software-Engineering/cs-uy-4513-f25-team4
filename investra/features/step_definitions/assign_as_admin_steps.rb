@@ -15,9 +15,7 @@ Given("I am logged in as a System Administrator") do
   click_button 'Log in'
 end
 
-Given('I am on the "User Management" page') do
-  visit user_management_path
-end
+# Removed duplicate - using generic step from buying_and_selling_steps.rb
 
 Given("a user {string} exists with the following details:") do |email, table|
   data = table.rows_hash
