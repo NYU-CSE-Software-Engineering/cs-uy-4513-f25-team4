@@ -10,7 +10,7 @@ Given("my company is {string}") do |company_name|
   @current_user.update!(company: company_name)
 end
 
-Given("I am on the "Manage Team" page") do
+Given('I am on the "Manage Team" page') do
   visit manage_team_path
 end
 
