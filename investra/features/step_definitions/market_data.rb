@@ -116,9 +116,7 @@
     News.where(stock: stock).destroy_all
   end
   
-  Then('I should see {string}') do |string|
-    expect(page).to have_content(string)
-  end
+  # Removed duplicate step - now in common_steps.rb
   
   Given('a new stock {string} exists with ticker {string}') do |string, string2|
     Stock.create!(ticker: string2, company_name: string, sector: "Technology")
