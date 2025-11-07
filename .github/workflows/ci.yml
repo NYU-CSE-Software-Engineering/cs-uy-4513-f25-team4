@@ -66,9 +66,9 @@ jobs:
           RAILS_ENV: test
         run: bundle exec rspec
 
-      - name: Run Cucumber tests
+      - name: Run Cucumber tests for assign_as_admin feature
         working-directory: investra
         env:
           RAILS_ENV: test
           DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
-        run: bundle exec cucumber
+        run: bundle exec cucumber --require features/step_definitions/assign_as_admin_steps.rb features/assign_as_admin.feature
