@@ -16,6 +16,8 @@ Given("I am on the {string} page") do |page_name|
     visit stocks_path
   when "Portfolio"
     visit portfolio_path
+  when "User Management"
+    visit user_management_path
   else
     raise "Unknown page: #{page_name}"
   end
