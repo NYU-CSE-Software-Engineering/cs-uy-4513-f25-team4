@@ -1,7 +1,3 @@
-# Ensure models are loaded
-require_relative '../../app/models/user'
-require_relative '../../app/models/company'
-
 Given("I am logged in as a System Administrator") do
   company = Company.find_or_create_by!(name: 'Default Company')
   @current_user = User.create!(
