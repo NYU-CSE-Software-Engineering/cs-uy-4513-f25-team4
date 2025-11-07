@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+    has_secure_password
+    
     belongs_to :company
     belongs_to :manager, class_name: 'User', optional: true
   
@@ -6,4 +8,12 @@ class User < ApplicationRecord
     validates :first_name, presence: true
     validates :last_name, presence: true
     validates :role, presence: true
+    
+    def assign_as_admin!
+      update!(role: "admin")
+    end
+    
+    def update_role!(new_role)
+        update!(role: new_role)
+    end
   end

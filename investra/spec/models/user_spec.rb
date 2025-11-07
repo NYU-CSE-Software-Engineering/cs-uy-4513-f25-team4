@@ -35,15 +35,15 @@ RSpec.describe User, type: :model do
     end
 
     it 'is valid with all attributes' do
-      user = User.new(email: 'alice@email.com', first_name: 'Alice', last_name: 'Smith', role: 'Trader', company: company)
+      user = User.new(email: 'alice@email.com', first_name: 'Alice', last_name: 'Smith', role: 'Trader', company: company, password: 'password', password_confirmation: 'password')
       expect(user).to be_valid
     end
   end
 
   describe 'associations' do
     it 'can have a manager' do
-      manager = User.create!(email: 'manager@firm.com', first_name: 'Manager', last_name: 'Boss', role: 'Portfolio Manager', company: company)
-      user = User.new(email: 'bob@email.com', first_name: 'Bob', last_name: 'Smith', role: 'Associate Trader', company: company, manager: manager)
+      manager = User.create!(email: 'manager@firm.com', first_name: 'Manager', last_name: 'Boss', role: 'Portfolio Manager', company: company, password: 'password', password_confirmation: 'password')
+      user = User.new(email: 'bob@email.com', first_name: 'Bob', last_name: 'Smith', role: 'Associate Trader', company: company, manager: manager, password: 'password', password_confirmation: 'password')
       expect(user.manager).to eq(manager)
     end
   end
