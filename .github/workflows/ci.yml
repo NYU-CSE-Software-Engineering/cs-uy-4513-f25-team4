@@ -70,5 +70,4 @@ jobs:
         working-directory: investra
         env:
           RAILS_ENV: test
-          DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
-        run: bundle exec cucumber --require features/step_definitions/assign_as_admin_steps.rb features/assign_as_admin.feature
+        run: bundle exec cucumber features/assign_as_admin.feature
