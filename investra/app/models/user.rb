@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  belongs_to :company
+  belongs_to :company, optional: true
 
   before_validation :downcase_email
 
