@@ -2,9 +2,9 @@ default: &default
   adapter: mysql2
   encoding: utf8mb4
   pool: 5
-  username: investra
-  password: investra
-  host: db
+  username: <%= ENV.fetch('DATABASE_USERNAME', 'investra') %>
+  password: <%= ENV.fetch('DATABASE_PASSWORD', 'investra') %>
+  host: <%= ENV.fetch('DATABASE_HOST', 'db') %>
 
 development:
   <<: *default

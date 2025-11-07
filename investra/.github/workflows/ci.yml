@@ -87,9 +87,19 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          DATABASE_URL: mysql2://127.0.0.1:3306
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_USERNAME: root
+          DATABASE_PASSWORD: ""
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test test:system
+
+      - name: Run RSpec tests
+        env:
+          RAILS_ENV: test
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_USERNAME: root
+          DATABASE_PASSWORD: ""
+        run: bundle exec rspec
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
