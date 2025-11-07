@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   def new
     @user = User.new
+    @companies = Company.all
   end
 
   def create
@@ -8,6 +9,7 @@ class UsersController < ApplicationController
     if @user.save
       redirect_to @user, notice: "Account created successfully"
     else
+      @companies = Company.all
       render :new, status: :unprocessable_entity
     end
   end
