@@ -73,7 +73,5 @@ When("I press {string}") do |button|
   click_button button
 end
 
-Then("I should see {string}") do |message|
-  expect(page).to have_content(message)
-end
+# Removed duplicate step - now in common_steps.rb
 

@@ -55,13 +55,7 @@ When("I select manager {string}") do |manager_email|
   select manager_email, from: 'manager'
 end
 
-When("I click {string}") do |button_text|
-  click_button button_text
-end
-
-Then("I should see {string}") do |message|
-  expect(page).to have_content(message)
-end
+# Removed duplicate steps - now in common_steps.rb
 
 Then("the user {string} should have role {string}") do |email, role|
   user = User.find_by(email: email)

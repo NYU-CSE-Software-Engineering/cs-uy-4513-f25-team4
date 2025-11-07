@@ -96,9 +96,7 @@ When('I press {string}') do |button|
   click_button button
 end
 
-When('I click {string}') do |element|
-    click_on element
-end
+# Removed duplicate step - now in common_steps.rb
 
 #page verification
 
@@ -127,9 +125,7 @@ Then('I should be on the profile page') do
 end
 
 #text verification
-Then('I should see {string}') do |message|
-  expect(page).to have_content(message)
-end
+# Removed duplicate step - now in common_steps.rb
 
 Then('I should be logged in as {string}') do |email|
   expect(page).to have_button('Log Out')
