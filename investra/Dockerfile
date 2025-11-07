@@ -2,15 +2,19 @@
 
 FROM ruby:3.2.2
 
+# ✅ Install dependencies (MySQL client dev headers for mysql2 gem)
 RUN apt-get update -qq && \
-    apt-get install -y build-essential libmariadb-dev nodejs yarn && \
+    apt-get install -y build-essential libmariadb-dev-compat libmariadb-dev nodejs yarn && \
     rm -rf /var/lib/apt/lists/*
 
 
 WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle install
+
+# ✅ Install gems including test group (RSpec + Cucumber)
+RUN bundle config set --local with 'development test' && \
+    bundle install
 
 COPY . .
 
