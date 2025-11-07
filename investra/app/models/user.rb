@@ -1,9 +1,14 @@
 class User < ApplicationRecord
-    belongs_to :company
-    belongs_to :manager, class_name: 'User', optional: true
-  
-    validates :email, presence: true
-    validates :first_name, presence: true
-    validates :last_name, presence: true
-    validates :role, presence: true
+  belongs_to :company
+
+  before_validation :downcase_email
+
+  validates :email, presence: true, uniqueness: { case_sensitive: false }
+  validates :role, presence: true
+
+  private
+
+  def downcase_email
+    self.email = email&.downcase
   end
+end
