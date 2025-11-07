@@ -2,9 +2,9 @@ class UsersController < ApplicationController
   # PATCH /users/:id/assign_associate
   def assign_associate
     @user = User.find(params[:id])
-    @company = Company.find(params[:company_id])
+    @company = Company.find_by(id: params[:company_id])
 
-    if @user.update(company: @company)
+    if @company && @user.update(company: @company)
       redirect_to user_management_path, notice: "User assigned to company successfully"
     else
       redirect_to user_management_path, alert: "Failed to assign user"
@@ -29,7 +29,6 @@ class UsersController < ApplicationController
       redirect_to user_management_path, alert: @user.errors.full_messages.to_sentence
     end
   end
-
 
   # GET /user_management
   def index
@@ -64,3 +63,4 @@ class UsersController < ApplicationController
     params.require(:user).permit(:email, :first_name, :last_name, :password, :password_confirmation, :role)
   end
 end
+

@@ -4,7 +4,7 @@ default: &default
   pool: 5
   username: investra
   password: investra
-  host: db
+  host: investra-db-1  # Matches your actual DB container name
 
 development:
   <<: *default
@@ -13,12 +13,11 @@ development:
 test:
   <<: *default
   database: investra_test
-  host: localhost
-  username: investra
-  password: investra
+  host: investra-db-1  # Ensure Rails uses same DB container in test env
 
 production:
   <<: *default
   database: investra_production
   username: investra
   password: <%= ENV['INVESTRA_DATABASE_PASSWORD'] %>
+
