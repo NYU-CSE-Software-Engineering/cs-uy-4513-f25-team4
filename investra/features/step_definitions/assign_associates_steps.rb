@@ -65,10 +65,7 @@ Then("{string} should not appear in my associates list") do |email|
   expect(page).not_to have_content(email)
 end
 
-Then("the user {string} should have role {string}") do |email, role|
-  user = User.find_by(email: email)
-  expect(user.role).to eq(role)
-end
+# Removed duplicate step - already defined in assign_as_admin_steps.rb
 
 Then("the user should be associated with company {string}") do |company_name|
   user = User.find_by(email: @last_selected_email)
