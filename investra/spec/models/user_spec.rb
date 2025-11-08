@@ -55,7 +55,7 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe 'associations' do
-    pending 'adds belongs_to :company once companies are modeled'
-  end
+  # describe 'associations' do
+  #   pending 'adds belongs_to :company once companies are modeled'
+  # end
 end

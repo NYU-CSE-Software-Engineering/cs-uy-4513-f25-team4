@@ -29,8 +29,8 @@ services:
       db:
         condition: service_healthy  # ✅ 等待数据库健康后才启动
     environment:
-      RAILS_ENV: development
-      DATABASE_URL: mysql2://investra:investra@db/investra_development
+      RAILS_ENV: test
+      DATABASE_URL: mysql2://investra:investra@db/investra_test
 
 volumes:
   db_data:
