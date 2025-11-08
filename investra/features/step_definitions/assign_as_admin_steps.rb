@@ -1,5 +1,5 @@
 Given("I am logged in as a System Administrator") do
-  @current_user = User.create!(email: 'admin@test.com', role: 'System Administrator')
+  @current_user = User.create!(email: 'admin@test.com', password: "password", first_name: "System", last_name: "Admin", role: 'System Administrator')
   visit new_user_session_path
   fill_in 'Email', with: @current_user.email
   fill_in 'Password', with: 'password'

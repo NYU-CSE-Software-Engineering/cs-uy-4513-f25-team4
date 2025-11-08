@@ -20,14 +20,14 @@ services:
 
   web:
     build: .
-    command: bash -c "bundle install && bin/rails db:schema:load && bin/rails server -b 0.0.0.0 -p 3000"
+    command: bash -c "./wait-for-it.sh db:3306 -- bundle install && bin/rails db:test:prepare && bin/rails server -b 0.0.0.0 -p 3000"
     volumes:
       - .:/app
     ports:
       - "3000:3000"
     depends_on:
       db:
-        condition: service_healthy  # ✅ 等待数据库健康后才启动
+        condition: service_healthy
     environment:
       RAILS_ENV: test
       DATABASE_URL: mysql2://investra:investra@db/investra_test
