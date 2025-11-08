@@ -1,0 +1,33 @@
+<h1>User Management</h1>
+
+<% if flash[:notice] %>
+  <div class="notice"><%= flash[:notice] %></div>
+<% end %>
+
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Company</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.email %></td>
+        <td><%= user.role %></td>
+        <td><%= user.company&.name || 'None' %></td>
+        <td>
+          <%= link_to "Edit", edit_user_path(user) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+

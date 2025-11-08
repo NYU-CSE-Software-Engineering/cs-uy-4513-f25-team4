@@ -1,0 +1,20 @@
+<h1>Log In</h1>
+
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<%= form_with url: login_path, local: true do |f| %>
+  <div>
+    <%= f.label :email, "Email" %>
+    <%= f.email_field :email, id: "Email" %>
+  </div>
+  
+  <div>
+    <%= f.label :password, "Password" %>
+    <%= f.password_field :password, id: "Password" %>
+  </div>
+  
+  <%= f.submit "Log in" %>
+<% end %>
+
