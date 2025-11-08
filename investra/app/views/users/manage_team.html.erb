@@ -13,17 +13,19 @@
   <ul>
     <% @associates.each do |associate| %>
       <li>
-        <%= associate.email %>
-        <span id="remove_<%= associate.id %>">
-          <%= form_with url: remove_associate_user_path(associate), method: :delete, local: true, id: "remove_form_#{associate.id}" do |f| %>
-            <%= f.submit "Remove", onclick: "document.getElementById('confirm_#{associate.id}').style.display = 'block'; document.getElementById('remove_#{associate.id}').style.display = 'none'; return false;" %>
-          <% end %>
-        </span>
-        <div id="confirm_<%= associate.id %>" style="display: none;">
+        <strong><%= associate.email %></strong>
+        <% if @confirm_remove_user&.id == associate.id %>
           <%= form_with url: remove_associate_user_path(associate), method: :delete, local: true do |f| %>
             <%= f.submit "Confirm" %>
           <% end %>
-        </div>
+        <% else %>
+          <%= form_with url: manage_team_path, method: :get, local: true do %>
+            <%= hidden_field_tag :confirm_remove_id, associate.id %>
+            <%= hidden_field_tag :show_traders, 'true' if @show_traders %>
+            <%= hidden_field_tag :search, @search_term if @search_term.present? %>
+            <%= submit_tag "Remove" %>
+          <% end %>
+        <% end %>
       </li>
     <% end %>
   </ul>
@@ -32,55 +34,64 @@
 <% end %>
 
 <h2>Available Traders</h2>
-<%= link_to "Add Associate", "#", id: "add_associate_link", onclick: "document.getElementById('trader_list').style.display = 'block'; return false;" %>
+<% link_params = { show_traders: 'true' } %>
+<% link_params[:search] = @search_term if @search_term.present? %>
+<%= link_to "Add Associate", manage_team_path(link_params), id: "add_associate_link" %>
 
-<div id="trader_list" style="display: none;">
-  <input type="text" id="search" name="search" placeholder="Search by name..." oninput="filterTraders(this.value)">
-  <ul id="trader_items">
-    <% @available_traders.each do |trader| %>
-      <li class="trader-item" data-name="<%= "#{trader.first_name} #{trader.last_name}" %>">
-        <%= link_to trader.email, "#", id: trader.email, onclick: "selectTrader(#{trader.id}, '#{trader.email}'); return false;" %>
-      </li>
+<% if @show_traders %>
+  <div id="trader_list">
+    <%= form_with url: manage_team_path, method: :get, local: true, id: "search_form" do %>
+      <%= hidden_field_tag :show_traders, 'true' %>
+      <% if @selected_trader %>
+        <%= hidden_field_tag :selected_user_id, @selected_trader.id %>
+      <% end %>
+      <%= text_field_tag :search, @search_term, id: "search", placeholder: "Search by name..." %>
+      <%= submit_tag "Filter" %>
     <% end %>
-  </ul>
-  <% if @available_traders.any? %>
-    <% trader = @available_traders.first %>
-    <%= form_with url: "/users/#{trader.id}/assign_as_associate", method: :post, local: true, id: "assign_form", style: "display: none;" do |f| %>
-      <%= f.hidden_field :selected_user_id, id: "selected_user_id", value: trader.id %>
-      <%= f.submit "Assign as Associate" %>
+
+    <% base_link_params = { show_traders: 'true' } %>
+    <% base_link_params[:search] = @search_term if @search_term.present? %>
+
+    <ul id="trader_items">
+      <% @available_traders.each do |trader| %>
+        <% trader_params = base_link_params.merge(selected_user_id: trader.id) %>
+        <li class="trader-item" data-name="<%= "#{trader.first_name} #{trader.last_name}" %>">
+          <%= link_to trader.email, manage_team_path(trader_params), id: trader.email %>
+          <% if @selected_trader&.id == trader.id %>
+            <span>(selected)</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+
+    <% if @available_traders.none? %>
+      <p>No traders available.</p>
     <% end %>
-  <% end %>
-</div>
+
+    <% if @selected_trader %>
+      <%= form_with url: assign_as_associate_user_path(@selected_trader), method: :post, local: true do |f| %>
+        <%= f.submit "Assign as Associate" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
 
 <script>
-  function selectTrader(userId, email) {
-    // Update the form action and show it
-    let form = document.getElementById('assign_form');
-    if (form) {
-      form.action = '/users/' + userId + '/assign_as_associate';
-      let hiddenField = document.getElementById('selected_user_id');
-      if (hiddenField) {
-        hiddenField.value = userId;
-      }
-      form.style.display = 'block';
+  function attachSearchAutoSubmit() {
+    var searchField = document.getElementById('search');
+    if (searchField && searchField.form && !searchField.dataset.autoSubmitBound) {
+      searchField.addEventListener('input', function () {
+        if (this.form.requestSubmit) {
+          this.form.requestSubmit();
+        } else {
+          this.form.submit();
+        }
+      });
+      searchField.dataset.autoSubmitBound = 'true';
     }
   }
-</script>
 
-<script>
-  function filterTraders(searchTerm) {
-    const term = searchTerm.toLowerCase();
-    const items = document.querySelectorAll('.trader-item');
-    items.forEach(function(item) {
-      const name = item.getAttribute('data-name').toLowerCase();
-      if (name.includes(term)) {
-        item.style.display = 'block';
-      } else {
-        item.style.display = 'none';
-      }
-    });
-  }
-  
-
+  document.addEventListener('DOMContentLoaded', attachSearchAutoSubmit);
+  document.addEventListener('turbo:load', attachSearchAutoSubmit);
 </script>
 

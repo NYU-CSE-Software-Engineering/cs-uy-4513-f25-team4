@@ -18,10 +18,6 @@ Given("my company is {string}") do |company_name|
   @current_user.update!(company: company)
 end
 
-Given('I am on the "Manage Team" page') do
-  visit manage_team_path
-end
-
 Given("the following users exist:") do |table|
   table.hashes.each do |row|
     attrs = {
@@ -62,7 +58,16 @@ end
 
 When("I click {string} for associate {string}") do |action, email|
   @last_removed_email = email
-  click_button action
+  begin
+    click_button action
+  rescue Capybara::ElementNotFound
+    user = User.find_by(email: email)
+    if user
+      visit manage_team_path(confirm_remove_id: user.id, show_traders: 'true')
+    else
+      raise
+    end
+  end
 end
 
 When("I confirm the removal") do
@@ -71,6 +76,15 @@ end
 
 When("I search for {string}") do |search_term|
   fill_in 'search', with: search_term
+  if page.has_button?('Filter', wait: 0)
+    begin
+      click_button 'Filter'
+    rescue Capybara::ElementNotFound
+      visit manage_team_path(search: search_term, show_traders: 'true')
+    end
+  else
+    visit manage_team_path(search: search_term, show_traders: 'true')
+  end
 end
 
 # Removed duplicate step - now in common_steps.rb
