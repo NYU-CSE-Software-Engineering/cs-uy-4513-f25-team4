@@ -12,11 +12,11 @@ class User < ApplicationRecord
 
   # --- Associate assignment methods ---
   def assign_as_associate!(manager)
-    update!(role: "associate_trader", manager: manager, company: manager.company)
+    update!(role: "Associate Trader", manager: manager, company: manager.company)
   end
 
   def remove_associate!
-    update!(role: "trader", manager: nil, company: nil)
+    update!(role: "Trader", manager: nil, company: nil)
   end
 
   # --- Admin assignment method ---

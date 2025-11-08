@@ -1,0 +1,86 @@
+<h1>Manage Team</h1>
+
+<% if flash[:notice] %>
+  <div class="notice"><%= flash[:notice] %></div>
+<% end %>
+
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<h2>My Associates</h2>
+<% if @associates.any? %>
+  <ul>
+    <% @associates.each do |associate| %>
+      <li>
+        <%= associate.email %>
+        <span id="remove_<%= associate.id %>">
+          <%= form_with url: remove_associate_user_path(associate), method: :delete, local: true, id: "remove_form_#{associate.id}" do |f| %>
+            <%= f.submit "Remove", onclick: "document.getElementById('confirm_#{associate.id}').style.display = 'block'; document.getElementById('remove_#{associate.id}').style.display = 'none'; return false;" %>
+          <% end %>
+        </span>
+        <div id="confirm_<%= associate.id %>" style="display: none;">
+          <%= form_with url: remove_associate_user_path(associate), method: :delete, local: true do |f| %>
+            <%= f.submit "Confirm" %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No associates yet.</p>
+<% end %>
+
+<h2>Available Traders</h2>
+<%= link_to "Add Associate", "#", id: "add_associate_link", onclick: "document.getElementById('trader_list').style.display = 'block'; return false;" %>
+
+<div id="trader_list" style="display: none;">
+  <input type="text" id="search" name="search" placeholder="Search by name..." oninput="filterTraders(this.value)">
+  <ul id="trader_items">
+    <% @available_traders.each do |trader| %>
+      <li class="trader-item" data-name="<%= "#{trader.first_name} #{trader.last_name}" %>">
+        <%= link_to trader.email, "#", id: trader.email, onclick: "selectTrader(#{trader.id}, '#{trader.email}'); return false;" %>
+      </li>
+    <% end %>
+  </ul>
+  <% if @available_traders.any? %>
+    <% trader = @available_traders.first %>
+    <%= form_with url: "/users/#{trader.id}/assign_as_associate", method: :post, local: true, id: "assign_form", style: "display: none;" do |f| %>
+      <%= f.hidden_field :selected_user_id, id: "selected_user_id", value: trader.id %>
+      <%= f.submit "Assign as Associate" %>
+    <% end %>
+  <% end %>
+</div>
+
+<script>
+  function selectTrader(userId, email) {
+    // Update the form action and show it
+    let form = document.getElementById('assign_form');
+    if (form) {
+      form.action = '/users/' + userId + '/assign_as_associate';
+      let hiddenField = document.getElementById('selected_user_id');
+      if (hiddenField) {
+        hiddenField.value = userId;
+      }
+      form.style.display = 'block';
+    }
+  }
+</script>
+
+<script>
+  function filterTraders(searchTerm) {
+    const term = searchTerm.toLowerCase();
+    const items = document.querySelectorAll('.trader-item');
+    items.forEach(function(item) {
+      const name = item.getAttribute('data-name').toLowerCase();
+      if (name.includes(term)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+  
+
+</script>
+

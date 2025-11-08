@@ -1,0 +1,26 @@
+<h1>Edit User</h1>
+
+<%= form_with model: @user, url: update_role_user_path(@user), method: :patch, local: true do |f| %>
+  <div>
+    <%= f.label :role, "Role" %>
+    <%= f.select :role, options_for_select([
+      ['Trader', 'Trader'],
+      ['Associate Trader', 'Associate Trader'],
+      ['Portfolio Manager', 'Portfolio Manager'],
+      ['System Administrator', 'System Administrator']
+    ], @user.role), {}, { id: 'role' } %>
+  </div>
+  
+  <div>
+    <%= f.label :company, "Company" %>
+    <%= f.select :company, options_for_select([['None', '']] + @companies.map { |c| [c.name, c.name] }, @user.company&.name), {}, { id: 'company' } %>
+  </div>
+  
+  <div>
+    <%= f.label :manager, "Manager" %>
+    <%= f.select :manager, options_for_select([['None', '']] + @managers.map { |m| [m.email, m.email] }, @user.manager&.email), {}, { id: 'manager' } %>
+  </div>
+  
+  <%= f.submit "Save Changes" %>
+<% end %>
+
