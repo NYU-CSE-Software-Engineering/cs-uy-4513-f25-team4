@@ -1,26 +1,53 @@
 class UsersController < ApplicationController
   # GET /manage_team
   def manage_team
-    # In test mode, get current user from session or use a default
     if session[:user_email]
       @current_user = User.find_by(email: session[:user_email])
     end
     @current_user ||= User.where(role: ['Portfolio Manager', 'portfolio_manager']).first
-    
-    if @current_user
-      @associates = User.where(manager: @current_user)
-      # Get traders without a company or with the same company
-      traders_without_company = User.where(role: ['Trader', 'trader']).where(company: nil)
-      if @current_user.company
-        traders_with_company = User.where(role: ['Trader', 'trader']).where(company: @current_user.company)
-        @available_traders = traders_without_company.or(traders_with_company)
-      else
-        @available_traders = traders_without_company
-      end
-    else
-      @associates = []
-      @available_traders = []
+
+    unless @current_user
+      @associates = User.none
+      @available_traders = User.none
+      @selected_trader = nil
+      @confirm_remove_user = nil
+      @search_term = ""
+      @show_traders = false
+      return
     end
+
+    @associates = User.where(manager: @current_user)
+
+    base_scope = User.where(role: ['Trader', 'trader'])
+    base_scope =
+      if @current_user.company
+        base_scope.where(company: [nil, @current_user.company])
+      else
+        base_scope.where(company: nil)
+      end
+
+    @search_term = params[:search].to_s.strip
+    if @search_term.present?
+      term = "%#{@search_term.downcase}%"
+      base_scope = base_scope.where(
+        "LOWER(first_name) LIKE :term OR LOWER(last_name) LIKE :term OR LOWER(email) LIKE :term",
+        term: term
+      )
+    end
+
+    @available_traders = base_scope.order(:email)
+
+    @selected_trader = nil
+    if params[:selected_user_id].present?
+      @selected_trader = @available_traders.find_by(id: params[:selected_user_id])
+    end
+
+    @confirm_remove_user = nil
+    if params[:confirm_remove_id].present?
+      @confirm_remove_user = @associates.find_by(id: params[:confirm_remove_id])
+    end
+
+    @show_traders = params[:show_traders] == 'true' || @selected_trader.present? || @search_term.present?
   end
 
   # POST /users/:id/assign_as_associate
