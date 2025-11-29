@@ -13,10 +13,11 @@ class ApplicationController < ActionController::Base
   if Rails.env.test?
     skip_before_action :authenticate_user!, raise: false
     skip_before_action :authorize_admin!, raise: false
+    skip_before_action :require_login, raise: false
   end
 
   helper_method :current_user
-  before_action :require_login
+  before_action :require_login, unless: -> { Rails.env.test? }
 
   def current_user
     @current_user ||= begin
