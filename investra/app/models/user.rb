@@ -9,12 +9,12 @@ class User < ApplicationRecord
   has_many :associates, class_name: "User", foreign_key: "manager_id"
   
   # Validations
-  validates :email, presence: true, uniqueness: { message: "is already taken" }
+  validates :email, presence: true, uniqueness: { message: "has already been taken" }
   validates :first_name, :last_name, presence: true
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   
-  before_validation :downcase_email
-  
+  before_validation :normalize_email
+
   def assign_as_associate!(manager)
     update!(manager: manager, company: manager.company)
   end
@@ -30,7 +30,7 @@ class User < ApplicationRecord
   
   private
   
-  def downcase_email
-    self.email = email&.downcase
+  def normalize_email
+    self.email = email&.strip&.downcase
   end
 end
