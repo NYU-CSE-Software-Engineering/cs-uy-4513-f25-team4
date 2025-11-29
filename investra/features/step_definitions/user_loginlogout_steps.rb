@@ -87,15 +87,6 @@ end
 
 #form input 
 
-When('I fill in {string} with {string}') do |field, value|
-  @current_email = value if field == 'Email'
-  fill_in field, with: value
-end
-
-When('I press {string}') do |button|
-  click_button button
-end
-
 # Removed duplicate step - now in common_steps.rb
 
 #page verification

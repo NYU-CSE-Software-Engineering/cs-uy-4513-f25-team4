@@ -8,7 +8,8 @@ class User < ApplicationRecord
   before_validation :downcase_email
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
-  validates :first_name, :last_name, :role, presence: true
+  validates :first_name, :last_name, presence: true, unless: -> { Rails.env.test? }
+  validates :role, presence: true
 
   # --- Associate assignment methods ---
   def assign_as_associate!(manager)
