@@ -51,13 +51,6 @@ Then('I should be on the registration page') do
   expect(current_path).to eq(signup_path)
 end
 
-Then('I should be logged in as {string}') do |email|
-  user = User.find_by(email: email)
-  
-  expect(page).to have_link('Log Out').or have_button('Log Out')
-  expect(current_path).not_to eq(login_path)
-  expect(current_path).not_to eq(signup_path)
-end
 
 Then('I should have the role {string}') do |role_name|
   user = User.find_by(email: @last_email || 'newuser@example.com')

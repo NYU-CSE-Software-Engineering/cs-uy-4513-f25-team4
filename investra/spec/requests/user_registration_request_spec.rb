@@ -178,7 +178,7 @@ RSpec.describe "User Registration", type: :request do
 
       it "shows error messages" do
         post '/signup', params: invalid_params
-        expect(response.body).to include("can't be blank")
+      expect(response.body).to include("Email can&#39;t be blank")
       end
     end
 
@@ -214,7 +214,7 @@ RSpec.describe "User Registration", type: :request do
 
       it "shows email taken error" do
         post '/signup', params: duplicate_params
-        expect(response.body).to include('already taken')
+        expect(response.body).to include("is already taken")
       end
     end
 
@@ -266,7 +266,7 @@ RSpec.describe "User Registration", type: :request do
 
       it "shows password confirmation error" do
         post '/signup', params: mismatched_params
-        expect(response.body).to include("doesn't match")
+        expect(response.body).to include("doesn&#39;t match")
       end
     end
   end

@@ -69,9 +69,6 @@ When("I select {string} as the purchase date") do |date|
   fill_in "Date", with: date
 end
 
-When("I press {string}") do |button|
-  click_button button
-end
 
 # Removed duplicate step - now in common_steps.rb
 

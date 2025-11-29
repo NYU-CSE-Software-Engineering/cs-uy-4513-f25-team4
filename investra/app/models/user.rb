@@ -9,7 +9,7 @@ class User < ApplicationRecord
   has_many :associates, class_name: "User", foreign_key: "manager_id"
   
   # Validations
-  validates :email, presence: true, uniqueness: { message: "has already been taken" }
+  validates :email, presence: true, uniqueness: { message: "is already taken" }
   validates :first_name, :last_name, presence: true
   validates :password, length: { minimum: 8 }, if: -> { password.present? }
   
