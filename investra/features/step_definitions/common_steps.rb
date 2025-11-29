@@ -1,10 +1,18 @@
 # Common step definitions used across multiple features
 
 # Generic click button/link step
-When("I click {string}") do |button_text|
-  click_button button_text
-rescue Capybara::ElementNotFound
-  click_link button_text
+When("I click {string}") do |text|
+  # First try to click a button
+  if page.has_button?(text, wait: 0)
+    click_button(text)
+  # Then try to click a link
+  elsif page.has_link?(text, wait: 0)
+    click_link(text)
+  elsif page.has_css?('label', text: text, exact_text: true, wait: 0)
+    find('label', text: text, exact_text: true).click
+  else
+    raise "Could not find button, link, or label with text '#{text}'"
+  end
 end
 
 # Generic expectation step

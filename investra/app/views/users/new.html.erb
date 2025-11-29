@@ -1,10 +1,88 @@
-<h1>Sign Up</h1>
-<%= form_with model: @user, url: "/users" do |f| %>
-  <%= f.label :name %>
-  <%= f.text_field :name %><br>
-  <%= f.label :email %>
-  <%= f.email_field :email %><br>
-  <%= f.label :password %>
-  <%= f.password_field :password %><br>
-  <%= f.submit "Create Account" %>
-<% end %>
+<div class="registration-container">
+  <h1>Sign Up for Investra</h1>
+
+  <% if @user && @user.errors.any? %>
+    <div class="error-messages">
+      <% @user.errors.full_messages.each do |message| %>
+        <p><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form_with model: @user, url: '/signup', method: :post, local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :email, "Email" %>
+      <%= f.email_field :email, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :password, "Password" %>
+      <%= f.password_field :password, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :password_confirmation, "Password confirmation" %>
+      <%= f.password_field :password_confirmation, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :first_name, "First name" %>
+      <%= f.text_field :first_name, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :last_name, "Last name" %>
+      <%= f.text_field :last_name, required: true %>
+    </div>
+
+    <div class="form-group role-selection">
+      <%= label_tag :role_name, "Role" %>
+      <div>
+        <%= radio_button_tag :role_name, 'Trader', true, id: 'role_trader' %>
+        <%= label_tag :role_trader, 'Trader' %>
+      </div>
+      <div>
+        <%= radio_button_tag :role_name, 'Associate Trader', false, id: 'role_associate_trader' %>
+        <%= label_tag :role_associate_trader, 'Associate Trader' %>
+      </div>
+      <div>
+        <%= radio_button_tag :role_name, 'Portfolio Manager', false, id: 'role_portfolio_manager' %>
+        <%= label_tag :role_portfolio_manager, 'Portfolio Manager' %>
+      </div>
+    </div>
+
+    <div class="form-group" id="company-name-field">
+      <%= label_tag :company_name, "Company name" %>
+      <%= text_field_tag :company_name, nil, placeholder: 'Leave blank for individual account' %>
+    </div>
+
+    <%= f.submit "Sign Up", class: "btn btn-primary" %>
+  <% end %>
+
+  <p>Already have an account? <%= link_to "Log In", '/login' %></p>
+</div>
+
+<script>
+  #Show/hide company name field based on role selection
+  document.addEventListener('DOMContentLoaded', function() {
+    const companyField = document.getElementById('company-name-field');
+    const roleRadios = document.querySelectorAll('input[name="role_name"]');
+    
+    function toggleCompanyField() {
+      const selectedRole = document.querySelector('input[name="role_name"]:checked').value;
+      if (selectedRole === 'Portfolio Manager' || selectedRole === 'Associate Trader') {
+        companyField.style.display = 'block';
+      } else {
+        companyField.style.display = 'none';
+      }
+    }
+    
+    #Set initial state
+    toggleCompanyField();
+    
+    #Listen for changes
+    roleRadios.forEach(radio => {
+      radio.addEventListener('change', toggleCompanyField);
+    });
+  });
+</script>

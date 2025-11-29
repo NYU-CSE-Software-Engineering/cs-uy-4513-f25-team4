@@ -51,8 +51,6 @@ Then('I should be on the registration page') do
   expect(current_path).to eq(signup_path)
 end
 
-# Removed duplicate step - now in common_steps.rb
-
 Then('I should be logged in as {string}') do |email|
   user = User.find_by(email: email)
   
@@ -89,23 +87,19 @@ end
 
 
 Given('a user exists with email {string}') do |email|
-  # Determine role based on email domain
-  domain = email.split('@').last
-  company = Company.find_by(domain: domain)
+  trader_role = Role.find_by(name: 'Trader')
   
-  user = User.create!(
+  user = User.new(
     email: email,
     password: 'SecurePass123',
     password_confirmation: 'SecurePass123',
     first_name: 'Existing',
-    last_name: 'User',
-    company_id: company&.id
+    last_name: 'User'
   )
-  # Assign default "Trader" role
-  trader_role = Role.find_by(name: 'Trader')
+  
   user.roles << trader_role if trader_role
+  user.save!
 end
-
 
 Then('both users should exist in the system') do
   first_user = User.find_by(email: 'first@example.com')
@@ -133,4 +127,5 @@ After do
   @last_email = nil
   @last_password = nil
 end
+
 

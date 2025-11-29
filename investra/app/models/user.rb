@@ -1,31 +1,35 @@
 class User < ApplicationRecord
   has_secure_password
-
+  
+  # Associations
+  has_many :user_roles, dependent: :destroy
+  has_many :roles, through: :user_roles
   belongs_to :company, optional: true
   belongs_to :manager, class_name: "User", optional: true
   has_many :associates, class_name: "User", foreign_key: "manager_id"
-
+  
+  # Validations
+  validates :email, presence: true, uniqueness: { message: "is already taken" }
+  validates :first_name, :last_name, presence: true
+  validates :password, length: { minimum: 8 }, if: -> { password.present? }
+  
   before_validation :downcase_email
-
-  validates :email, presence: true, uniqueness: { case_sensitive: false }
-  validates :first_name, :last_name, :role, presence: true
-
-  # --- Associate assignment methods ---
+  
   def assign_as_associate!(manager)
-    update!(role: "Associate Trader", manager: manager, company: manager.company)
+    update!(manager: manager, company: manager.company)
   end
-
+  
   def remove_associate!
-    update!(role: "Trader", manager: nil, company: nil)
+    update!(manager: nil, company: nil)
   end
-
-  # --- Admin assignment method ---
+  
   def assign_as_admin!
-    update!(role: "admin")
+    admin_role = Role.find_by(name: 'System Administrator')
+    roles << admin_role unless roles.include?(admin_role)
   end
-
+  
   private
-
+  
   def downcase_email
     self.email = email&.downcase
   end

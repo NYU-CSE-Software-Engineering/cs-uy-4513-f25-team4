@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  before_action :require_login, only: [:show]
+
   # GET /manage_team
   def manage_team
     if session[:user_email]
@@ -57,7 +59,7 @@ class UsersController < ApplicationController
       @current_user = User.find_by(email: session[:user_email])
     end
     @current_user ||= User.where(role: ['Portfolio Manager', 'portfolio_manager']).first
-    
+
     if @current_user && @user.assign_as_associate!(@current_user)
       redirect_to manage_team_path, notice: "Associate added successfully"
     else
@@ -68,7 +70,7 @@ class UsersController < ApplicationController
   # DELETE /users/:id/remove_associate
   def remove_associate
     @user = User.find(params[:id])
-    
+
     if @user.remove_associate!
       redirect_to manage_team_path, notice: "Associate removed successfully"
     else
@@ -76,7 +78,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # PATCH /users/:id/assign_associate (legacy)
+  # PATCH /users/:id/assign_associate 
   def assign_associate
     @user = User.find(params[:id])
     @company = Company.find_by(id: params[:company_id])
@@ -99,10 +101,9 @@ class UsersController < ApplicationController
   def update_role
     @user = User.find(params[:id])
     user_params = params.require(:user).permit(:role, :company, :manager)
-    
+
     updates = { role: user_params[:role] }
-    
-    # Handle company - form always sends a value (either company name or empty string for "None")
+
     company_name = user_params[:company].to_s.strip
     company_provided = false
     if company_name.present? && company_name != 'None'
@@ -111,15 +112,9 @@ class UsersController < ApplicationController
         updates[:company] = company
         company_provided = true
       end
-      # If company not found, don't set it - will use manager's company for Associate Trader if applicable
-    else
-      # Empty string or "None" means no company explicitly selected
-      # For Associate Trader, we'll use manager's company if available
     end
-    
-    # Handle manager
+
     if ['Portfolio Manager', 'portfolio_manager'].include?(user_params[:role])
-      # Portfolio Managers don't have managers
       updates[:manager] = nil
     else
       manager_email = user_params[:manager].to_s.strip
@@ -127,16 +122,13 @@ class UsersController < ApplicationController
         manager = User.find_by(email: manager_email)
         updates[:manager] = manager if manager
       else
-        # Empty string or "None" means no manager
         updates[:manager] = nil
       end
     end
-    
-    # If assigning as Associate Trader and company not provided but manager is set, use manager's company
+
     if ['Associate Trader', 'associate_trader'].include?(user_params[:role]) && updates[:manager] && !company_provided
       updates[:company] = updates[:manager].company
     elsif !company_provided && !['Associate Trader', 'associate_trader'].include?(user_params[:role])
-      # For other roles, if no company provided, set to nil
       updates[:company] = nil
     end
 
@@ -153,7 +145,7 @@ class UsersController < ApplicationController
     @companies = Company.all
     @managers = User.where(role: ['Portfolio Manager', 'portfolio_manager'])
   end
-  
+
   # GET /users/:id/edit
   def edit
     @user = User.find(params[:id])
@@ -169,22 +161,65 @@ class UsersController < ApplicationController
   # POST /users
   def create
     @user = User.new(user_params)
+    
+    # Assign selected role
+    role_name = params[:role_name] || 'Trader'
+    role = Role.find_or_create_by(name: role_name)
+    
+    # Handle company for Portfolio Manager and Associate Trader
+    if ['Portfolio Manager', 'Associate Trader'].include?(role_name)
+      domain = @user.email.split('@').last
+      company = Company.find_by(domain: domain)
+      
+      if company.nil? && params[:company_name].present?
+        company = Company.create!(
+          name: params[:company_name],
+          domain: domain
+        )
+      end
+      
+      @user.company = company if company
+    end
+    
     if @user.save
-      redirect_to @user, notice: "User created successfully."
+      @user.roles << role unless @user.roles.exists?(id: role.id)
+      session[:user_id] = @user.id
+      
+      dashboard_path = case role_name
+      when 'Portfolio Manager'
+        '/dashboard/manager'
+      when 'Associate Trader'
+        '/dashboard/associate'
+      when 'System Administrator'
+        '/dashboard/admin'
+      else
+        '/dashboard/trader'
+      end
+      
+      redirect_to dashboard_path, notice: 'Registration successful'
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_entity, layout: true
     end
   end
 
   # GET /users/:id
   def show
-    @user = User.find(params[:id])
+    if session[:user_id]
+      @user = User.find(session[:user_id])
+    else
+      redirect_to '/login', alert: 'Please log in'
+    end
   end
 
   private
 
   def user_params
-    params.require(:user).permit(:email, :first_name, :last_name, :password, :password_confirmation, :role)
+    params.require(:user).permit(:email, :first_name, :last_name, :password, :password_confirmation)
+  end
+
+  def require_login
+    unless session[:user_id]
+      redirect_to '/login', alert: 'Please log in'
+    end
   end
 end
-
