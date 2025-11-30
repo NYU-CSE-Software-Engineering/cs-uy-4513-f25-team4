@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   
   # Root
-  root "users#index"
+  root "sessions#new"
   
   # Signup
   get "/signup", to: "users#new", as: :signup

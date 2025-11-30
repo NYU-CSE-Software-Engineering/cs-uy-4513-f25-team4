@@ -87,37 +87,12 @@ end
 
 #form input 
 
-When('I fill in {string} with {string}') do |field, value|
-  @current_email = value if field == 'Email'
-  fill_in field, with: value
-end
-
-When('I press {string}') do |button|
-  click_button button
-end
-
-# Removed duplicate step - now in common_steps.rb
 
 #page verification
 
 Then('I should be on the login page') do
   expect(current_path).to eq(login_path)
-end
 
-Then('I should be on the trader dashboard page') do
-  expect(current_path).to eq(trader_dashboard_path)
-end
-
-Then('I should be on the associate dashboard page') do
-  expect(current_path).to eq(associate_dashboard_path)
-end
-
-Then('I should be on the manager dashboard page') do
-  expect(current_path).to eq(manager_dashboard_path)
-end
-
-Then('I should be on the admin dashboard page') do
-  expect(current_path).to eq(admin_dashboard_path)
 end
 
 Then('I should be on the profile page') do
@@ -125,21 +100,19 @@ Then('I should be on the profile page') do
 end
 
 #text verification
-# Removed duplicate step - now in common_steps.rb
 
 Then('I should be logged in as {string}') do |email|
-  expect(page).to have_button('Log Out')
+  expect(page).to have_link('Log Out')
   user = User.find_by(email: email)
   expect(page).to have_content(user.first_name) if user
 end
 
 Then('I should be logged in') do
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page).to have_link('Log Out')
 end
 
-
 Then('I should still be logged in as {string}') do |email|
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page).to have_link('Log Out')
 end
 
 Then('a session should be created for {string}') do |email|
@@ -168,11 +141,11 @@ end
 Then('my session data should be cleared') do
   visit trader_dashboard_path
   expect(current_path).to eq(login_path)
-  expect(page).to have_content('Please log in').or have_content('Log In')
+  expect(['Please log in', 'Log In'].any? { |text| page.has_content?(text) }).to be true
 end
 
 Then('my session should remain active') do
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page.has_link?('Log Out') || page.has_button?('Log Out')).to be true
   expect(current_path).not_to eq(login_path)
 end
 
