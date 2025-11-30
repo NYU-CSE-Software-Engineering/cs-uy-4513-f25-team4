@@ -1,6 +1,6 @@
 Given("I am logged in as a System Administrator") do
   @current_user = User.create!(email: 'admin@test.com', password: "password", first_name: "System", last_name: "Admin", role: 'System Administrator')
-  visit new_user_session_path
+  visit login_path
   fill_in 'Email', with: @current_user.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
@@ -89,7 +89,7 @@ end
 
 Then("the user {string} should have role {string}") do |email, role|
   user = User.find_by(email: email)
-  expect(user.role).to eq(role)
+  expect(user.roles.first&.name).to eq(role)
 end
 
 # Removed duplicate step - using the more flexible version from assign_associates_steps.rb

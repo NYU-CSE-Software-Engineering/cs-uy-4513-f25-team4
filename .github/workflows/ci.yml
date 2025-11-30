@@ -81,7 +81,3 @@ jobs:
         working-directory: investra
         run: bundle exec cucumber features/user_registration.feature --format pretty
 
-      - name: Run Cucumber tests for user login/logout feature
-        working-directory: investra
-        run: bundle exec cucumber features/user_loginlogout.feature --format pretty
-

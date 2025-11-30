@@ -31,7 +31,7 @@ RSpec.describe 'Associate assignment lifecycle', type: :model do
       trader.assign_as_associate!(portfolio_manager)
 
       trader.reload
-      expect(trader.role).to eq('Associate Trader')
+      expect(trader.roles.first.name).to eq('Associate Trader')
       expect(trader.manager).to eq(portfolio_manager)
       expect(trader.company).to eq(company)
     end
@@ -53,7 +53,7 @@ RSpec.describe 'Associate assignment lifecycle', type: :model do
       associate.remove_associate!
 
       associate.reload
-      expect(associate.role).to eq('Trader')
+      expect(associate.roles.first.name).to eq('Trader')
       expect(associate.manager).to be_nil
       expect(associate.company).to be_nil
     end

@@ -15,11 +15,17 @@ class User < ApplicationRecord
   
   before_validation :normalize_email
 
-  def assign_as_associate!(manager)
+def assign_as_associate!(manager)
+    self.roles.clear
+    associate_role = Role.find_or_create_by(name: 'Associate Trader')
+    self.roles << associate_role
     update!(manager: manager, company: manager.company)
   end
-  
+
   def remove_associate!
+    self.roles.clear
+    trader_role = Role.find_or_create_by(name: 'Trader')
+    self.roles << trader_role
     update!(manager: nil, company: nil)
   end
   

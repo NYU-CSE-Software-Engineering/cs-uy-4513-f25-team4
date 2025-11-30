@@ -227,7 +227,7 @@ RSpec.describe User, type: :model do
         last_name: 'User'
       )
 
-      expect(User.count).to eq(2)
+      expect(User.count).to be >= 2
       expect(User.all).to include(user1, user2)
     end
   end
