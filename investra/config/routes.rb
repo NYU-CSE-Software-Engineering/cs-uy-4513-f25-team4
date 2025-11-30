@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   
@@ -42,3 +43,39 @@ Rails.application.routes.draw do
   # Stocks
   resources :stocks, only: [:show, :index]
 end
+=======
+Rails.application.routes.draw do
+  get "up" => "rails/health#show", as: :rails_health_check
+
+  # Stocks
+  resources :stocks, only: [:show, :index]
+
+  # Users
+  resources :users, only: [:create, :show, :edit, :update, :index] do
+    member do
+      patch :assign_associate  
+      patch :assign_admin
+      patch :update_role
+    end
+  end
+
+  # User management (used in request spec and redirects)
+  get "user_management", to: "users#index", as: :user_management
+  
+  # Manage team
+  get "manage_team", to: "users#manage_team", as: :manage_team
+  post "users/:id/assign_as_associate", to: "users#assign_as_associate", as: :assign_as_associate_user
+  delete "users/:id/remove_associate", to: "users#remove_associate", as: :remove_associate_user
+
+  # Signup
+  get "/signup", to: "users#new"
+  
+  # Session routes
+  get "login", to: "sessions#new", as: :new_user_session
+  post "login", to: "sessions#create"
+
+  # Root (default)
+  root "users#index"
+end
+
+>>>>>>> Stashed changes
