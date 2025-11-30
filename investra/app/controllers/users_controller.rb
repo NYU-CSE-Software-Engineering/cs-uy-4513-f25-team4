@@ -101,9 +101,17 @@ class UsersController < ApplicationController
   def update_role
     @user = User.find(params[:id])
     user_params = params.require(:user).permit(:role, :company, :manager)
-
-    updates = { role: user_params[:role] }
-
+    
+    # Update roles (many-to-many)
+    role_name = user_params[:role]
+    if role_name.present?
+      @user.roles.clear
+      role = Role.find_or_create_by(name: role_name)
+      @user.roles << role
+    end
+    
+    updates = {}
+    
     company_name = user_params[:company].to_s.strip
     company_provided = false
     if company_name.present? && company_name != 'None'
@@ -113,8 +121,8 @@ class UsersController < ApplicationController
         company_provided = true
       end
     end
-
-    if ['Portfolio Manager', 'portfolio_manager'].include?(user_params[:role])
+    
+    if ['Portfolio Manager', 'portfolio_manager'].include?(role_name)
       updates[:manager] = nil
     else
       manager_email = user_params[:manager].to_s.strip
@@ -125,13 +133,13 @@ class UsersController < ApplicationController
         updates[:manager] = nil
       end
     end
-
-    if ['Associate Trader', 'associate_trader'].include?(user_params[:role]) && updates[:manager] && !company_provided
+    
+    if ['Associate Trader', 'associate_trader'].include?(role_name) && updates[:manager] && !company_provided
       updates[:company] = updates[:manager].company
-    elsif !company_provided && !['Associate Trader', 'associate_trader'].include?(user_params[:role])
+    elsif !company_provided && !['Associate Trader', 'associate_trader'].include?(role_name)
       updates[:company] = nil
     end
-
+    
     if @user.update(updates)
       redirect_to user_management_path, notice: "Role updated successfully"
     else
