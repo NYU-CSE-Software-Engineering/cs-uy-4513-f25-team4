@@ -1,10 +1,9 @@
 # Background steps
 Given('the following roles exist:') do |table|
-  table.hashes.each do |role|
-    Role.create!(
-      name: role['name'],
-      description: role['description'] || "#{role['name']} role"
-    )
+  table.hashes.each do |row|
+    Role.find_or_create_by!(name: row['name']) do |role|
+      role.description = row['description']
+    end
   end
 end
 

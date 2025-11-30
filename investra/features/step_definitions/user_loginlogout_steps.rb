@@ -87,33 +87,12 @@ end
 
 #form input 
 
-When('I fill in {string} with {string}') do |field, value|
-  @current_email = value if field == 'Email'
-  fill_in field, with: value
-end
-
-When('I press {string}') do |button|
-  click_button button
-end
-
 # Removed duplicate step - now in common_steps.rb
 
 #page verification
 
 Then('I should be on the login page') do
   expect(current_path).to eq(login_path)
-end
-
-Then('I should be on the trader dashboard page') do
-  expect(current_path).to eq(trader_dashboard_path)
-end
-
-Then('I should be on the associate dashboard page') do
-  expect(current_path).to eq(associate_dashboard_path)
-end
-
-Then('I should be on the manager dashboard page') do
-  expect(current_path).to eq(manager_dashboard_path)
 end
 
 Then('I should be on the admin dashboard page') do

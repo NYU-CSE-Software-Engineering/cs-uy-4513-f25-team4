@@ -65,17 +65,19 @@ RSpec.describe "Users", type: :request do
           first_name: "Employee",
           last_name: "User",
           email: "employee@test.com",
-          role: "Employee",
           company: company
         }.merge(password_attrs)
       )
+      # Assign initial role
+      employee_role = Role.find_or_create_by(name: "Employee")
+      user.roles << employee_role
       
       patch update_role_user_path(user), params: {
         user: { role: "Portfolio Manager" }
       }
       
       user.reload
-      expect(user.role).to eq("Portfolio Manager")
+      expect(user.roles.first.name).to eq("Portfolio Manager")
       expect(response).to have_http_status(:found)
       expect(response).to redirect_to(user_management_path)
     end
