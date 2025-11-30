@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -81,3 +82,172 @@ jobs:
         working-directory: investra
         run: bundle exec cucumber features/user_registration.feature --format pretty
 
+name: CI
+
+on:
+  push:
+    branches: [ main, hanqiLiuBranch ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: investra_test
+          MYSQL_USER: investra
+          MYSQL_PASSWORD: investra
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      # ✅ 全局设置测试环境变量，所有 steps 都能继承
+      RAILS_ENV: test
+      DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
+          working-directory: investra
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y build-essential libmariadb-dev nodejs yarn
+
+      # ✅ 等待 MySQL 容器健康
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to start..."
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -uinvestra -pinvestra --silent; then
+              echo "✅ MySQL is ready!"
+              break
+            fi
+            echo "⏳ Waiting ($i)..."
+            sleep 2
+          done
+
+      - name: Prepare database
+        working-directory: investra
+        run: |
+          # ✅ 清理并加载最新 schema
+          bundle exec rails db:drop db:create db:schema:load
+
+      - name: Run RSpec tests
+        working-directory: investra
+        run: bundle exec rspec --format documentation
+
+      - name: Run Cucumber tests for assign_as_admin feature
+        working-directory: investra
+        run: bundle exec cucumber features/assign_as_admin.feature --format pretty
+
+      - name: Run Cucumber tests for assign_associates feature
+        working-directory: investra
+        run: bundle exec cucumber features/assign_associates.feature --format pretty
+
+name: CI
+
+on:
+  push:
+    branches: [ main, hanqiLiuBranch ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: investra_test
+          MYSQL_USER: investra
+          MYSQL_PASSWORD: investra
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      # ✅ 全局设置测试环境变量，所有 steps 都能继承
+      RAILS_ENV: test
+      DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
+          working-directory: investra
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y build-essential libmariadb-dev nodejs yarn
+
+      # ✅ 等待 MySQL 容器健康
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to start..."
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -uinvestra -pinvestra --silent; then
+              echo "✅ MySQL is ready!"
+              break
+            fi
+            echo "⏳ Waiting ($i)..."
+            sleep 2
+          done
+
+      - name: Prepare database
+        working-directory: investra
+        run: |
+          # ✅ 清理并加载最新 schema
+          bundle exec rails db:drop db:create db:schema:load
+
+      - name: Run RSpec tests
+        working-directory: investra
+        run: bundle exec rspec --format documentation
+
+      - name: Run Cucumber tests for assign_as_admin feature
+        working-directory: investra
+        run: bundle exec cucumber features/assign_as_admin.feature --format pretty
+
+      - name: Run Cucumber tests for assign_associates feature
+        working-directory: investra
+        run: bundle exec cucumber features/assign_associates.feature --format pretty
+
+      - name: Run Cucumber tests for user registration feature
+        working-directory: investra
+        run: bundle exec cucumber features/user_registration.feature --format pretty
+
+      - name: Run Cucumber tests for user registration feature
+        working-directory: investra
+        run: bundle exec cucumber features/user_registration.feature --format pretty
+
+      - name: Run Cucumber tests for user login/logout feature
+        working-directory: investra
+        run: bundle exec cucumber features/user_loginlogout.feature --format pretty
