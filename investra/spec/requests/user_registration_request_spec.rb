@@ -3,9 +3,9 @@ require 'rails_helper'
 RSpec.describe "User Registration", type: :request do
   before(:each) do
     # Create roles that are needed for tests
-    Role.create!(name: 'Trader', description: 'Individual investor')
-    Role.create!(name: 'Associate Trader', description: 'Company employee trader')
-    Role.create!(name: 'Portfolio Manager', description: 'Company manager')
+    Role.find_or_create_by!(name: 'Trader') { |r| r.description = 'Individual investor' }
+    Role.find_or_create_by!(name: 'Associate Trader') { |r| r.description = 'Company employee trader' }
+    Role.find_or_create_by!(name: 'Portfolio Manager') { |r| r.description = 'Company manager' }
   end
 
   describe "GET /signup" do
