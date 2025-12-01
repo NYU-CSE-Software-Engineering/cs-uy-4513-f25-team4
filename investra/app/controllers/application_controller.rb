@@ -13,5 +13,36 @@ class ApplicationController < ActionController::Base
   if Rails.env.test?
     skip_before_action :authenticate_user!, raise: false
     skip_before_action :authorize_admin!, raise: false
+    skip_before_action :require_login, raise: false
+  end
+
+  helper_method :current_user
+  before_action :require_login, unless: -> { Rails.env.test? }
+
+  def current_user
+    @current_user ||= begin
+      User.find_by(id: session[:user_id]) || User.find_by(email: session[:user_email])
+    end
+  end
+
+  def require_login
+    return if current_user.present?
+    return if devise_controller? rescue false # defensive if Devise is added later
+
+    unless login_path?(request.path)
+      redirect_to new_user_session_path
+    end
+  end
+
+  def require_admin!
+    unless current_user&.role.to_s.downcase == "admin"
+      redirect_to root_path, alert: "You are not authorized to access this page"
+    end
+  end
+
+  private
+
+  def login_path?(path)
+    path == new_user_session_path || path == login_path rescue false
   end
 end

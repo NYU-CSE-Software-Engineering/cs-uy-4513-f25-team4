@@ -15,6 +15,18 @@ When("I click {string}") do |text|
   end
 end
 
+# Generic form fill/submit steps
+When('I fill in {string} with {string}') do |field, value|
+  @last_email = value if field == "Email"
+  @last_password = value if field == "Password"
+  @current_email = value if field == "Email"
+  fill_in field, with: value
+end
+
+When('I press {string}') do |button|
+  click_button button
+end
+
 # Generic expectation step
 Then("I should see {string}") do |message|
   expect(page).to have_content(message)
@@ -35,4 +47,3 @@ Given("I am on the {string} page") do |page_name|
     raise "Unknown page: #{page_name}"
   end
 end
-

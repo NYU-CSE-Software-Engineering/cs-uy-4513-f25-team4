@@ -1,0 +1,48 @@
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<% if @company.errors.any? %>
+  <div class="alert">
+    <p>There were problems saving the company:</p>
+    <ul>
+      <% @company.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: @company, local: true do |f| %>
+  <div>
+    <%= f.label :name, "Name" %><br>
+    <%= f.text_field :name %>
+  </div>
+
+  <div>
+    <%= f.label :ticker, "Ticker" %><br>
+    <%= f.text_field :ticker %>
+  </div>
+
+  <div>
+    <%= f.label :sector, "Sector" %><br>
+    <%= f.text_field :sector %>
+  </div>
+
+  <div>
+    <%= f.label :market_cap, "Market Cap" %><br>
+    <%= f.number_field :market_cap, step: 1 %>
+  </div>
+
+  <div>
+    <%= f.label :tradable, "Tradable" %>
+    <%= f.check_box :tradable %>
+  </div>
+
+  <div>
+    <%= f.label :ipo_date, "IPO Date" %><br>
+    <%= f.date_field :ipo_date %>
+  </div>
+
+  <%= f.submit @company.persisted? ? "Update Company" : "Create Company" %>
+<% end %>

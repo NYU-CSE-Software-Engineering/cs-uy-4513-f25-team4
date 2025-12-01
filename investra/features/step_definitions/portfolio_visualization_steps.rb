@@ -8,8 +8,7 @@ end
 
 Given("I have trading history in my portfolio") do
   @portfolio = Portfolio.create!(user: @user, name: "Main Portfolio")
-  @portfolio.holdings.create!(symbol: "AAPL", quantity: 10, average_price: 
-150)
+  @portfolio.holdings.create!(symbol: "AAPL", quantity: 10, average_price: 150)
 end
 
 When("I visit the analytics dashboard") do
@@ -48,8 +47,7 @@ When("I view the diversification chart") do
   click_link "Diversification"
 end
 
-Then("I should see each sector represented with a percentage of my total 
-balance") do
+Then("I should see each sector represented with a percentage of my total balance") do
   expect(page).to have_content("% of Total Portfolio")
 end
 
@@ -69,6 +67,4 @@ When("I select {string} as the purchase date") do |date|
   fill_in "Date", with: date
 end
 
-
 # Removed duplicate step - now in common_steps.rb
-

@@ -71,6 +71,9 @@ Some core endpoints include:
 
 ---
 
+## ▶️ Local Run (Docker)
+- See `investra/README.md` for Docker-based local startup instructions and dev/test admin login details.
+
 ## 📅 Course Information
 - **Course:** CS-UY 4513 – Software Engineering  
 - **Professor:** Dr. DePasquale  
