@@ -1,0 +1,30 @@
+<h1><%= @company.name %></h1>
+
+<p>
+  <strong>Ticker:</strong> <%= @company.ticker %><br>
+  <strong>Sector:</strong> <%= @company.sector %><br>
+  <strong>Market Cap (stored):</strong> <%= @company.market_cap || "—" %><br>
+  <strong>Tradable:</strong> <%= @company.tradable? ? "Yes" : "No" %><br>
+  <strong>IPO Date:</strong> <%= @company.ipo_date || "—" %>
+</p>
+
+<h2>Live Market Data (<%= @market_data_source || "External" %>)</h2>
+<% if @quote && @quote[:error] %>
+  <div class="alert"><%= @quote[:error] %></div>
+<% elsif @quote %>
+  <p>
+    <strong>Name:</strong> <%= @quote[:name] || "—" %><br>
+    <strong>Price:</strong> <%= @quote[:price] ? "#{@quote[:price]} #{@quote[:currency]}" : "—" %><br>
+    <strong>Market Cap:</strong> <%= @quote[:market_cap] || "—" %><br>
+    <strong>Exchange:</strong> <%= @quote[:exchange] || "—" %><br>
+    <strong>Fetched At:</strong> <%= @quote[:fetched_at]&.strftime("%Y-%m-%d %H:%M:%S") %>
+  </p>
+<% else %>
+  <p>No market data fetched.</p>
+<% end %>
+
+<p>
+  <%= link_to "Refresh", company_path(@company) %> |
+  <%= link_to "Edit", edit_company_path(@company) %> |
+  <%= link_to "Back to Companies", companies_path %>
+</p>

@@ -31,6 +31,7 @@ services:
     environment:
       RAILS_ENV: test
       DATABASE_URL: mysql2://investra:investra@db/investra_test
+      MASSIVE_API_KEY: ${MASSIVE_API_KEY:-}
 
 volumes:
   db_data:

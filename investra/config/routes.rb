@@ -5,6 +5,9 @@ Rails.application.routes.draw do
   # Stocks (existing feature)
   resources :stocks, only: [:show, :index]
 
+  # Companies
+  resources :companies, only: [:index, :new, :create, :edit, :update, :show]
+
   # Users (shared across both features)
   resources :users, only: [:create, :show, :edit, :update, :index] do
     member do
@@ -32,4 +35,3 @@ Rails.application.routes.draw do
   # Root (default)
   root "users#index"
 end
-

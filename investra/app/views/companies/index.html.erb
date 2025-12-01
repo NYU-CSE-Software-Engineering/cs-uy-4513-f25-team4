@@ -1,0 +1,40 @@
+<h1>Companies</h1>
+
+<% if flash[:notice] %>
+  <div class="notice"><%= flash[:notice] %></div>
+<% end %>
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<p><%= link_to "New Company", new_company_path %></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Ticker</th>
+      <th>Sector</th>
+      <th>Market Cap</th>
+      <th>Tradable</th>
+      <th>IPO Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @companies.each do |company| %>
+      <tr>
+        <td><%= company.name %></td>
+        <td><%= company.ticker %></td>
+        <td><%= company.sector %></td>
+        <td><%= company.market_cap ? number_to_currency(company.market_cap, precision: 0) : "—" %></td>
+        <td><%= company.tradable? ? "Yes" : "No" %></td>
+        <td><%= company.ipo_date || "—" %></td>
+        <td>
+          <%= link_to "View", company_path(company) %> |
+          <%= link_to "Edit", edit_company_path(company) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

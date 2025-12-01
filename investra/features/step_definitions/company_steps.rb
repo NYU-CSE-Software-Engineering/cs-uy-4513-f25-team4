@@ -3,7 +3,10 @@
 # You may adapt selectors/paths to match your actual Rails routes and forms.
 
 Given("I am logged in as an admin") do
-  @admin = User.create!(email: "admin@example.com", password: "password", role: "admin")
+  @admin = User.find_or_create_by!(email: "admin@example.com") do |user|
+    user.password = "password"
+    user.role = "admin"
+  end
   visit new_user_session_path
   fill_in "Email", with: @admin.email
   fill_in "Password", with: "password"
@@ -11,7 +14,10 @@ Given("I am logged in as an admin") do
 end
 
 Given("I am logged in as a non-admin user") do
-  @user = User.create!(email: "user@example.com", password: "password", role: "trader")
+  @user = User.find_or_create_by!(email: "user@example.com") do |user|
+    user.password = "password"
+    user.role = "trader"
+  end
   visit new_user_session_path
   fill_in "Email", with: @user.email
   fill_in "Password", with: "password"
@@ -23,15 +29,10 @@ Given("I am on the new company page") do
 end
 
 Given("an existing company with ticker {string}") do |ticker|
-  Company.create!(name: "Existing Co", ticker: ticker, sector: "General")
-end
-
-When('I fill in {string} with {string}') do |field, value|
-  fill_in field, with: value
-end
-
-When('I press {string}') do |button|
-  click_button button
+  Company.find_or_create_by!(ticker: ticker) do |company|
+    company.name = "Existing Co"
+    company.sector = "General"
+  end
 end
 
 When("I visit the companies management page") do
