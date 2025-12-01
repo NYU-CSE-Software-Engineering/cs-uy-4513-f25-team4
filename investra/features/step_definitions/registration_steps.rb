@@ -20,17 +20,6 @@ Given('I am on the registration page') do
   visit signup_path
 end
 
-# --- Input Steps (only in feature branch, keep them) ---
-When('I fill in {string} with {string}') do |field, value|
-  @last_email = value if field == 'Email'
-  @last_password = value if field == 'Password'
-  fill_in field, with: value
-end
-
-When('I press {string}') do |button|
-  click_button button
-end
-
 # --- Dashboard redirect checks (same on both sides, keep once) ---
 Then('I should be on the trader dashboard page') do
   expect(current_path).to eq(trader_dashboard_path)

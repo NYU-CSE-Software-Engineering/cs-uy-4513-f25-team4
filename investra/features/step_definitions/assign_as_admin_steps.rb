@@ -89,7 +89,7 @@ end
 
 Then("the user {string} should have role {string}") do |email, role|
   user = User.find_by(email: email)
-  expect(user.roles.first&.name).to eq(role)
+  expect(user.roles.pluck(:name)).to include(role)
 end
 
 # Removed duplicate step - using the more flexible version from assign_associates_steps.rb
@@ -100,4 +100,3 @@ Then("the user should be managed by {string}") do |manager_email|
   manager = User.find_by(email: manager_email)
   expect(@last_user.manager).to eq(manager)
 end
-

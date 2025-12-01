@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :roles, through: :user_roles
 
   before_validation :normalize_email
+  after_commit :sync_role_to_roles_table, on: [:create, :update]
 
   validates :email, presence: true, uniqueness: { case_sensitive: false, message: "is already taken" }
   validates :first_name, presence: true
@@ -47,5 +48,12 @@ class User < ApplicationRecord
 
   def normalize_email
     self.email = email.to_s.strip.downcase
+  end
+
+  def sync_role_to_roles_table
+    return if role.blank?
+
+    primary_role = Role.find_or_create_by!(name: role)
+    user_roles.find_or_create_by!(role: primary_role)
   end
 end
