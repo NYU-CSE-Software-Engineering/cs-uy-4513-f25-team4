@@ -6,8 +6,10 @@ Given("I am logged in as an admin") do
   @admin = User.find_or_create_by!(email: "admin@example.com") do |user|
     user.password = "password"
     user.role = "admin"
+    user.first_name = "Admin"
+    user.last_name = "User"
   end
-  visit new_user_session_path
+  visit login_path
   fill_in "Email", with: @admin.email
   fill_in "Password", with: "password"
   click_button "Log in"
@@ -17,8 +19,10 @@ Given("I am logged in as a non-admin user") do
   @user = User.find_or_create_by!(email: "user@example.com") do |user|
     user.password = "password"
     user.role = "trader"
+    user.first_name = "Regular"
+    user.last_name = "User"
   end
-  visit new_user_session_path
+  visit login_path
   fill_in "Email", with: @user.email
   fill_in "Password", with: "password"
   click_button "Log in"

@@ -26,7 +26,6 @@ jobs:
           --health-retries=10
 
     env:
-      # ✅ 全局设置测试环境变量，所有 steps 都能继承
       RAILS_ENV: test
       DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
 
@@ -46,7 +45,6 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y build-essential libmariadb-dev nodejs yarn
 
-      # ✅ 等待 MySQL 容器健康
       - name: Wait for MySQL to be ready
         run: |
           echo "Waiting for MySQL to start..."
@@ -62,7 +60,6 @@ jobs:
       - name: Prepare database
         working-directory: investra
         run: |
-          # ✅ 清理并加载最新 schema
           bundle exec rails db:drop db:create db:schema:load
 
       - name: Run RSpec tests
@@ -76,6 +73,10 @@ jobs:
       - name: Run Cucumber tests for assign_associates feature
         working-directory: investra
         run: bundle exec cucumber features/assign_associates.feature --format pretty
+
+      - name: Run Cucumber tests for user registration feature
+        working-directory: investra
+        run: bundle exec cucumber features/user_registration.feature --format pretty
 
       - name: Run Cucumber tests for company_management feature
         working-directory: investra

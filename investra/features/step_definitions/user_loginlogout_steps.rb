@@ -95,18 +95,6 @@ Then('I should be on the login page') do
   expect(current_path).to eq(login_path)
 end
 
-Then('I should be on the trader dashboard page') do
-  expect(current_path).to eq(trader_dashboard_path)
-end
-
-Then('I should be on the associate dashboard page') do
-  expect(current_path).to eq(associate_dashboard_path)
-end
-
-Then('I should be on the manager dashboard page') do
-  expect(current_path).to eq(manager_dashboard_path)
-end
-
 Then('I should be on the admin dashboard page') do
   expect(current_path).to eq(admin_dashboard_path)
 end

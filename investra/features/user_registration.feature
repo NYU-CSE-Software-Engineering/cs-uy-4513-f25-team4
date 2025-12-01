@@ -3,7 +3,7 @@ Feature: User Registration
   I want to register for an account
   So that I can access the trading platform
 
-    Background:
+  Background:
     Given the following roles exist:
       | name                  | description                    |
       | Trader                | Individual investor            |
@@ -50,13 +50,13 @@ Feature: User Registration
     Then I should be on the trader dashboard page
     Then I should have the role "Trader"
     And I should not have any other roles assigned
-    
+
 
   Scenario: Registration fails with password less than 8 characters
     Given I am on the registration page
     When I fill in "Email" with "newuser@example.com"
-    And I fill in "Password" with "Short123"
-    And I fill in "Password confirmation" with "Short123"
+    And I fill in "Password" with "Short12"
+    And I fill in "Password confirmation" with "Short12"
     And I fill in "First name" with "John"
     And I fill in "Last name" with "Doe"
     And I press "Sign Up"
@@ -106,6 +106,7 @@ Feature: User Registration
     And I fill in "Password confirmation" with "SecurePass123"
     And I fill in "First name" with "Sarah"
     And I fill in "Last name" with "Johnson"
+    And I click "Portfolio Manager"
     And I press "Sign Up"
     Then I should be on the manager dashboard page
     And I should see "Registration successful"
@@ -119,6 +120,7 @@ Feature: User Registration
     And I fill in "Password confirmation" with "SecurePass123"
     And I fill in "First name" with "Mike"
     And I fill in "Last name" with "Chen"
+    And I click "Associate Trader"
     And I press "Sign Up"
     Then I should be on the associate dashboard page
     And I should see "Registration successful"
@@ -133,6 +135,7 @@ Feature: User Registration
     And I fill in "Password confirmation" with "SecurePass123"
     And I fill in "First name" with "Alice"
     And I fill in "Last name" with "Martinez"
+    And I click "Portfolio Manager"
     And I fill in "Company name" with "NewStartup Inc"
     And I press "Sign Up"
     Then I should be on the manager dashboard page
@@ -140,5 +143,3 @@ Feature: User Registration
     And I should have the role "Portfolio Manager"
     And a new company "NewStartup Inc" should be created with domain "newstartup.com"
     And I should be affiliated with company "NewStartup Inc"
-
-
