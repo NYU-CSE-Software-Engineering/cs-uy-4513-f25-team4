@@ -4,7 +4,7 @@ default: &default
   pool: 5
   username: investra
   password: investra
-  host: investra-db-1  # Matches your actual DB container name
+  host: <%= ENV.fetch("DB_HOST", "investra-db-1") %>  # Allow override for local/CI
 
 development:
   <<: *default
@@ -20,4 +20,3 @@ production:
   database: investra_production
   username: investra
   password: <%= ENV['INVESTRA_DATABASE_PASSWORD'] %>
-

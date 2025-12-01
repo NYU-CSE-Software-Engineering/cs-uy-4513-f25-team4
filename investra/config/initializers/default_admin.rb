@@ -16,8 +16,9 @@ if Rails.env.development? || Rails.env.test?
           user.last_name = "User"
         end
       end
-    rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
-      # Database not ready; ignore and let seeding/tests handle user creation later
+    rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid,
+           ActiveRecord::DatabaseConnectionError, ActiveRecord::ConnectionNotEstablished, Mysql2::Error
+      # Database not ready or reachable; ignore and let seeding/tests handle user creation later
     end
   end
 end
