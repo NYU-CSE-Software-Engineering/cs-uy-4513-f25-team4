@@ -26,13 +26,7 @@ Given("an existing company with ticker {string}") do |ticker|
   Company.create!(name: "Existing Co", ticker: ticker, sector: "General")
 end
 
-When('I fill in {string} with {string}') do |field, value|
-  fill_in field, with: value
-end
 
-When('I press {string}') do |button|
-  click_button button
-end
 
 When("I visit the companies management page") do
   visit companies_path

@@ -21,31 +21,8 @@ Given('I am on the registration page') do
   visit signup_path
 end
 
-When('I fill in {string} with {string}') do |field, value|
-  @last_email = value if field == 'Email'
-  @last_password = value if field == 'Password'
-  fill_in field, with: value
-end
 
-When('I press {string}') do |button|
-    click_button button
-end
 
-Then('I should be on the trader dashboard page') do
-  expect(current_path).to eq(trader_dashboard_path)  # /dashboard/trader
-end
-
-Then('I should be on the associate dashboard page') do
-  expect(current_path).to eq(associate_dashboard_path)  # /dashboard/associate
-end
-
-Then('I should be on the manager dashboard page') do
-  expect(current_path).to eq(manager_dashboard_path)  # /dashboard/manager
-end
-
-Then('I should be on the admin dashboard page') do
-  expect(current_path).to eq(admin_dashboard_path)  # /dashboard/admin
-end
 
 Then('I should be on the registration page') do
   expect(current_path).to eq(signup_path)
@@ -53,13 +30,7 @@ end
 
 # Removed duplicate step - now in common_steps.rb
 
-Then('I should be logged in as {string}') do |email|
-  user = User.find_by(email: email)
-  
-  expect(page).to have_link('Log Out').or have_button('Log Out')
-  expect(current_path).not_to eq(login_path)
-  expect(current_path).not_to eq(signup_path)
-end
+
 
 Then('I should have the role {string}') do |role_name|
   user = User.find_by(email: @last_email || 'newuser@example.com')

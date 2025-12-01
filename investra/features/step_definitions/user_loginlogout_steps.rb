@@ -1,34 +1,25 @@
 Given('a user exists with email {string} and password {string}') do |email, password|
-    #ensuring trader role exists
-  Role.find_or_create_by!(name: 'Trader', description: 'Individual investor')
-  
   @test_user = User.create!(
     email: email,
     password: password,
     password_confirmation: password,
     first_name: 'Test',
-    last_name: 'User'
+    last_name: 'User',
+    role: 'Trader'  # Default role
   )
-  
-  trader_role = Role.find_by(name: 'Trader')
-  @test_user.roles << trader_role if trader_role
   @test_password = password
 end
 
 #user creation with role
 Given('a user exists with email {string} and password {string} and role {string}') do |email, password, role_name|
-    
-  role = Role.find_or_create_by!(name: role_name.strip)
-  
   @test_user = User.create!(
     email: email,
     password: password,
     password_confirmation: password,
     first_name: 'Test',
-    last_name: 'User'
+    last_name: 'User',
+    role: role_name.strip
   )
-  # Assign the specified role
-  @test_user.roles << role
   @test_password = password
 end
 
@@ -55,27 +46,22 @@ When('I navigate to the profile page') do
 end
 
 
-
-
 # Already logged in
 Given('I am logged in as {string}') do |email|
   user = User.find_by(email: email)
   
-  # Create user if cant find user
+  # Create user if can't find user
   unless user
-    Role.find_or_create_by!(name: 'Trader')
     user = User.create!(
       email: email,
       password: 'SecurePass123',
       password_confirmation: 'SecurePass123',
       first_name: 'Test',
-      last_name: 'User'
+      last_name: 'User',
+      role: 'Trader'
     )
-    trader_role = Role.find_by(name: 'Trader')
-    user.roles << trader_role if trader_role
   end
   
-  # Perform login
   visit login_path
   fill_in 'Email', with: email
   fill_in 'Password', with: 'SecurePass123'
@@ -85,18 +71,9 @@ Given('I am logged in as {string}') do |email|
   @current_email = email
 end
 
-#form input 
+# form input 
 
-When('I fill in {string} with {string}') do |field, value|
-  @current_email = value if field == 'Email'
-  fill_in field, with: value
-end
 
-When('I press {string}') do |button|
-  click_button button
-end
-
-# Removed duplicate step - now in common_steps.rb
 
 #page verification
 
@@ -124,22 +101,19 @@ Then('I should be on the profile page') do
   expect(current_path).to eq(profile_path)
 end
 
-#text verification
-# Removed duplicate step - now in common_steps.rb
-
 Then('I should be logged in as {string}') do |email|
-  expect(page).to have_button('Log Out')
+  expect(page).to have_link('Log Out')
   user = User.find_by(email: email)
   expect(page).to have_content(user.first_name) if user
 end
 
 Then('I should be logged in') do
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page).to have_link('Log Out')
 end
 
 
 Then('I should still be logged in as {string}') do |email|
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page).to have_link('Log Out')
 end
 
 Then('a session should be created for {string}') do |email|
@@ -157,7 +131,7 @@ Then('the user session should be destroyed') do
 end
 
 Then('I should not be logged in') do
-  expect(current_path).to eq(login_path).or eq(root_path)
+  expect(current_path).to eq(login_path)
 end
 
 Then('I should not have an active session') do
@@ -168,11 +142,11 @@ end
 Then('my session data should be cleared') do
   visit trader_dashboard_path
   expect(current_path).to eq(login_path)
-  expect(page).to have_content('Please log in').or have_content('Log In')
+  expect(page).to have_content('Log In')
 end
 
 Then('my session should remain active') do
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page).to have_link('Log Out')
   expect(current_path).not_to eq(login_path)
 end
 
