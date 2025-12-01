@@ -76,3 +76,7 @@ jobs:
       - name: Run Cucumber tests for assign_associates feature
         working-directory: investra
         run: bundle exec cucumber features/assign_associates.feature --format pretty
+
+      - name: Run Cucumber tests for user login/logout feature
+        working-directory: investra
+        run: bundle exec cucumber features/user_loginlogout.feature --format pretty
