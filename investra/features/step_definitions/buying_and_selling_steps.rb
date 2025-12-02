@@ -10,10 +10,10 @@ Given("I am a logged-in user") do
     last_name: 'User',
     balance: 5000
   )
-  visit new_user_session_path
+  visit login_path
   fill_in 'Email', with: @user.email
   fill_in 'Password', with: @user.password
-  click_button 'Log in'
+  click_button 'Log In'
   expect(page).to have_content('Signed in successfully')
 end
 
@@ -285,7 +285,7 @@ end
 
 When("User A completes the purchase first") do
   @user = @user_a
-  visit new_user_session_path
+  visit login_path
   fill_in 'Email', with: @user_a.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
@@ -299,7 +299,7 @@ end
 
 Then(/^User B's transaction should fail with an error message "([^"]*)"$/) do |message|
   @user = @user_b
-  visit new_user_session_path
+  visit login_path
   fill_in 'Email', with: @user_b.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
@@ -348,7 +348,7 @@ Then("I should see a notification {string}") do |message|
 end
 
 Given("I am not logged in") do
-  visit destroy_user_session_path
+  visit logout_path
 end
 
 When("I try to access the {string} or {string} functionality") do |btn1, btn2|
