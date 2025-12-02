@@ -78,11 +78,12 @@
     const sellQuantity = document.getElementById('sell-quantity');
     const sellError = document.getElementById('sell-error');
     const sellConfirmBtn = document.getElementById('sell-confirm-btn');
-    let currentStockId = null;
+    // Use window.currentStockId to make it accessible for testing
+    window.currentStockId = null;
 
     sellButtons.forEach(btn => {
       btn.addEventListener('click', function() {
-        currentStockId = this.dataset.stockId;
+        window.currentStockId = this.dataset.stockId;
         sellSymbol.textContent = this.dataset.stockSymbol;
         sellPrice.textContent = parseFloat(this.dataset.stockPrice).toFixed(2);
         sellMaxQuantity.textContent = this.dataset.maxQuantity;
@@ -95,7 +96,7 @@
 
     sellCancelBtn.addEventListener('click', function() {
       sellModal.style.display = 'none';
-      currentStockId = null;
+      window.currentStockId = null;
     });
 
     sellForm.addEventListener('submit', function(e) {
@@ -118,7 +119,7 @@
 
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
                        document.querySelector('input[name="authenticity_token"]')?.value;
-      fetch(`/stocks/${currentStockId}/sell`, {
+      fetch(`/stocks/${window.currentStockId}/sell`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -76,11 +76,12 @@
     const buyQuantity = document.getElementById('buy-quantity');
     const buyError = document.getElementById('buy-error');
     const buyConfirmBtn = document.getElementById('buy-confirm-btn');
-    let currentStockId = null;
+    // Use window.currentStockId to make it accessible for testing
+    window.currentStockId = null;
 
     buyButtons.forEach(btn => {
       btn.addEventListener('click', function() {
-        currentStockId = this.dataset.stockId;
+        window.currentStockId = this.dataset.stockId;
         buySymbol.textContent = this.dataset.stockSymbol;
         buyPrice.textContent = parseFloat(this.dataset.stockPrice).toFixed(2);
         buyModal.style.display = 'block';
@@ -91,7 +92,7 @@
 
     buyCancelBtn.addEventListener('click', function() {
       buyModal.style.display = 'none';
-      currentStockId = null;
+      window.currentStockId = null;
     });
 
     buyForm.addEventListener('submit', function(e) {
@@ -109,7 +110,16 @@
 
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
                        document.querySelector('input[name="authenticity_token"]')?.value;
-      fetch(`/stocks/${currentStockId}/buy`, {
+      
+      if (!window.currentStockId) {
+        buyError.textContent = 'Error: Stock ID not set';
+        buyConfirmBtn.disabled = false;
+        buyCancelBtn.disabled = false;
+        return;
+      }
+      
+      console.log('Making buy request for stock ID:', window.currentStockId, 'quantity:', quantity);
+      fetch(`/stocks/${window.currentStockId}/buy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,20 +129,24 @@
         body: JSON.stringify({ quantity: quantity })
       })
       .then(response => {
+        console.log('Buy response status:', response.status);
         if (!response.ok) {
           return response.json().then(data => {
+            console.error('Buy error:', data.error);
             throw new Error(data.error || 'Transaction failed');
           });
         }
         return response.json();
       })
       .then(data => {
+        console.log('Buy success:', data);
         document.getElementById('message').textContent = data.message;
         document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
         buyModal.style.display = 'none';
         location.reload(); // Refresh to show updated data
       })
       .catch(error => {
+        console.error('Buy catch error:', error);
         buyError.textContent = error.message || 'Transaction failed. Please try again.';
         buyConfirmBtn.disabled = false;
         buyCancelBtn.disabled = false;

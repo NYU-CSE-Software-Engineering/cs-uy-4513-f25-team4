@@ -11,9 +11,12 @@ class StocksController < ApplicationController
   end
 
   def buy
+    # Accept quantity as integer or string, convert to integer
     quantity = params[:quantity].to_i
 
-    if quantity <= 0 || params[:quantity].to_s != quantity.to_s
+    # Validate: quantity must be positive integer
+    # Check if original param was a valid positive number
+    if quantity <= 0 || (params[:quantity].present? && params[:quantity].to_s.strip != quantity.to_s)
       render json: { error: 'Please enter a valid quantity' }, status: :unprocessable_entity
       return
     end
