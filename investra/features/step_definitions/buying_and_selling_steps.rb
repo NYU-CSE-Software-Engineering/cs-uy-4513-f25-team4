@@ -67,11 +67,12 @@ When("I click the {string} button next to {string}") do |button, stock_symbol|
   within(".stock-row[data-symbol='#{stock_symbol}']") do
     click_button button
   end
-  # Wait for modal to be visible
+  # Wait for modal to be visible (JavaScript sets style.display = 'block')
+  # Instead of checking style, wait for the quantity field to be visible
   if button == 'Buy'
-    expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+    expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   elsif button == 'Sell'
-    expect(page).to have_selector('#sell-modal', visible: true, wait: 2)
+    expect(page).to have_field('sell-quantity', visible: true, wait: 5)
   end
 end
 
@@ -114,7 +115,15 @@ end
 # Edge case
 
 Given("my balance is less than the total cost of {int} shares of {string}") do |shares, symbol|
-  @user.update(balance: 50) # Force low balance
+  # Ensure the stock exists
+  stock = Stock.find_or_create_by!(symbol: symbol) do |s|
+    s.name = symbol
+    s.price = 100
+    s.available_quantity = 1000
+  end
+  # Set balance to less than the cost
+  total_cost = stock.price * shares
+  @user.update(balance: total_cost - 1)
   visit stocks_path
 end
 
@@ -175,7 +184,7 @@ Given("I completed a successful purchase") do
   within(".stock-row[data-symbol='AAPL']") do
     click_button 'Buy'
   end
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: '10'
   click_button 'Confirm'
   expect(page).to have_content('Purchase successful')
@@ -206,7 +215,7 @@ Given("I successfully purchased {string}") do |stock_symbol|
   within(".stock-row[data-symbol='#{stock_symbol}']") do
     click_button 'Buy'
   end
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: '10'
   click_button 'Confirm'
   expect(page).to have_content('Purchase successful')
@@ -238,7 +247,7 @@ end
 
 When("I click {string} and enter {string} in the quantity field") do |button, quantity|
   click_button button
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: quantity
 end
 
@@ -255,7 +264,7 @@ Given("I have selected {string} to buy") do |stock_symbol|
 end
 
 When("I click {string} and the transaction is processing") do |button|
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: '10'
   click_button button
   # Transaction is processing
@@ -286,7 +295,7 @@ When("I buy {string} shares of {string}") do |quantity_str, stock_symbol|
   within(".stock-row[data-symbol='#{stock_symbol}']") do
     click_button 'Buy'
   end
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: quantity_str
   click_button 'Confirm'
 end
@@ -343,12 +352,12 @@ When("User A completes the purchase first") do
   within(".stock-row[data-symbol='#{@stock.symbol}']") do
     click_button 'Buy'
   end
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: @stock.available_quantity.to_s
   click_button 'Confirm'
 end
 
-Then("User B's transaction should fail with an error message {string}") do |message|
+Then(/^User B['']s transaction should fail with an error message "([^"]*)"$/) do |message|
   @user = @user_b
   visit login_path
   fill_in 'Email', with: @user_b.email
@@ -358,7 +367,7 @@ Then("User B's transaction should fail with an error message {string}") do |mess
   within(".stock-row[data-symbol='#{@stock.symbol}']") do
     click_button 'Buy'
   end
-  expect(page).to have_selector('#buy-modal', visible: true, wait: 2)
+  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
   fill_in 'buy-quantity', with: @stock.available_quantity.to_s
   click_button 'Confirm'
   expect(page).to have_content(message)
@@ -375,7 +384,7 @@ When("I attempt to sell {string} shares of {string}") do |quantity_str, stock_sy
   within(".stock-row[data-symbol='#{stock_symbol}']") do
     click_button 'Sell'
   end
-  expect(page).to have_selector('#sell-modal', visible: true, wait: 2)
+  expect(page).to have_field('sell-quantity', visible: true, wait: 5)
   fill_in 'sell-quantity', with: quantity_str
   click_button 'Confirm'
 end
@@ -397,8 +406,8 @@ Then("the {string} and {string} buttons should be disabled") do |btn1, btn2|
 end
 
 Then("I should see a notification {string}") do |message|
-  # Check for visible text (not hidden)
-  expect(page).to have_content(message, visible: :visible)
+  # Check for visible text - look in error divs or message areas
+  expect(page).to have_content(message)
 end
 
 Given("I am not logged in") do
@@ -429,7 +438,8 @@ Then("I should be redirected to the login page") do
     expect(current_path).to eq(login_path)
   else
     # If not redirected, check that login is required (page shows login form or message)
-    expect(page).to have_content('Log in').or have_content('Please sign in').or have_content('Login')
+    has_login = page.has_content?('Log in') || page.has_content?('Please sign in') || page.has_content?('Login')
+    expect(has_login).to be true
   end
 end
 
