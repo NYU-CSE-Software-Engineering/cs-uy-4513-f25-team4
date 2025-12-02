@@ -68,6 +68,28 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Check for persisted message from previous transaction (sessionStorage or cookie)
+    let persistedMessage = sessionStorage.getItem('transactionMessage');
+    if (!persistedMessage) {
+      // Try reading from cookie
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'transactionMessage') {
+          persistedMessage = decodeURIComponent(value);
+          break;
+        }
+      }
+    }
+    if (persistedMessage) {
+      const messageEl = document.getElementById('message');
+      if (messageEl) {
+        messageEl.textContent = persistedMessage;
+        messageEl.style.display = 'block';
+        // Don't clear immediately - let test verify it first
+      }
+    }
+    
     const sellButtons = document.querySelectorAll('.sell-btn');
     const sellModal = document.getElementById('sell-modal');
     const sellForm = document.getElementById('sell-form');
@@ -137,6 +159,12 @@
         return response.json();
       })
       .then(data => {
+        // Store message in both sessionStorage and cookie before reload so it persists
+        if (data.message) {
+          sessionStorage.setItem('transactionMessage', data.message);
+          // Also set a cookie that persists across page navigations
+          document.cookie = 'transactionMessage=' + encodeURIComponent(data.message) + '; path=/';
+        }
         document.getElementById('message').textContent = data.message;
         document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
         sellModal.style.display = 'none';

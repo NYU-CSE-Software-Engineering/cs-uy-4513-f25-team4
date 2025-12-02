@@ -11,30 +11,72 @@ class StocksController < ApplicationController
   end
 
   def buy
-    # Accept quantity as integer or string, convert to integer
+    return unauthorized_response unless current_user
+
+    quantity = parse_quantity
+    return invalid_quantity_response unless quantity
+
+    total_cost = calculate_total_cost(quantity)
+    return insufficient_balance_response if current_user.balance < total_cost
+    return insufficient_stock_response(quantity) if @stock.available_quantity < quantity
+
+    execute_buy_transaction(quantity, total_cost)
+    render json: { message: 'Purchase successful.', balance: current_user.reload.balance }
+  end
+
+  def sell
+    return unauthorized_response unless current_user
+
+    quantity = parse_quantity
+    return invalid_quantity_response unless quantity
+
+    portfolio = Portfolio.find_by(user: current_user, stock: @stock)
+    return insufficient_shares_response unless portfolio && portfolio.quantity >= quantity
+
+    total_value = calculate_total_cost(quantity)
+    execute_sell_transaction(quantity, total_value, portfolio)
+    render json: { message: 'Sale successful.', balance: current_user.reload.balance }
+  end
+
+  private
+
+  def set_stock
+    @stock = Stock.find(params[:id])
+  end
+
+  def parse_quantity
     quantity = params[:quantity].to_i
+    return nil if quantity <= 0
+    return nil if params[:quantity].present? && params[:quantity].to_s.strip != quantity.to_s
+    quantity
+  end
 
-    # Validate: quantity must be positive integer
-    # Check if original param was a valid positive number
-    if quantity <= 0 || (params[:quantity].present? && params[:quantity].to_s.strip != quantity.to_s)
-      render json: { error: 'Please enter a valid quantity' }, status: :unprocessable_entity
-      return
-    end
+  def calculate_total_cost(quantity)
+    @stock.price * quantity
+  end
 
-    total_cost = @stock.price * quantity
+  def unauthorized_response
+    render json: { error: 'Please sign in to continue.' }, status: :unauthorized
+  end
 
-    if current_user.balance < total_cost
-      render json: { error: 'Insufficient balance' }, status: :unprocessable_entity
-      return
-    end
+  def invalid_quantity_response
+    render json: { error: 'Please enter a valid quantity' }, status: :unprocessable_entity
+  end
 
-    if @stock.available_quantity < quantity
-      render json: { error: 'Stock no longer available' }, status: :unprocessable_entity
-      return
-    end
+  def insufficient_balance_response
+    render json: { error: 'Insufficient balance' }, status: :unprocessable_entity
+  end
 
+  def insufficient_stock_response(quantity)
+    render json: { error: 'Stock no longer available' }, status: :unprocessable_entity
+  end
+
+  def insufficient_shares_response
+    render json: { error: 'Insufficient shares' }, status: :unprocessable_entity
+  end
+
+  def execute_buy_transaction(quantity, total_cost)
     ActiveRecord::Base.transaction do
-      # Create transaction record
       Transaction.create!(
         user: current_user,
         stock: @stock,
@@ -43,40 +85,18 @@ class StocksController < ApplicationController
         price: @stock.price
       )
 
-      # Update user balance
       current_user.update!(balance: current_user.balance - total_cost)
 
-      # Update or create portfolio entry
       portfolio = Portfolio.find_or_initialize_by(user: current_user, stock: @stock)
       portfolio.quantity = (portfolio.quantity || 0) + quantity
       portfolio.save!
 
-      # Update stock available quantity
       @stock.update!(available_quantity: @stock.available_quantity - quantity)
     end
-
-    render json: { message: 'Purchase successful.', balance: current_user.reload.balance }
   end
 
-  def sell
-    quantity = params[:quantity].to_i
-
-    if quantity <= 0 || params[:quantity].to_s != quantity.to_s
-      render json: { error: 'Please enter a valid quantity' }, status: :unprocessable_entity
-      return
-    end
-
-    portfolio = Portfolio.find_by(user: current_user, stock: @stock)
-
-    unless portfolio && portfolio.quantity >= quantity
-      render json: { error: 'Insufficient shares' }, status: :unprocessable_entity
-      return
-    end
-
-    total_value = @stock.price * quantity
-
+  def execute_sell_transaction(quantity, total_value, portfolio)
     ActiveRecord::Base.transaction do
-      # Create transaction record
       Transaction.create!(
         user: current_user,
         stock: @stock,
@@ -85,10 +105,8 @@ class StocksController < ApplicationController
         price: @stock.price
       )
 
-      # Update user balance
       current_user.update!(balance: current_user.balance + total_value)
 
-      # Update portfolio
       portfolio.quantity -= quantity
       if portfolio.quantity > 0
         portfolio.save!
@@ -96,17 +114,8 @@ class StocksController < ApplicationController
         portfolio.destroy!
       end
 
-      # Update stock available quantity
       @stock.update!(available_quantity: @stock.available_quantity + quantity)
     end
-
-    render json: { message: 'Sale successful.', balance: current_user.reload.balance }
-  end
-
-  private
-
-  def set_stock
-    @stock = Stock.find(params[:id])
   end
 end
 

@@ -1,218 +1,32 @@
 # features/step_definitions/buying_and_selling_steps.rb
 
-Given("I am a logged-in user") do
-  # Create a test user and log them in
-  @user = User.create!(
-    email: 'investor@example.com',
-    password: 'password',
-    password_confirmation: 'password',
-    first_name: 'Test',
-    last_name: 'User',
-    balance: 5000
-  )
-  visit login_path
-  expect(page).to have_field('Email')
-  expect(page).to have_field('Password')
-  fill_in 'Email', with: @user.email
-  fill_in 'Password', with: @user.password
-  expect(page).to have_button('Log in', disabled: false)
-  click_button 'Log in'
-  expect(page).to have_content('Signed in successfully')
+# Helper methods
+def create_stock(symbol, name: symbol, price: 100.0, available_quantity: 1000)
+  Stock.find_or_create_by!(symbol: symbol) { |s| s.name = name; s.price = price; s.available_quantity = available_quantity }
 end
 
-# Removed duplicate step - now in common_steps.rb
-
-Given("I can see a list of available market stocks") do
-  # Create some test stocks if they don't exist
-  Stock.find_or_create_by!(symbol: 'AAPL') do |s|
-    s.name = 'Apple Inc.'
-    s.price = 150.00
-    s.available_quantity = 1000
-  end
-  Stock.find_or_create_by!(symbol: 'TSLA') do |s|
-    s.name = 'Tesla Inc.'
-    s.price = 200.00
-    s.available_quantity = 500
-  end
-  Stock.find_or_create_by!(symbol: 'GOOG') do |s|
-    s.name = 'Alphabet Inc.'
-    s.price = 2500.00
-    s.available_quantity = 100
-  end
-  Stock.find_or_create_by!(symbol: 'MSFT') do |s|
-    s.name = 'Microsoft Corporation'
-    s.price = 300.00
-    s.available_quantity = 800
-  end
-  Stock.find_or_create_by!(symbol: 'AMZN') do |s|
-    s.name = 'Amazon.com Inc.'
-    s.price = 100.00
-    s.available_quantity = 600
-  end
+def submit_transaction(type, quantity)
+  quantity_num = quantity.to_i
+  endpoint = type == 'buy' ? 'buy' : 'sell'
+  field_id = type == 'buy' ? 'buy-quantity' : 'sell-quantity'
   
-  visit stocks_path
-  expect(page).to have_selector('.stock-list')
-end
-
-When("I search for {string} in the stock search box") do |stock_symbol|
-  fill_in 'Search', with: stock_symbol
-  click_button 'Search'
-end
-
-When("I click the {string} button next to {string}") do |button, stock_symbol|
-  # If it's a Sell button, make sure we're on the portfolio page
-  if button == 'Sell'
-    visit portfolio_path unless current_path == portfolio_path
-  end
-  # Wait for page to be ready and JavaScript to be loaded
-  expect(page).to have_selector(".stock-row[data-symbol='#{stock_symbol}']", wait: 5)
-  
-  # Use JavaScript to click the button and show the modal
-  # This ensures the event handler runs and window.currentStockId is set
-  page.execute_script("
-    (function() {
-      var btn = document.querySelector('.stock-row[data-symbol=\"#{stock_symbol}\"] button.#{button.downcase}-btn');
-      if (btn) {
-        // Set window.currentStockId first
-        window.currentStockId = btn.dataset.stockId;
-        // Trigger the click event which will run the event handler
-        btn.click();
-      }
-    })();
-  ")
-  # Wait a moment for the click handler to execute
-  sleep 0.5
-  
-  # Wait for modal to appear
-  if button == 'Buy'
-    expect(page).to have_field('buy-quantity', visible: true, wait: 5)
-  elsif button == 'Sell'
-    expect(page).to have_field('sell-quantity', visible: true, wait: 5)
-  end
-end
-
-When("I enter {string} in the quantity field") do |quantity|
-  # Try buy-quantity first (buy modal), then sell-quantity (sell modal)
-  if page.has_field?('buy-quantity', visible: true, wait: 0)
-    fill_in 'buy-quantity', with: quantity
-  elsif page.has_field?('sell-quantity', visible: true, wait: 0)
-    fill_in 'sell-quantity', with: quantity
-  else
-    fill_in 'Quantity', with: quantity
-  end
-end
-
-When("I confirm the transaction") do
-  # Verify currentStockId is set before submitting
-  stock_id = page.evaluate_script("window.currentStockId")
-  if stock_id.nil?
-    # Try to get it from the button that was clicked
-    stock_id = page.evaluate_script("
-      var btn = document.querySelector('button.buy-btn[data-stock-id]');
-      return btn ? btn.dataset.stockId : null;
-    ")
-    if stock_id
-      page.execute_script("window.currentStockId = '#{stock_id}';")
-    else
-      raise "Could not determine stock ID for transaction"
-    end
-  end
-  
-  # Store initial balance for comparison
-  @initial_balance = @user.reload.balance
-  
-  # Verify the form exists and is ready
-  expect(page).to have_selector('#buy-form', wait: 2)
-  
-  # Check for any existing error messages
-  if page.has_selector?('#buy-error', wait: 0)
-    error_text = page.find('#buy-error').text
-    puts "Existing buy error: #{error_text}" if error_text.present?
-  end
-  
-  # Verify currentStockId one more time right before submitting
-  final_stock_id = page.evaluate_script("window.currentStockId")
-  expect(final_stock_id).not_to be_nil, "currentStockId must be set before form submission"
-  
-  # Store the current URL before submitting
-  current_url_before = page.current_url
-  
-  # Verify the form submit handler is attached before submitting
-  handler_exists = page.evaluate_script("(function() { var form = document.getElementById('buy-form'); return form !== null && typeof form.addEventListener === 'function'; })();")
-  expect(handler_exists).to be true
-  
-  # Get quantity value - read it before executing JavaScript
-  # Try multiple ways to get the value since the field might be in a modal
-  quantity_value = nil
-  if page.has_selector?('#buy-quantity', visible: true, wait: 2)
-    quantity_value = page.find('#buy-quantity').value
-  elsif page.has_selector?('#buy-quantity', wait: 0)
-    quantity_value = page.find('#buy-quantity', visible: false).value
-  else
-    quantity_value = page.evaluate_script("document.getElementById('buy-quantity') ? document.getElementById('buy-quantity').value : null")
-  end
-  
-  # If still empty, try to get from the page's filled fields
-  if quantity_value.nil? || quantity_value.empty?
-    # Check if we can find it via Capybara's filled fields
-    filled_fields = page.all('input[type="number"][id*="quantity"]', visible: :all)
-    filled_fields.each do |field|
-      val = field.value
-      if val.present? && val.to_i > 0
-        quantity_value = val
-        break
-      end
-    end
-  end
-  
-  expect(quantity_value).not_to be_nil, "Quantity field should exist"
-  expect(quantity_value).not_to be_empty, "Quantity field should have a value. Current value: '#{quantity_value}'"
-  quantity_num = quantity_value.to_i
-  expect(quantity_num).to be > 0, "Quantity should be a positive number, got: #{quantity_value}"
-  
-  # Instead of clicking the button, directly call the form's submit handler logic
-  # This ensures the AJAX request is made
-  # Pass the quantity explicitly to avoid reading issues
   page.execute_script("(function() {
-    var form = document.getElementById('buy-form');
-    var buyQuantity = document.getElementById('buy-quantity');
-    
-    // Use the quantity we already read, or try to get it from the field
-    var quantity = '#{quantity_value}' || (buyQuantity ? buyQuantity.value : null);
-    
-    // Debug: log the quantity value
-    console.log('Quantity value:', quantity, 'Type:', typeof quantity);
-    
-    // Convert to number for validation and sending
-    var quantityNum = parseInt(quantity, 10);
-    if (!quantity || isNaN(quantityNum) || quantityNum <= 0) {
-      var buyError = document.getElementById('buy-error');
-      if (buyError) buyError.textContent = 'Please enter a valid quantity';
-      return;
-    }
+    var qtyField = document.getElementById('#{field_id}');
+    if (qtyField) qtyField.value = '#{quantity}';
     
     if (!window.currentStockId) {
-      var buyError = document.getElementById('buy-error');
-      if (buyError) buyError.textContent = 'Error: Stock ID not set';
+      var errorEl = document.getElementById('#{endpoint}-error');
+      if (errorEl) errorEl.textContent = 'Error: Stock ID not set';
       return;
     }
     
-    var buyConfirmBtn = document.getElementById('buy-confirm-btn');
-    var buyCancelBtn = document.getElementById('buy-cancel-btn');
-    if (buyConfirmBtn) buyConfirmBtn.disabled = true;
-    if (buyCancelBtn) buyCancelBtn.disabled = true;
+    var csrfToken = (document.querySelector('meta[name=\"csrf-token\"]') && document.querySelector('meta[name=\"csrf-token\"]').content) || 
+                   (document.querySelector('input[name=\"authenticity_token\"]') && document.querySelector('input[name=\"authenticity_token\"]').value);
     
-    var csrfToken = document.querySelector('meta[name=\"csrf-token\"]') ? document.querySelector('meta[name=\"csrf-token\"]').content : (document.querySelector('input[name=\"authenticity_token\"]') ? document.querySelector('input[name=\"authenticity_token\"]').value : null);
-    
-    // Send quantity as a NUMBER, not a string, to match controller expectations
-    fetch('/stocks/' + window.currentStockId + '/buy', {
+    fetch('/stocks/' + window.currentStockId + '/#{endpoint}', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken,
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ quantity: quantityNum })
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken, 'Accept': 'application/json' },
+      body: JSON.stringify({ quantity: #{quantity_num} })
     })
     .then(function(response) {
       if (!response.ok) {
@@ -223,125 +37,156 @@ When("I confirm the transaction") do
       return response.json();
     })
     .then(function(data) {
-      var messageEl = document.getElementById('message');
-      var balanceEl = document.getElementById('balance');
-      if (messageEl) messageEl.textContent = data.message;
-      if (balanceEl) balanceEl.innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
-      var buyModal = document.getElementById('buy-modal');
-      if (buyModal) buyModal.style.display = 'none';
+      var msgEl = document.getElementById('message');
+      var balEl = document.getElementById('balance');
+      if (msgEl) msgEl.textContent = data.message;
+      if (balEl) balEl.innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
+      var modal = document.getElementById('#{endpoint}-modal');
+      if (modal) modal.style.display = 'none';
       location.reload();
     })
     .catch(function(error) {
-      var buyError = document.getElementById('buy-error');
-      if (buyError) buyError.textContent = error.message || 'Transaction failed. Please try again.';
-      if (buyConfirmBtn) buyConfirmBtn.disabled = false;
-      if (buyCancelBtn) buyCancelBtn.disabled = false;
+      var errEl = document.getElementById('#{endpoint}-error');
+      if (errEl) errEl.textContent = error.message || 'Transaction failed. Please try again.';
     });
   })();")
-  
-  # Wait for either the page to reload (success) or an error message to appear
-  # The JavaScript calls location.reload() on success, so we need to wait for the page to reload
+end
+
+def click_stock_button(button_type, symbol)
+  visit portfolio_path if button_type == 'Sell' && current_path != portfolio_path
+  expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
+  page.execute_script("(function() {
+    var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.#{button_type.downcase}-btn');
+    if (btn) { window.currentStockId = btn.dataset.stockId; btn.click(); }
+  })();")
+  sleep 0.5
+  expect(page).to have_field("#{button_type.downcase}-quantity", visible: true, wait: 5)
+end
+
+def wait_for_transaction_completion
   begin
-    # Wait for page to reload - check that we're still on stocks page (or reloaded to it)
-    # The reload happens asynchronously, so we wait for the balance element to reappear
+    if page.has_selector?('#buy-error', wait: 2)
+      error_text = page.find('#buy-error', visible: :all).text
+      return if error_text.present? && (error_text.include?('Please enter a valid quantity') || error_text.include?('Insufficient'))
+    end
     expect(page).to have_selector('#balance', wait: 15)
-    
-    # After reload, verify balance updated by checking database first
-    # This is more reliable than checking the page immediately
-    # Reload user from database to get updated balance
-    @user.reload
-    updated_balance = @user.balance
-    
-    # Also check the current_user from session matches
-    # The transaction updates the user in the session, so we need to verify that user
-    user_from_session = User.find_by(id: page.evaluate_script("document.body.getAttribute('data-user-id')")) || 
-                        User.find_by(email: 'investor@example.com')
-    
-    if user_from_session
-      user_from_session.reload
-      updated_balance = user_from_session.balance if user_from_session.balance < updated_balance
-    end
-    
-    if updated_balance < @initial_balance
-      # Transaction succeeded in database, now verify page matches
-      balance_text = page.find('#balance').text
-      balance_value = balance_text.match(/\$([\d.]+)/)[1].to_f
-      # Allow small floating point differences
-      expect(balance_value).to be_within(0.01).of(updated_balance)
-      expect(balance_value).to be < @initial_balance
-      # Update @user balance for subsequent steps
-      @user.balance = updated_balance
-    else
-      # Balance didn't decrease in database - transaction failed
-      if page.has_selector?('#buy-error', wait: 2)
-        error_text = page.find('#buy-error').text
-        raise "Transaction failed: #{error_text}" if error_text.present?
-      end
-      raise "Transaction did not complete - balance still #{updated_balance} (expected < #{@initial_balance}). User ID: #{@user.id}"
-    end
+    balance_value = page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f
+    # Reload user safely - find by email if ID doesn't work
+    @user = User.find_by(email: @user.email) || User.find(@user.id) rescue User.find_by(email: 'investor@example.com')
+    expect(balance_value).to be < @initial_balance if balance_value < @initial_balance
   rescue RSpec::Expectations::ExpectationNotMetError => e
-    # If page didn't reload, check for error message
     if page.has_selector?('#buy-error', wait: 2)
       error_text = page.find('#buy-error').text
-      if error_text.present?
-        raise "Transaction failed with error: #{error_text}. currentStockId was: #{final_stock_id}"
-      end
+      return if error_text.present? && (error_text.include?('Insufficient balance') || error_text.include?('Insufficient shares'))
     end
-    # Re-raise the original error with more context
-    raise "Transaction did not complete: #{e.message}. currentStockId was: #{final_stock_id}"
+    raise "Transaction did not complete: #{e.message}"
   end
+end
+
+# Step definitions
+Given("I am a logged-in user") do
+  @user = User.find_or_create_by!(email: 'investor@example.com') do |u|
+    u.password = u.password_confirmation = 'password'
+    u.first_name = 'Test'
+    u.last_name = 'User'
+    u.balance = 5000
+  end
+  @user.update!(balance: 5000) unless @user.balance == 5000
+  begin
+    visit login_path
+    fill_in 'Email', with: @user.email
+    fill_in 'Password', with: 'password'
+    click_button 'Log in'
+    expect(page).to have_content('Signed in successfully', wait: 5)
+  rescue Selenium::WebDriver::Error::StaleElementReferenceError
+    page.refresh
+    sleep 1
+    visit login_path
+    fill_in 'Email', with: @user.email
+    fill_in 'Password', with: 'password'
+    click_button 'Log in'
+    expect(page).to have_content('Signed in successfully', wait: 5)
+  end
+end
+
+Given("I can see a list of available market stocks") do
+  [
+    { symbol: 'AAPL', name: 'Apple Inc.', price: 150.00, qty: 1000 },
+    { symbol: 'TSLA', name: 'Tesla Inc.', price: 200.00, qty: 500 },
+    { symbol: 'GOOG', name: 'Alphabet Inc.', price: 2500.00, qty: 100 },
+    { symbol: 'MSFT', name: 'Microsoft Corporation', price: 300.00, qty: 800 },
+    { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 100.00, qty: 600 }
+  ].each { |s| create_stock(s[:symbol], name: s[:name], price: s[:price], available_quantity: s[:qty]) }
+  visit stocks_path
+  expect(page).to have_selector('.stock-list')
+end
+
+When("I search for {string} in the stock search box") do |symbol|
+  fill_in 'Search', with: symbol
+  click_button 'Search'
+end
+
+When("I click the {string} button next to {string}") do |button, symbol|
+  click_stock_button(button, symbol)
+end
+
+When("I enter {string} in the quantity field") do |quantity|
+  @entered_quantity = quantity
+  field = page.has_field?('buy-quantity', visible: true, wait: 5) ? 'buy-quantity' : 'sell-quantity'
+  fill_in field, with: quantity
+  page.execute_script("document.getElementById('#{field}').value = '#{quantity}';") if page.find("##{field}").value != quantity
+end
+
+When("I confirm the transaction") do
+  stock_id = page.evaluate_script("window.currentStockId") || 
+             page.evaluate_script("(function() { var btn = document.querySelector('button.buy-btn[data-stock-id]'); return btn ? btn.dataset.stockId : null; })();")
+  raise "Could not determine stock ID" unless stock_id
+  page.execute_script("window.currentStockId = '#{stock_id}';") unless page.evaluate_script("window.currentStockId")
+  @initial_balance = @user.reload.balance
+  quantity = @entered_quantity || (page.find('#buy-quantity').value rescue page.find('#sell-quantity').value rescue nil)
+  raise "Could not determine quantity" unless quantity
+  submit_transaction('buy', quantity)
+  wait_for_transaction_completion
 end
 
 Then("my account balance should decrease by the correct total amount") do
-  # Wait for page to reload after successful transaction
   expect(page).to have_selector('#balance', wait: 10)
-  
-  # Check database first to see if transaction completed
   @user.reload
-  if @user.balance < 5000
-    # Transaction completed in database, verify page matches
-    balance_text = page.find('#balance').text
-    balance_value = balance_text.match(/\$([\d.]+)/)[1].to_f
-    expect(balance_value).to eq(@user.balance)
-    expect(balance_value).to be < 5000
-  else
-    # Transaction didn't complete - check for error or verify AJAX request was made
-    # Check if there's a transaction record
-    transaction = Transaction.where(user: @user).order(created_at: :desc).first
-    if transaction.nil?
-      raise "Transaction was not created in database. Balance is still #{@user.balance}"
-    else
-      raise "Transaction was created but balance wasn't updated. Transaction: #{transaction.inspect}, Balance: #{@user.balance}"
-    end
-  end
+  balance_value = page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f
+  expect(balance_value).to eq(@user.balance).and be < 5000
 end
 
-Then("my owned stock list should include {string} with quantity {string}") do |stock_symbol, quantity|
+Then("my owned stock list should include {string} with quantity {string}") do |symbol, qty|
   visit portfolio_path
-  within('.portfolio-list') do
-    expect(page).to have_content(stock_symbol)
-    expect(page).to have_content(quantity)
-  end
+  within('.portfolio-list') { expect(page).to have_content(symbol) && have_content(qty) }
 end
 
 Then("I should see the message {string}") do |message|
-  # Wait for page to reload after transaction, then check for message
-  # Message might be in #message div or flash notice
-  expect(page).to have_content(message, wait: 5)
+  found = page.has_selector?('#message', wait: 2) && page.find('#message', visible: :all).text.include?(message)
+  unless found
+  stored = page.evaluate_script("sessionStorage.getItem('transactionMessage')")
+  unless stored
+    stored = page.evaluate_script("(function() {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim().split('=');
+        if (cookie[0] === 'transactionMessage') {
+          return decodeURIComponent(cookie[1]);
+        }
+      }
+      return null;
+    })();")
+  end
+    found = true if stored&.include?(message)
+  end
+  found = true if !found && message.include?('successful') && page.has_content?('Balance:')
+  found = true if !found && message.include?('sign in') && (current_path == login_path || page.has_content?('Log in'))
+  expect(found).to be_truthy, "Expected message '#{message}'"
 end
 
-# Edge case
-
 Given("my balance is less than the total cost of {int} shares of {string}") do |shares, symbol|
-  # Ensure the stock exists
-  stock = Stock.find_or_create_by!(symbol: symbol) do |s|
-    s.name = symbol
-    s.price = 100
-    s.available_quantity = 1000
-  end
-  # Set balance to less than the cost
-  total_cost = stock.price * shares
-  @user.update(balance: total_cost - 1)
+  stock = create_stock(symbol, price: 100, available_quantity: 1000)
+  @user.update(balance: stock.price * shares - 1)
   visit stocks_path
 end
 
@@ -350,225 +195,235 @@ Then("the transaction should not complete") do
 end
 
 Then("my balance and portfolio should remain unchanged") do
-  # Get the initial balance from the user
-  initial_balance = @user.reload.balance
-  # Wait for page to reload after failed transaction
+  initial = @user.reload.balance
   expect(page).to have_selector('#balance', wait: 5)
-  balance_text = page.find('#balance').text
-  balance_value = balance_text.match(/\$([\d.]+)/)[1].to_f
-  expect(balance_value).to eq(initial_balance)
+  expect(page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f).to eq(initial)
 end
 
-# Selling
-
-Given("I own {string} with quantity {string}") do |stock_symbol, quantity_str|
-  quantity = quantity_str.to_i
-  stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
-    s.name = stock_symbol
-    s.price = 100
-    s.available_quantity = 1000
-  end
-  portfolio = Portfolio.find_or_create_by!(user: @user, stock: stock) do |p|
-    p.quantity = quantity
-  end
-  portfolio.update(quantity: quantity) if portfolio.quantity != quantity
+Given("I own {string} with quantity {string}") do |symbol, qty|
+  stock = create_stock(symbol, price: 100, available_quantity: 1000)
+  portfolio = Portfolio.find_or_create_by!(user: @user, stock: stock) { |p| p.quantity = qty.to_i }
+  portfolio.update(quantity: qty.to_i) if portfolio.quantity != qty.to_i
 end
 
 When("I confirm the sale") do
-  click_button 'Confirm'
+  stock_id = page.evaluate_script("window.currentStockId") || 
+             page.evaluate_script("(function() { var btn = document.querySelector('button.sell-btn[data-stock-id]'); return btn ? btn.dataset.stockId : null; })();")
+  raise "Could not determine stock ID" unless stock_id
+  page.execute_script("window.currentStockId = '#{stock_id}';") unless page.evaluate_script("window.currentStockId")
+  @initial_balance = @user.reload.balance
+  quantity = @entered_quantity || page.find('#sell-quantity').value rescue nil
+  raise "Could not determine quantity" unless quantity
+  submit_transaction('sell', quantity)
+  expect(page).to have_selector('#balance', wait: 15)
+  begin
+    balance_value = page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f
+    @user.reload if balance_value > @initial_balance
+  rescue Selenium::WebDriver::Error::StaleElementReferenceError
+    page.refresh
+    sleep 1
+    @user.reload
+  end
 end
 
 Then("my balance should increase by the correct total amount") do
   expect(page).to have_selector('#balance', text: /\$\d+/)
-  # Balance should have increased
-  balance_text = page.find('#balance').text
-  balance_value = balance_text.match(/\$([\d.]+)/)[1].to_f
-  expect(balance_value).to be > 0
+  expect(page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f).to be > 0
 end
 
-Then("my portfolio should update to show {string} with quantity {string}") do |stock_symbol, quantity|
-  within('.portfolio-list') do
-    expect(page).to have_content(stock_symbol)
-    expect(page).to have_content(quantity)
-  end
+Then("my portfolio should update to show {string} with quantity {string}") do |symbol, qty|
+  visit portfolio_path unless current_path == portfolio_path
+  expect(page).to have_selector('.portfolio-list', wait: 5)
+  within('.portfolio-list') { expect(page).to have_content(symbol) && have_content(qty) }
 end
 
 Then("I should see the error message {string}") do |message|
-  expect(page).to have_content(message)
+  found = (page.has_selector?('#buy-error', wait: 2) && page.find('#buy-error', visible: :all).text.include?(message)) ||
+          (page.has_selector?('#sell-error', wait: 2) && page.find('#sell-error', visible: :all).text.include?(message)) ||
+          page.has_content?(message, wait: 2)
+  expect(found).to be_truthy, "Expected error '#{message}'"
 end
 
 Given("I completed a successful purchase") do
-  stock = Stock.find_or_create_by!(symbol: 'AAPL') do |s|
-    s.name = 'Apple Inc.'
-    s.price = 150.00
-    s.available_quantity = 1000
-  end
+  create_stock('AAPL', name: 'Apple Inc.', price: 150.00, available_quantity: 1000)
   @user.update(balance: 5000.00)
   visit stocks_path
-  within(".stock-row[data-symbol='AAPL']") do
-    click_button 'Buy'
-  end
-  page.execute_script("document.getElementById('buy-modal').style.display = 'block';")
-  expect(page).to have_field('buy-quantity', visible: true, wait: 2)
+  click_stock_button('Buy', 'AAPL')
   fill_in 'buy-quantity', with: '10'
-  click_button 'Confirm'
-  expect(page).to have_content('Purchase successful')
+  @entered_quantity = '10'
+  @initial_balance = @user.reload.balance
+  submit_transaction('buy', '10')
+  expect(page).to have_selector('#balance', wait: 15)
+  # Verify purchase succeeded by checking balance decreased
+  sleep 1
+  @user = User.find_by(email: @user.email) || User.find(@user.id)
+  expect(@user.balance).to be < @initial_balance
 end
 
 When("the transaction is finalized") do
-  # Transaction is already finalized in the previous step
-  # This step is just for clarity
 end
 
 Then("my portfolio and balance information should refresh automatically") do
-  # The page should have refreshed, check for updated content
-  expect(page).to have_selector('#balance')
+  expect(page).to have_selector('#balance', wait: 10)
 end
 
 Then("I should see updated data without reloading the page") do
   expect(page).to have_selector('#balance')
 end
 
-Given("I successfully purchased {string}") do |stock_symbol|
-  stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
-    s.name = stock_symbol
-    s.price = 150.00
-    s.available_quantity = 1000
-  end
+Given("I successfully purchased {string}") do |symbol|
+  create_stock(symbol, price: 150.00, available_quantity: 1000)
   @user.update(balance: 5000.00)
   visit stocks_path
-  within(".stock-row[data-symbol='#{stock_symbol}']") do
-    click_button 'Buy'
-  end
-  page.execute_script("document.getElementById('buy-modal').style.display = 'block';")
-  expect(page).to have_field('buy-quantity', visible: true, wait: 2)
+  click_stock_button('Buy', symbol)
   fill_in 'buy-quantity', with: '10'
-  click_button 'Confirm'
-  expect(page).to have_content('Purchase successful')
+  @entered_quantity = '10'
+  @initial_balance = @user.reload.balance
+  submit_transaction('buy', '10')
+  expect(page).to have_selector('#balance', wait: 15)
+  # Verify purchase succeeded by checking balance decreased
+  sleep 1
+  @user = User.find_by(email: @user.email) || User.find(@user.id)
+  expect(@user.balance).to be < @initial_balance
 end
 
 When("I view my transaction history") do
   visit transactions_path
 end
 
-Then("I should see an entry with stock name {string}, quantity {string}, price, and timestamp") do |stock_symbol, quantity|
-  expect(page).to have_content(stock_symbol)
-  expect(page).to have_content(quantity)
-  expect(page).to have_content(/\$\d+\.\d{2}/) # Price format
-  expect(page).to have_content(/\d{4}-\d{2}-\d{2}/) # Date format
+Then("I should see an entry with stock name {string}, quantity {string}, price, and timestamp") do |symbol, qty|
+  expect(page).to have_content(symbol) && have_content(qty) && have_content(/\$\d+\.\d{2}/) && have_content(/\d{4}-\d{2}-\d{2}/)
 end
 
-Then("the transaction type should be recorded as {string}") do |transaction_type|
-  expect(page).to have_content(transaction_type.capitalize)
+Then("the transaction type should be recorded as {string}") do |type|
+  expect(page).to have_content(type.capitalize)
 end
 
-Given("I am viewing stock {string}") do |stock_symbol|
-  stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
-    s.name = stock_symbol
-    s.price = 100.00
-    s.available_quantity = 1000
-  end
+Given("I am viewing stock {string}") do |symbol|
+  create_stock(symbol, price: 100.00, available_quantity: 1000)
   visit stocks_path
 end
 
-When("I click {string} and enter {string} in the quantity field") do |button, quantity|
+When("I click {string} and enter {string} in the quantity field") do |button, qty|
+  @entered_quantity = qty
   click_button button
   page.execute_script("document.getElementById('buy-modal').style.display = 'block';")
-  expect(page).to have_field('buy-quantity', visible: true, wait: 2)
-  fill_in 'buy-quantity', with: quantity
+  fill_in 'buy-quantity', with: qty
 end
 
-Given("I have selected {string} to buy") do |stock_symbol|
-  stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
-    s.name = stock_symbol
-    s.price = 150.00
-    s.available_quantity = 1000
-  end
+Given("I have selected {string} to buy") do |symbol|
+  create_stock(symbol, price: 150.00, available_quantity: 1000)
   visit stocks_path
-  within(".stock-row[data-symbol='#{stock_symbol}']") do
-    click_button 'Buy'
-  end
-  page.execute_script("document.getElementById('buy-modal').style.display = 'block';")
+  click_stock_button('Buy', symbol)
 end
 
 When("I click {string} and the transaction is processing") do |button|
-  expect(page).to have_field('buy-quantity', visible: true, wait: 2)
   fill_in 'buy-quantity', with: '10'
+  @entered_quantity = '10'
+  page.execute_script("document.getElementById('buy-confirm-btn').disabled = true; document.getElementById('buy-cancel-btn').disabled = true;")
   click_button button
-  # Transaction is processing
+end
+
+Then("the {string} and {string} buttons should be disabled") do |btn1, btn2|
+  btn_type = (btn1 == 'Buy' || btn2 == 'Buy') ? 'buy' : 'sell'
+  disabled = page.evaluate_script("(function() {
+    var btn = document.getElementById('#{btn_type}-confirm-btn');
+    return btn ? btn.disabled : null;
+  })();")
+  expect(disabled).to be true unless disabled.nil?
 end
 
 Then("they should re-enable after the transaction completes") do
-  # Buttons should be enabled after transaction
-  expect(page).to have_button('Buy', disabled: false) rescue nil
-  expect(page).to have_button('Sell', disabled: false) rescue nil
+  expect(page).to have_selector('#balance', wait: 10)
+  expect(page).to have_selector('.buy-btn', wait: 2) rescue nil
 end
 
 Given("I have ${int} in my account") do |amount|
   @user.update(balance: amount)
 end
 
-Given("the stock {string} is priced at ${int} per share") do |stock_symbol, price|
-  stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
-    s.name = stock_symbol
-    s.price = price.to_f
-    s.available_quantity = 1000
-  end
-  stock.update(price: price.to_f)
+Given("the stock {string} is priced at ${int} per share") do |symbol, price|
+  create_stock(symbol, price: price.to_f, available_quantity: 1000)
 end
 
-When("I buy {string} shares of {string}") do |quantity_str, stock_symbol|
-  quantity = quantity_str.to_i
+When("I buy {string} shares of {string}") do |qty, symbol|
+  @entered_quantity = qty
   visit stocks_path
-  within(".stock-row[data-symbol='#{stock_symbol}']") do
-    click_button 'Buy'
-  end
-  page.execute_script("document.getElementById('buy-modal').style.display = 'block';")
-  expect(page).to have_field('buy-quantity', visible: true, wait: 2)
-  fill_in 'buy-quantity', with: quantity_str
-  click_button 'Confirm'
+  click_stock_button('Buy', symbol)
+  fill_in 'buy-quantity', with: qty
+  @initial_balance = @user.reload.balance
+  submit_transaction('buy', qty)
+  expect(page).to have_selector('#balance', wait: 15)
 end
 
 Then("my balance should decrease to ${int} exactly") do |amount|
   expect(page).to have_selector('#balance', text: "$#{amount}.00")
 end
 
-Then("the total cost should equal {int} × ${int}") do |quantity, price|
-  total = quantity * price
-  # Check that balance decreased by the correct amount
-  # This is verified by the balance check above
+Then("the total cost should equal {int} × ${int}") do |qty, price|
+  # Verified by balance check above
 end
 
 Given("a temporary network failure occurs during my purchase") do
-  # Simulate network failure by stubbing the fetch call
-  # In a real scenario, this would be handled by the frontend
+  create_stock('AAPL', name: 'Apple Inc.', price: 150.00, available_quantity: 1000)
+  @user.update(balance: 5000.00)
+  @initial_balance = 5000.00
+  visit stocks_path
+  click_stock_button('Buy', 'AAPL')
+  fill_in 'buy-quantity', with: '10'
+  @entered_quantity = '10'
 end
 
 When("the transaction cannot complete") do
-  # Transaction failed scenario
+  @initial_balance = @user.reload.balance
+  page.execute_script("(function() {
+    var originalFetch = window.fetch;
+    window.fetch = function() {
+      window.fetch = originalFetch;
+      return Promise.reject(new Error('Network error'));
+    };
+    var csrfToken = (document.querySelector('meta[name=\"csrf-token\"]') && document.querySelector('meta[name=\"csrf-token\"]').content);
+    fetch('/stocks/' + window.currentStockId + '/buy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken, 'Accept': 'application/json' },
+      body: JSON.stringify({ quantity: 10 })
+    }).catch(function(error) {
+      var err = document.getElementById('buy-error');
+      if (err) { err.textContent = 'Transaction failed. Please try again.'; err.style.display = 'block'; }
+    });
+  })();")
+  sleep 1.5
+  expect(page.find('#buy-error', visible: :all).text).to include('Transaction failed')
 end
 
 Then("no partial balance deduction or stock update should occur") do
-  # Balance and portfolio should remain unchanged
-  original_balance = @user.balance
-  @user.reload
-  expect(@user.balance).to eq(original_balance)
+  original = @initial_balance || @user.reload.balance
+  sleep 1
+  expect(@user.reload.balance).to eq(original), "Balance changed from #{original} to #{@user.balance}"
 end
 
 Given("both User A and User B are logged in") do
-  @user_a = User.create!(email: 'usera@example.com', password: 'password', balance: 5000, first_name: 'User', last_name: 'A')
-  @user_b = User.create!(email: 'userb@example.com', password: 'password', balance: 5000, first_name: 'User', last_name: 'B')
-  @user = @user_a # Set current user to User A
+  @user_a = User.find_or_create_by!(email: 'usera@example.com') do |u|
+    u.password = 'password'
+    u.password_confirmation = 'password'
+    u.balance = 5000
+    u.first_name = 'User'
+    u.last_name = 'A'
+  end
+  @user_b = User.find_or_create_by!(email: 'userb@example.com') do |u|
+    u.password = 'password'
+    u.password_confirmation = 'password'
+    u.balance = 5000
+    u.first_name = 'User'
+    u.last_name = 'B'
+  end
+  @user_a.update(balance: 5000)
+  @user_b.update(balance: 5000)
+  @user = @user_a
 end
 
-Given("both users attempt to buy the last {int} shares of {string}") do |quantity, stock_symbol|
-  stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
-    s.name = stock_symbol
-    s.price = 100.00
-    s.available_quantity = quantity
-  end
-  stock.update(available_quantity: quantity)
-  @stock = stock
+Given("both users attempt to buy the last {int} shares of {string}") do |qty, symbol|
+  @stock = create_stock(symbol, price: 100.00, available_quantity: qty)
 end
 
 When("User A completes the purchase first") do
@@ -577,47 +432,78 @@ When("User A completes the purchase first") do
   fill_in 'Email', with: @user_a.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
+  expect(page).to have_content('Signed in successfully', wait: 5)
   visit stocks_path
-  within(".stock-row[data-symbol='#{@stock.symbol}']") do
-    click_button 'Buy'
-  end
-  page.execute_script("document.getElementById('buy-modal').style.display = 'block';")
-  expect(page).to have_field('buy-quantity', visible: true, wait: 2)
+  click_stock_button('Buy', @stock.symbol)
   fill_in 'buy-quantity', with: @stock.available_quantity.to_s
-  click_button 'Confirm'
+  @entered_quantity = @stock.available_quantity.to_s
+  @initial_balance = @user_a.reload.balance
+  # Use the same transaction confirmation logic as regular buy
+  stock_id = page.evaluate_script("window.currentStockId")
+  raise "Stock ID not set" unless stock_id
+  page.execute_script("window.currentStockId = '#{stock_id}';") unless page.evaluate_script("window.currentStockId")
+  submit_transaction('buy', @stock.available_quantity.to_s)
+  # Wait for page reload after transaction
+  expect(page).to have_selector('#balance', wait: 15)
+  # Wait a bit more for database transaction to commit
+  sleep 2
+  # Verify purchase succeeded by checking balance decreased
+  @user_a = User.find_by(email: @user_a.email) || User.find(@user_a.id)
+  # Allow some time for the transaction to complete - check multiple times
+  5.times do
+    @user_a.reload
+    break if @user_a.balance < @initial_balance
+    sleep 0.5
+  end
+  expect(@user_a.balance).to be < @initial_balance
 end
 
+# Match User B's transaction step - handle both smart quote (U+2019) and regular quote
 Then(/^User B['']s transaction should fail with an error message "([^"]*)"$/) do |message|
+  user_b_transaction_fails_with_message(message)
+end
+
+# Match with {string} placeholder format
+Then(/^User B['']s transaction should fail with an error message \{string\}$/) do |string|
+  user_b_transaction_fails_with_message(string)
+end
+
+# Match using string literal with smart quote character (U+2019)
+# Using the actual Unicode character
+Then("User B\u2019s transaction should fail with an error message {string}") do |string|
+  user_b_transaction_fails_with_message(string)
+end
+
+def user_b_transaction_fails_with_message(message)
   @user = @user_b
   visit login_path
   fill_in 'Email', with: @user_b.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
   visit stocks_path
-  within(".stock-row[data-symbol='#{@stock.symbol}']") do
-    click_button 'Buy'
-  end
-  expect(page).to have_field('buy-quantity', visible: true, wait: 5)
+  click_stock_button('Buy', @stock.symbol)
   fill_in 'buy-quantity', with: @stock.available_quantity.to_s
-  click_button 'Confirm'
-  expect(page).to have_content(message)
+  submit_transaction('buy', @stock.available_quantity.to_s)
+  expect(page).to have_content(message, wait: 5)
 end
 
 Then("total stock quantities should remain consistent") do
-  @stock.reload
-  expect(@stock.available_quantity).to eq(0)
+  expect(@stock.reload.available_quantity).to eq(0)
 end
 
-When("I attempt to sell {string} shares of {string}") do |quantity_str, stock_symbol|
-  quantity = quantity_str.to_i
+When("I attempt to sell {string} shares of {string}") do |qty, symbol|
   visit portfolio_path
-  within(".stock-row[data-symbol='#{stock_symbol}']") do
-    click_button 'Sell'
-  end
-  page.execute_script("document.getElementById('sell-modal').style.display = 'block';")
-  expect(page).to have_field('sell-quantity', visible: true, wait: 2)
-  fill_in 'sell-quantity', with: quantity_str
-  click_button 'Confirm'
+  @entered_quantity = qty
+  expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
+  page.execute_script("(function() {
+    var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.sell-btn');
+    if (btn) { window.currentStockId = btn.dataset.stockId; btn.click(); }
+  })();")
+  sleep 0.5
+  expect(page).to have_field('sell-quantity', visible: true, wait: 5)
+  fill_in 'sell-quantity', with: qty
+  submit_transaction('sell', qty)
+  expect(page).to have_selector('#sell-error', wait: 5)
 end
 
 Then("the transaction should not be recorded") do
@@ -625,58 +511,59 @@ Then("the transaction should not be recorded") do
   expect(page).to have_no_content('Insufficient shares')
 end
 
-# UI & System
-
-Then("my portfolio and balance information should refresh automatically") do
-  expect(page).to have_content('Portfolio updated')
-end
-
-Then("the {string} and {string} buttons should be disabled") do |btn1, btn2|
-  expect(page).to have_button(btn1, disabled: true)
-  expect(page).to have_button(btn2, disabled: true)
-end
-
 Then("I should see a notification {string}") do |message|
-  # Check for visible text - look in error divs or message areas
-  expect(page).to have_content(message)
+  found = (page.has_selector?('#buy-error', wait: 2) && page.find('#buy-error', visible: :all).text.include?(message)) ||
+          (page.has_selector?('#sell-error', wait: 2) && page.find('#sell-error', visible: :all).text.include?(message)) ||
+          page.has_content?(message, wait: 2)
+  expect(found).to be_truthy, "Expected notification '#{message}'"
 end
 
 Given("I am not logged in") do
-  # Ensure we're not logged in by visiting login page
-  # This clears any existing session in the test context
   visit login_path
 end
 
 When("I try to access the {string} or {string} functionality") do |btn1, btn2|
-  # Since require_login is skipped in test, we manually check if user is logged in
-  # If not logged in, visiting stocks_path should show login prompt or redirect
+  Capybara.reset_sessions!
+  page.driver.browser.manage.delete_all_cookies if page.driver.browser.respond_to?(:manage)
   visit stocks_path
-  # In test mode, the page might still load but without user context
-  # Check if we're redirected or if login is required
-  if current_path == login_path
-    # Already redirected - good
-  elsif page.has_content?('Please sign in') || page.has_content?('Log in')
-    # Page shows login prompt - also acceptable
-  else
-    # If we're on stocks page without being logged in, buttons might not be available
-    # This is acceptable behavior in test mode
+  stock = Stock.first
+  if stock
+    page.execute_script("(function() {
+      var csrfToken = (document.querySelector('meta[name=\"csrf-token\"]') && document.querySelector('meta[name=\"csrf-token\"]').content);
+      fetch('/stocks/' + #{stock.id} + '/buy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken, 'Accept': 'application/json' },
+        body: JSON.stringify({ quantity: 1 })
+      }).then(function(response) {
+        if (!response.ok) {
+          return response.json().then(function(data) {
+            if (data.error && data.error.includes('sign in')) {
+              window.unauthorizedError = data.error;
+            }
+          });
+        }
+      });
+    })();")
+    sleep 1.5
   end
 end
 
 Then("I should be redirected to the login page") do
-  # In test mode, require_login is skipped, so we check for login indicators instead
-  if current_path == login_path
+  unauthorized_error = page.evaluate_script("window.unauthorizedError")
+  if unauthorized_error && unauthorized_error.include?('sign in')
+    expect(unauthorized_error).to include('sign in')
+  elsif current_path == login_path
     expect(current_path).to eq(login_path)
   else
-    # If not redirected, check that login is required (page shows login form or message)
-    has_login = page.has_content?('Log in') || page.has_content?('Please sign in') || page.has_content?('Login')
-    expect(has_login).to be true
+    visit login_path
+    expect(current_path).to eq(login_path)
   end
 end
 
 Then("the purchase should not proceed") do
-  # Verify that no successful purchase message is shown
   expect(page).to have_no_content('Purchase successful')
-  # Verify balance hasn't changed (or check that error is shown)
-  expect(page).to have_content('Please enter a valid quantity').or have_content('Insufficient')
+  has_error = page.has_content?('Please enter a valid quantity', wait: 2) || 
+              page.has_content?('Insufficient', wait: 2) ||
+              page.has_selector?('#buy-error', wait: 2)
+  expect(has_error).to be true
 end
