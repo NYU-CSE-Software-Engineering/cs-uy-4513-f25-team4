@@ -2,7 +2,14 @@
 
 Given("I am a logged-in user") do
   # Create a test user and log them in
-  @user = User.create!(email: 'investor@example.com', password: 'password', balance: 5000)
+  @user = User.create!(
+    email: 'investor@example.com',
+    password: 'password',
+    password_confirmation: 'password',
+    first_name: 'Test',
+    last_name: 'User',
+    balance: 5000
+  )
   visit new_user_session_path
   fill_in 'Email', with: @user.email
   fill_in 'Password', with: @user.password
@@ -77,7 +84,8 @@ end
 
 # Selling
 
-Given("I own {string} with quantity {int}") do |stock_symbol, quantity|
+Given("I own {string} with quantity {string}") do |stock_symbol, quantity_str|
+  quantity = quantity_str.to_i
   stock = Stock.find_or_create_by!(symbol: stock_symbol) do |s|
     s.name = stock_symbol
     s.price = 100
@@ -309,12 +317,13 @@ Then("total stock quantities should remain consistent") do
   expect(@stock.available_quantity).to eq(0)
 end
 
-When("I attempt to sell {int} shares of {string}") do |quantity, stock_symbol|
+When("I attempt to sell {string} shares of {string}") do |quantity_str, stock_symbol|
+  quantity = quantity_str.to_i
   visit portfolio_path
   within(".stock-row[data-symbol='#{stock_symbol}']") do
     click_button 'Sell'
   end
-  fill_in 'Quantity', with: quantity
+  fill_in 'Quantity', with: quantity_str
   click_button 'Confirm'
 end
 
@@ -350,4 +359,11 @@ end
 
 Then("I should be redirected to the login page") do
   expect(current_path).to eq(new_user_session_path)
+end
+
+Then("the purchase should not proceed") do
+  # Verify that no successful purchase message is shown
+  expect(page).to have_no_content('Purchase successful')
+  # Verify balance hasn't changed (or check that error is shown)
+  expect(page).to have_content('Please enter a valid quantity').or have_content('Insufficient')
 end
