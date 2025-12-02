@@ -11,8 +11,11 @@ Given("I am a logged-in user") do
     balance: 5000
   )
   visit login_path
+  expect(page).to have_field('Email')
+  expect(page).to have_field('Password')
   fill_in 'Email', with: @user.email
   fill_in 'Password', with: @user.password
+  expect(page).to have_button('Log in', disabled: false)
   click_button 'Log in'
   expect(page).to have_content('Signed in successfully')
 end
