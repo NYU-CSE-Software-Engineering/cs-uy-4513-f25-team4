@@ -288,7 +288,7 @@ When("User A completes the purchase first") do
   visit login_path
   fill_in 'Email', with: @user_a.email
   fill_in 'Password', with: 'password'
-  click_button 'Log in'
+  click_button 'Log In'
   visit stocks_path
   within(".stock-row[data-symbol='#{@stock.symbol}']") do
     click_button 'Buy'
@@ -302,7 +302,7 @@ Then(/^User B's transaction should fail with an error message "([^"]*)"$/) do |m
   visit login_path
   fill_in 'Email', with: @user_b.email
   fill_in 'Password', with: 'password'
-  click_button 'Log in'
+  click_button 'Log In'
   visit stocks_path
   within(".stock-row[data-symbol='#{@stock.symbol}']") do
     click_button 'Buy'
@@ -358,7 +358,7 @@ When("I try to access the {string} or {string} functionality") do |btn1, btn2|
 end
 
 Then("I should be redirected to the login page") do
-  expect(current_path).to eq(new_user_session_path)
+  expect(current_path).to eq(login_path)
 end
 
 Then("the purchase should not proceed") do
