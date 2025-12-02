@@ -4,8 +4,7 @@ default: &default
   pool: 5
   username: investra
   password: investra
-  host: <%= ENV.fetch("DB_HOST", "localhost") %>
-  port: <%= ENV.fetch("DB_PORT", "3307") %>
+  host: <%= ENV.fetch("DB_HOST", "investra-db-1") %>
 
 development:
   <<: *default
@@ -14,8 +13,7 @@ development:
 test:
   <<: *default
   database: investra_test
-  host: <%= ENV.fetch("DB_HOST", "localhost") %>
-  port: <%= ENV.fetch("DB_PORT", "3307") %>
+  host: <%= ENV.fetch("DB_HOST", "investra-db-1") %>
 
 production:
   <<: *default
