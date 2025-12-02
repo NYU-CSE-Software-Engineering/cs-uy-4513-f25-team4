@@ -25,7 +25,7 @@ RSpec.describe Transaction, type: :model do
     it 'requires a user' do
       transaction = Transaction.new(stock: stock, quantity: 10, transaction_type: 'buy', price: 150.00)
       expect(transaction).not_to be_valid
-      expect(transaction.errors[:user]).to include("can't be blank")
+      expect(transaction.errors[:user]).to include("must exist")
     end
 
     it 'requires a stock' do
