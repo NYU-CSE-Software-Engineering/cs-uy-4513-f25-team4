@@ -107,29 +107,33 @@
       buyConfirmBtn.disabled = true;
       buyCancelBtn.disabled = true;
 
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                       document.querySelector('input[name="authenticity_token"]')?.value;
       fetch(`/stocks/${currentStockId}/buy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'X-CSRF-Token': csrfToken,
+          'Accept': 'application/json'
         },
         body: JSON.stringify({ quantity: quantity })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          buyError.textContent = data.error;
-          buyConfirmBtn.disabled = false;
-          buyCancelBtn.disabled = false;
-        } else {
-          document.getElementById('message').textContent = data.message;
-          document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
-          buyModal.style.display = 'none';
-          location.reload(); // Refresh to show updated data
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.error || 'Transaction failed');
+          });
         }
+        return response.json();
+      })
+      .then(data => {
+        document.getElementById('message').textContent = data.message;
+        document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
+        buyModal.style.display = 'none';
+        location.reload(); // Refresh to show updated data
       })
       .catch(error => {
-        buyError.textContent = 'Transaction failed. Please try again.';
+        buyError.textContent = error.message || 'Transaction failed. Please try again.';
         buyConfirmBtn.disabled = false;
         buyCancelBtn.disabled = false;
       });
