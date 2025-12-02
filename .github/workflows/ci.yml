@@ -81,3 +81,7 @@ jobs:
       - name: Run Cucumber tests for company_management feature
         working-directory: investra
         run: bundle exec cucumber features/company_management.feature --format pretty
+
+      - name: Run Cucumber tests for buying_and_selling feature
+        working-directory: investra
+        run: bundle exec cucumber features/buying_and_selling.feature --format pretty
