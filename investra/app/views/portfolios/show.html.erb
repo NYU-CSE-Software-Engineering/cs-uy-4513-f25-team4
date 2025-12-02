@@ -1,0 +1,148 @@
+<h1>My Portfolio</h1>
+
+<% if current_user %>
+  <div id="balance">
+    <strong>Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
+  </div>
+<% end %>
+
+<% if flash[:notice] %>
+  <div class="notice"><%= flash[:notice] %></div>
+<% end %>
+
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<div id="message"></div>
+
+<% if @portfolios.any? %>
+  <div class="portfolio-list">
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Current Price</th>
+          <th>Total Value</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @portfolios.each do |portfolio| %>
+          <tr class="stock-row" data-symbol="<%= portfolio.stock.symbol %>">
+            <td><%= portfolio.stock.symbol %></td>
+            <td><%= portfolio.stock.name %></td>
+            <td><%= portfolio.quantity %></td>
+            <td>$<%= number_with_precision(portfolio.stock.price, precision: 2) %></td>
+            <td>$<%= number_with_precision(portfolio.quantity * portfolio.stock.price, precision: 2) %></td>
+            <td>
+              <button class="sell-btn" data-stock-id="<%= portfolio.stock.id %>" data-stock-symbol="<%= portfolio.stock.symbol %>" data-stock-price="<%= portfolio.stock.price %>" data-max-quantity="<%= portfolio.quantity %>">Sell</button>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p>You don't own any stocks yet.</p>
+<% end %>
+
+<!-- Sell Modal -->
+<div id="sell-modal" style="display: none;">
+  <div class="modal-content">
+    <h2>Sell Stock</h2>
+    <p>Symbol: <span id="sell-symbol"></span></p>
+    <p>Price: $<span id="sell-price"></span></p>
+    <p>Max Quantity: <span id="sell-max-quantity"></span></p>
+    <%= form_with url: "#", id: "sell-form", local: false do |f| %>
+      <%= f.label :quantity, "Quantity" %>
+      <%= f.number_field :quantity, id: "sell-quantity", min: 1, required: true %>
+      <%= f.submit "Confirm", id: "sell-confirm-btn" %>
+      <button type="button" id="sell-cancel-btn">Cancel</button>
+    <% end %>
+    <div id="sell-error"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const sellButtons = document.querySelectorAll('.sell-btn');
+    const sellModal = document.getElementById('sell-modal');
+    const sellForm = document.getElementById('sell-form');
+    const sellCancelBtn = document.getElementById('sell-cancel-btn');
+    const sellSymbol = document.getElementById('sell-symbol');
+    const sellPrice = document.getElementById('sell-price');
+    const sellMaxQuantity = document.getElementById('sell-max-quantity');
+    const sellQuantity = document.getElementById('sell-quantity');
+    const sellError = document.getElementById('sell-error');
+    const sellConfirmBtn = document.getElementById('sell-confirm-btn');
+    let currentStockId = null;
+
+    sellButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        currentStockId = this.dataset.stockId;
+        sellSymbol.textContent = this.dataset.stockSymbol;
+        sellPrice.textContent = parseFloat(this.dataset.stockPrice).toFixed(2);
+        sellMaxQuantity.textContent = this.dataset.maxQuantity;
+        sellQuantity.max = this.dataset.maxQuantity;
+        sellModal.style.display = 'block';
+        sellError.textContent = '';
+        sellQuantity.value = '';
+      });
+    });
+
+    sellCancelBtn.addEventListener('click', function() {
+      sellModal.style.display = 'none';
+      currentStockId = null;
+    });
+
+    sellForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const quantity = sellQuantity.value;
+      
+      if (!quantity || quantity <= 0) {
+        sellError.textContent = 'Please enter a valid quantity';
+        return;
+      }
+
+      if (parseInt(quantity) > parseInt(sellMaxQuantity.textContent)) {
+        sellError.textContent = 'Insufficient shares';
+        return;
+      }
+
+      // Disable buttons during transaction
+      sellConfirmBtn.disabled = true;
+      sellCancelBtn.disabled = true;
+
+      fetch(`/stocks/${currentStockId}/sell`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ quantity: quantity })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          sellError.textContent = data.error;
+          sellConfirmBtn.disabled = false;
+          sellCancelBtn.disabled = false;
+        } else {
+          document.getElementById('message').textContent = data.message;
+          document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
+          sellModal.style.display = 'none';
+          location.reload(); // Refresh to show updated data
+        }
+      })
+      .catch(error => {
+        sellError.textContent = 'Transaction failed. Please try again.';
+        sellConfirmBtn.disabled = false;
+        sellCancelBtn.disabled = false;
+      });
+    });
+  });
+</script>
+
