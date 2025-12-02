@@ -57,7 +57,9 @@ jobs:
           sudo unzip -q /tmp/chromedriver.zip -d /tmp/
           sudo mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
-          rm -rf /tmp/chromedriver*
+          # Cleanup: use sudo since files were created with sudo, and || true to make non-fatal
+          sudo rm -rf /tmp/chromedriver* || true
+          rm -f /tmp/chromedriver.zip || true
 
       - name: Wait for MySQL to be ready
         run: |
