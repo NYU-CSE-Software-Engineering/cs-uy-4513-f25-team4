@@ -297,7 +297,7 @@ When("User A completes the purchase first") do
   click_button 'Confirm'
 end
 
-Then("User B's transaction should fail with an error message {string}") do |message|
+Then(/^User B's transaction should fail with an error message "([^"]*)"$/) do |message|
   @user = @user_b
   visit new_user_session_path
   fill_in 'Email', with: @user_b.email
