@@ -92,20 +92,35 @@ Given("I am a logged-in user") do
     u.balance = 5000
   end
   @user.update!(balance: 5000) unless @user.balance == 5000
+  
+  # Retry logic for stale element errors
+  retries = 0
   begin
     visit login_path
+    # Wait for page to be ready before interacting
+    expect(page).to have_field('Email', wait: 5)
     fill_in 'Email', with: @user.email
     fill_in 'Password', with: 'password'
     click_button 'Log in'
     expect(page).to have_content('Signed in successfully', wait: 5)
-  rescue Selenium::WebDriver::Error::StaleElementReferenceError
-    page.refresh
-    sleep 1
-    visit login_path
-    fill_in 'Email', with: @user.email
-    fill_in 'Password', with: 'password'
-    click_button 'Log in'
-    expect(page).to have_content('Signed in successfully', wait: 5)
+  rescue Selenium::WebDriver::Error::StaleElementReferenceError, 
+         Selenium::WebDriver::Error::UnknownError => e
+    retries += 1
+    if retries < 3
+      # Refresh and wait before retrying
+      page.refresh
+      sleep 1
+      retry
+    else
+      # Last resort: reset session
+      Capybara.reset_sessions! if defined?(Capybara)
+      visit login_path
+      expect(page).to have_field('Email', wait: 5)
+      fill_in 'Email', with: @user.email
+      fill_in 'Password', with: 'password'
+      click_button 'Log in'
+      expect(page).to have_content('Signed in successfully', wait: 5)
+    end
   end
 end
 
