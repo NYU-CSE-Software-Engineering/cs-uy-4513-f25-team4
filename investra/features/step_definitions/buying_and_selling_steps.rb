@@ -13,7 +13,7 @@ Given("I am a logged-in user") do
   visit login_path
   fill_in 'Email', with: @user.email
   fill_in 'Password', with: @user.password
-  click_button 'Log In'
+  click_button 'Log in'
   expect(page).to have_content('Signed in successfully')
 end
 
@@ -288,7 +288,7 @@ When("User A completes the purchase first") do
   visit login_path
   fill_in 'Email', with: @user_a.email
   fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
   visit stocks_path
   within(".stock-row[data-symbol='#{@stock.symbol}']") do
     click_button 'Buy'
@@ -302,7 +302,7 @@ Then(/^User B's transaction should fail with an error message "([^"]*)"$/) do |m
   visit login_path
   fill_in 'Email', with: @user_b.email
   fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
   visit stocks_path
   within(".stock-row[data-symbol='#{@stock.symbol}']") do
     click_button 'Buy'

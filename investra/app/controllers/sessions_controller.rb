@@ -19,7 +19,7 @@ class SessionsController < ApplicationController
   def destroy
     session[:user_id] = nil
     session[:user_email] = nil
-    redirect_to new_user_session_path, notice: "Logged out successfully"
+    redirect_to login_path, notice: "Logged out successfully"
   end
 end
 
