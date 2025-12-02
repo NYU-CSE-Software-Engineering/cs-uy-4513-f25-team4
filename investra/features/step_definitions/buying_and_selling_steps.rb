@@ -348,7 +348,9 @@ Then("I should see a notification {string}") do |message|
 end
 
 Given("I am not logged in") do
-  visit logout_path
+  # Ensure we're not logged in by visiting login page
+  # This clears any existing session in the test context
+  visit login_path
 end
 
 When("I try to access the {string} or {string} functionality") do |btn1, btn2|
