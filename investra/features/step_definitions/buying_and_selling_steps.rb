@@ -22,6 +22,10 @@ When("I search for {string} in the stock search box") do |stock_symbol|
 end
 
 When("I click the {string} button next to {string}") do |button, stock_symbol|
+  # If it's a Sell button, make sure we're on the portfolio page
+  if button == 'Sell'
+    visit portfolio_path unless current_path == portfolio_path
+  end
   within(".stock-row[data-symbol='#{stock_symbol}']") do
     click_button button
   end
@@ -38,6 +42,10 @@ end
 Then("my account balance should decrease by the correct total amount") do
   # The balance updates dynamically on the page
   expect(page).to have_selector('#balance', text: /\$\d+/)
+  # Balance should be less than initial 5000
+  balance_text = page.find('#balance').text
+  balance_value = balance_text.match(/\$([\d.]+)/)[1].to_f
+  expect(balance_value).to be < 5000
 end
 
 Then("my owned stock list should include {string} with quantity {string}") do |stock_symbol, quantity|
@@ -87,6 +95,10 @@ end
 
 Then("my balance should increase by the correct total amount") do
   expect(page).to have_selector('#balance', text: /\$\d+/)
+  # Balance should have increased
+  balance_text = page.find('#balance').text
+  balance_value = balance_text.match(/\$([\d.]+)/)[1].to_f
+  expect(balance_value).to be > 0
 end
 
 Then("my portfolio should update to show {string} with quantity {string}") do |stock_symbol, quantity|
