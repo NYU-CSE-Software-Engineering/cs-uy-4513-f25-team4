@@ -25,13 +25,13 @@ RSpec.describe Portfolio, type: :model do
     it 'requires a user' do
       portfolio = Portfolio.new(stock: stock, quantity: 10)
       expect(portfolio).not_to be_valid
-      expect(portfolio.errors[:user]).to include("can't be blank")
+      expect(portfolio.errors[:user]).to include("must exist")
     end
 
     it 'requires a stock' do
       portfolio = Portfolio.new(user: user, quantity: 10)
       expect(portfolio).not_to be_valid
-      expect(portfolio.errors[:stock]).to include("can't be blank")
+      expect(portfolio.errors[:stock]).to include("must exist")
     end
 
     it 'requires a quantity' do

@@ -27,7 +27,7 @@ RSpec.describe Stock, type: :model do
     end
 
     it 'requires available_quantity to be present' do
-      stock = Stock.new(symbol: 'AAPL', name: 'Apple Inc.', price: 150.00)
+      stock = Stock.new(symbol: 'AAPL', name: 'Apple Inc.', price: 150.00, available_quantity: nil)
       expect(stock).not_to be_valid
       expect(stock.errors[:available_quantity]).to include("can't be blank")
     end

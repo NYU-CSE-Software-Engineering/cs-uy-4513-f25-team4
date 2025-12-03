@@ -37,7 +37,7 @@ RSpec.describe Transaction, type: :model do
     it 'requires a quantity' do
       transaction = Transaction.new(user: user, stock: stock, transaction_type: 'buy', price: 150.00)
       expect(transaction).not_to be_valid
-      expect(transaction.errors[:quantity]).to include("must exist")
+      expect(transaction.errors[:quantity]).to include("can't be blank")
     end
 
     it 'requires quantity to be greater than 0' do
