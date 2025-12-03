@@ -1,0 +1,192 @@
+<h1>Stocks</h1>
+
+<% if current_user %>
+  <div id="balance">
+    <strong>Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
+  </div>
+<% end %>
+
+<% if flash[:notice] %>
+  <div class="notice"><%= flash[:notice] %></div>
+<% end %>
+
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
+
+<div id="message"></div>
+
+<form id="search-form">
+  <%= label_tag :search, "Search" %>
+  <%= text_field_tag :search, params[:search], placeholder: "Search stocks..." %>
+  <%= submit_tag "Search" %>
+</form>
+
+<div class="stock-list">
+  <table>
+    <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Available</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @stocks.each do |stock| %>
+        <tr class="stock-row" data-symbol="<%= stock.symbol %>">
+          <td><%= stock.symbol %></td>
+          <td><%= stock.name %></td>
+          <td>$<%= number_with_precision(stock.price, precision: 2) %></td>
+          <td><%= stock.available_quantity %></td>
+          <td>
+            <button class="buy-btn" data-stock-id="<%= stock.id %>" data-stock-symbol="<%= stock.symbol %>" data-stock-price="<%= stock.price %>">Buy</button>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Buy Modal -->
+<div id="buy-modal" style="display: none;">
+  <div class="modal-content">
+    <h2>Buy Stock</h2>
+    <p>Symbol: <span id="buy-symbol"></span></p>
+    <p>Price: $<span id="buy-price"></span></p>
+    <%= form_with url: "#", id: "buy-form", local: false do |f| %>
+      <%= f.label :quantity, "Quantity" %>
+      <%= f.number_field :quantity, id: "buy-quantity", min: 1, required: true %>
+      <%= f.submit "Confirm", id: "buy-confirm-btn" %>
+      <button type="button" id="buy-cancel-btn">Cancel</button>
+    <% end %>
+    <div id="buy-error"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check for persisted message from previous transaction (sessionStorage or cookie)
+    let persistedMessage = sessionStorage.getItem('transactionMessage');
+    if (!persistedMessage) {
+      // Try reading from cookie
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'transactionMessage') {
+          persistedMessage = decodeURIComponent(value);
+          break;
+        }
+      }
+    }
+    if (persistedMessage) {
+      const messageEl = document.getElementById('message');
+      if (messageEl) {
+        messageEl.textContent = persistedMessage;
+        messageEl.style.display = 'block';
+        // Don't clear immediately - let test verify it first
+      }
+    }
+    
+    const buyButtons = document.querySelectorAll('.buy-btn');
+    const buyModal = document.getElementById('buy-modal');
+    const buyForm = document.getElementById('buy-form');
+    const buyCancelBtn = document.getElementById('buy-cancel-btn');
+    const buySymbol = document.getElementById('buy-symbol');
+    const buyPrice = document.getElementById('buy-price');
+    const buyQuantity = document.getElementById('buy-quantity');
+    const buyError = document.getElementById('buy-error');
+    const buyConfirmBtn = document.getElementById('buy-confirm-btn');
+    // Use window.currentStockId to make it accessible for testing
+    window.currentStockId = null;
+
+    buyButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        window.currentStockId = this.dataset.stockId;
+        buySymbol.textContent = this.dataset.stockSymbol;
+        buyPrice.textContent = parseFloat(this.dataset.stockPrice).toFixed(2);
+        buyModal.style.display = 'block';
+        buyError.textContent = '';
+        buyQuantity.value = '';
+      });
+    });
+
+    buyCancelBtn.addEventListener('click', function() {
+      buyModal.style.display = 'none';
+      window.currentStockId = null;
+    });
+
+    buyForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const quantity = buyQuantity.value;
+      
+      if (!quantity || quantity <= 0) {
+        buyError.textContent = 'Please enter a valid quantity';
+        return;
+      }
+
+      // Disable buttons during transaction
+      buyConfirmBtn.disabled = true;
+      buyCancelBtn.disabled = true;
+
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                       document.querySelector('input[name="authenticity_token"]')?.value;
+      
+      if (!window.currentStockId) {
+        buyError.textContent = 'Error: Stock ID not set';
+        buyConfirmBtn.disabled = false;
+        buyCancelBtn.disabled = false;
+        return;
+      }
+      
+      console.log('Making buy request for stock ID:', window.currentStockId, 'quantity:', quantity);
+      fetch(`/stocks/${window.currentStockId}/buy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ quantity: quantity })
+      })
+      .then(response => {
+        console.log('Buy response status:', response.status);
+        if (!response.ok) {
+          return response.json().then(data => {
+            console.error('Buy error:', data.error);
+            throw new Error(data.error || 'Transaction failed');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Buy success:', data);
+        // Store message in both sessionStorage and cookie before reload so it persists
+        if (data.message) {
+          sessionStorage.setItem('transactionMessage', data.message);
+          // Also set a cookie that persists across page navigations
+          document.cookie = 'transactionMessage=' + encodeURIComponent(data.message) + '; path=/';
+        }
+        document.getElementById('message').textContent = data.message;
+        document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
+        buyModal.style.display = 'none';
+        location.reload(); // Refresh to show updated data
+      })
+      .catch(error => {
+        console.error('Buy catch error:', error);
+        buyError.textContent = error.message || 'Transaction failed. Please try again.';
+        buyConfirmBtn.disabled = false;
+        buyCancelBtn.disabled = false;
+      });
+    });
+
+    // Search form submission
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const searchValue = document.querySelector('#search').value;
+      window.location.href = '<%= stocks_path %>?search=' + encodeURIComponent(searchValue);
+    });
+  });
+</script>
+

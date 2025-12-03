@@ -30,6 +30,8 @@ services:
         condition: service_healthy
     environment:
       RAILS_ENV: test
+      DB_HOST: db
+      DB_PORT: 3306
       DATABASE_URL: mysql2://investra:investra@db/investra_test
       MASSIVE_API_KEY: ${MASSIVE_API_KEY:-}
 

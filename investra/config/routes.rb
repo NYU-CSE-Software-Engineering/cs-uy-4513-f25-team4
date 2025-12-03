@@ -56,7 +56,22 @@ Rails.application.routes.draw do
   # -------------------------------
   # Stocks (from both versions)
   # -------------------------------
-  resources :stocks, only: [:show, :index]
+  resources :stocks, only: [:show, :index] do
+    member do
+      post :buy
+      post :sell
+    end
+  end
+
+  # -------------------------------
+  # Portfolio
+  # -------------------------------
+  get "/portfolio", to: "portfolios#show", as: :portfolio
+
+  # -------------------------------
+  # Transactions
+  # -------------------------------
+  get "/transactions", to: "transactions#index", as: :transactions
 
   # -------------------------------
   # Companies (from main)

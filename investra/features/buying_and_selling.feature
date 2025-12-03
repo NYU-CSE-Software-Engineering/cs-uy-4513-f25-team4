@@ -1,3 +1,4 @@
+@javascript
 Feature: Buying and Selling Stocks
   As a registered investor
   I want to buy and sell stocks through the platform

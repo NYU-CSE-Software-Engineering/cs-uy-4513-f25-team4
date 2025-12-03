@@ -5,7 +5,10 @@ class CreateUsers < ActiveRecord::Migration[8.0]
       t.string :first_name
       t.string :last_name
       t.string :role
-      t.references :company, null: false, foreign_key: true
+      # company_id created without foreign key constraint initially
+      # (companies table doesn't exist yet, and FK will be added later if needed)
+      t.references :company, null: true, foreign_key: false
+      # manager_id references users table (self-referential, but users table exists)
       t.references :manager, null: true, foreign_key: { to_table: :users }
 
       t.timestamps

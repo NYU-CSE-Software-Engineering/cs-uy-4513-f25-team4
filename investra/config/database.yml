@@ -4,7 +4,7 @@ default: &default
   pool: 5
   username: investra
   password: investra
-  host: <%= ENV.fetch("DB_HOST", "investra-db-1") %>  # Allow override for local/CI
+  host: <%= ENV.fetch("DB_HOST", "investra-db-1") %>
 
 development:
   <<: *default
@@ -13,7 +13,7 @@ development:
 test:
   <<: *default
   database: investra_test
-  host: investra-db-1  # Ensure Rails uses same DB container in test env
+  host: <%= ENV.fetch("DB_HOST", "investra-db-1") %>
 
 production:
   <<: *default

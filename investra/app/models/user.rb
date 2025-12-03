@@ -7,6 +7,8 @@ class User < ApplicationRecord
 
   has_many :user_roles, dependent: :destroy
   has_many :roles, through: :user_roles
+  has_many :portfolios, dependent: :destroy
+  has_many :transactions, dependent: :destroy
 
   before_validation :normalize_email
   after_commit :sync_role_to_roles_table, on: [:create, :update]

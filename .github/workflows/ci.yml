@@ -27,6 +27,7 @@ jobs:
 
     env:
       RAILS_ENV: test
+      DB_HOST: 127.0.0.1
       DATABASE_URL: mysql2://investra:investra@127.0.0.1/investra_test
 
     steps:
@@ -44,14 +45,34 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y build-essential libmariadb-dev nodejs yarn
+          # Install Google Chrome and ChromeDriver for Capybara JavaScript tests
+          sudo apt-get install -y wget unzip curl
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update -y
+          sudo apt-get install -y google-chrome-stable
+          # Install ChromeDriver using Chrome for Testing (latest stable)
+          CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" | grep -oE '"version":"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"' | head -1 | cut -d'"' -f4)
+          wget -q "https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip" -O /tmp/chromedriver.zip
+          sudo unzip -q /tmp/chromedriver.zip -d /tmp/
+          sudo mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+          # Cleanup: use sudo since files were created with sudo, and || true to make non-fatal
+          sudo rm -rf /tmp/chromedriver* || true
+          rm -f /tmp/chromedriver.zip || true
 
       - name: Wait for MySQL to be ready
         run: |
           echo "Waiting for MySQL to start..."
           for i in {1..30}; do
-            if mysqladmin ping -h 127.0.0.1 -uinvestra -pinvestra --silent; then
-              echo "✅ MySQL is ready!"
-              break
+            # Try root first (health check), then investra user
+            if mysqladmin ping -h 127.0.0.1 -uroot -proot --silent 2>/dev/null; then
+              # Wait a bit more for user creation
+              sleep 2
+              if mysqladmin ping -h 127.0.0.1 -uinvestra -pinvestra --silent 2>/dev/null; then
+                echo "✅ MySQL is ready!"
+                break
+              fi
             fi
             echo "⏳ Waiting ($i)..."
             sleep 2
@@ -81,3 +102,7 @@ jobs:
       - name: Run Cucumber tests for company_management feature
         working-directory: investra
         run: bundle exec cucumber features/company_management.feature --format pretty
+
+      - name: Run Cucumber tests for buying_and_selling feature
+        working-directory: investra
+        run: bundle exec cucumber features/buying_and_selling.feature --format pretty
