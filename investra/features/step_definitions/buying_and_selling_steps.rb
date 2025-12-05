@@ -53,7 +53,11 @@ def submit_transaction(type, quantity)
 end
 
 def click_stock_button(button_type, symbol)
-  visit portfolio_path if button_type == 'Sell' && current_path != portfolio_path
+  if button_type == 'Sell'
+    visit portfolio_path if current_path != portfolio_path
+  else
+    visit stocks_path if current_path != stocks_path
+  end
   expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
   page.execute_script("(function() {
     var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.#{button_type.downcase}-btn');

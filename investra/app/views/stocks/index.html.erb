@@ -67,6 +67,28 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Show persisted transaction message (from buy/sell)
+    (function() {
+      let persistedMessage = sessionStorage.getItem('transactionMessage');
+      if (!persistedMessage) {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'transactionMessage') {
+            persistedMessage = decodeURIComponent(value);
+            break;
+          }
+        }
+      }
+      if (persistedMessage) {
+        const messageEl = document.getElementById('message');
+        if (messageEl) {
+          messageEl.textContent = persistedMessage;
+          messageEl.style.display = 'block';
+        }
+      }
+    })();
+
     // Check for persisted message from previous transaction (sessionStorage or cookie)
     let persistedMessage = sessionStorage.getItem('transactionMessage');
     if (!persistedMessage) {
@@ -189,4 +211,3 @@
     });
   });
 </script>
-
