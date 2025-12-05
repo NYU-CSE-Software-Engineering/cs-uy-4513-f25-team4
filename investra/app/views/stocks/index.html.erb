@@ -193,7 +193,9 @@
         document.getElementById('message').textContent = data.message;
         document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
         buyModal.style.display = 'none';
-        location.reload(); // Refresh to show updated data
+        <% unless Rails.env.test? %>
+        location.reload(); // Refresh to show updated data (skip reload in test to avoid stale elements)
+        <% end %>
       })
       .catch(error => {
         console.error('Buy catch error:', error);

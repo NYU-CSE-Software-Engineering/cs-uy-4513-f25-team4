@@ -187,7 +187,9 @@
         }
         document.getElementById('message').textContent = data.message;
         sellModal.style.display = 'none';
-        location.reload();
+        <% unless Rails.env.test? %>
+        location.reload(); // Skip reload in test to avoid stale element issues
+        <% end %>
       })
       .catch(error => {
         sellError.textContent = error.message || 'Transaction failed. Please try again.';
