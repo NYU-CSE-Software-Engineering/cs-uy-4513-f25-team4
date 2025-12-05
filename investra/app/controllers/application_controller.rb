@@ -19,6 +19,15 @@ class ApplicationController < ActionController::Base
   helper_method :current_user
   before_action :require_login, unless: -> { Rails.env.test? }
 
+  def require_authenticated!
+    return if current_user.present?
+
+    respond_to do |format|
+      format.json { render json: { error: "Unauthorized" }, status: :unauthorized }
+      format.html { redirect_to login_path, alert: "Please log in" }
+    end
+  end
+
   def current_user
     @current_user ||= begin
       User.find_by(id: session[:user_id]) || User.find_by(email: session[:user_email])
@@ -29,8 +38,12 @@ class ApplicationController < ActionController::Base
     return if current_user.present?
     return if devise_controller? rescue false # defensive if Devise is added later
 
-    unless login_path?(request.path)
-      redirect_to new_user_session_path
+    respond_to do |format|
+      format.json { render json: { error: "Unauthorized" }, status: :unauthorized and return }
+      format.html do
+        redirect_to new_user_session_path and return unless login_path?(request.path)
+      end
+      format.any { head :unauthorized and return }
     end
   end
 

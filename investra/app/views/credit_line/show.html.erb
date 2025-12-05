@@ -1,0 +1,32 @@
+<% content_for :title, "Credit Line" %>
+
+<div class="page">
+  <div class="page__header">
+    <div class="eyebrow">Credit</div>
+    <h1>Credit Line Overview</h1>
+    <p class="lede">Track your approved limit, current utilization, and available balance.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card card--stat">
+      <div class="label">Credit Limit</div>
+      <div class="value"><%= number_to_currency(@summary[:credit_limit]) %></div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Used</div>
+      <div class="value"><%= number_to_currency(@summary[:credit_used]) %></div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Available</div>
+      <div class="value"><%= number_to_currency(@summary[:available_balance]) %></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card__header">
+      <div class="label">Notes</div>
+      <h2>How it works</h2>
+    </div>
+    <p>Your available balance is calculated as <strong>credit limit minus used</strong>. If you draw more funds or repay, this view will reflect the change.</p>
+  </div>
+</div>

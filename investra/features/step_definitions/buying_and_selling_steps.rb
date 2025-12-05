@@ -53,7 +53,11 @@ def submit_transaction(type, quantity)
 end
 
 def click_stock_button(button_type, symbol)
-  visit portfolio_path if button_type == 'Sell' && current_path != portfolio_path
+  if button_type == 'Sell'
+    visit portfolio_path if current_path != portfolio_path
+  else
+    visit stocks_path if current_path != stocks_path
+  end
   expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
   page.execute_script("(function() {
     var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.#{button_type.downcase}-btn');
@@ -177,25 +181,35 @@ Then("my owned stock list should include {string} with quantity {string}") do |s
 end
 
 Then("I should see the message {string}") do |message|
-  found = page.has_selector?('#message', wait: 2) && page.find('#message', visible: :all).text.include?(message)
+  # Wait for message element or persisted storage
+  found = false
+
+  found ||= page.has_selector?('#message', text: message, wait: 5)
+
   unless found
-  stored = page.evaluate_script("sessionStorage.getItem('transactionMessage')")
-  unless stored
-    stored = page.evaluate_script("(function() {
-      var cookies = document.cookie.split(';');
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = cookies[i].trim().split('=');
-        if (cookie[0] === 'transactionMessage') {
-          return decodeURIComponent(cookie[1]);
-        }
-      }
-      return null;
-    })();")
+    stored = page.evaluate_script("sessionStorage.getItem('transactionMessage')")
+    if stored&.include?(message)
+      found = true
+    else
+      stored = page.evaluate_script <<~JS
+        (function() {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim().split('=');
+            if (cookie[0] === 'transactionMessage') {
+              return decodeURIComponent(cookie[1]);
+            }
+          }
+          return null;
+        })();
+      JS
+      found = true if stored&.include?(message)
+    end
   end
-    found = true if stored&.include?(message)
-  end
-  found = true if !found && message.include?('successful') && page.has_content?('Balance:')
-  found = true if !found && message.include?('sign in') && (current_path == login_path || page.has_content?('Log in'))
+
+  found ||= (message.include?('successful') && page.has_content?('Balance:', wait: 5))
+  found ||= (message.include?('sign in') && (current_path == login_path || page.has_content?('Log in')))
+
   expect(found).to be_truthy, "Expected message '#{message}'"
 end
 

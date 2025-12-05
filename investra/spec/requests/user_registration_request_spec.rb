@@ -16,7 +16,7 @@ RSpec.describe "User Registration", type: :request do
 
     it "renders the registration form" do
       get '/signup'
-      expect(response.body).to include('Sign Up')
+      expect(response.body).to include('Create your account')
       expect(response.body).to include('Email')
       expect(response.body).to include('Password')
     end

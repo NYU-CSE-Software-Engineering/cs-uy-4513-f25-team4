@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   # -------------------------------
   # Root
   # -------------------------------
-  root "users#index"
+  root "users#new"
 
   # -------------------------------
   # Signup / Login / Logout (from feature)
@@ -67,6 +67,14 @@ Rails.application.routes.draw do
   # Portfolio
   # -------------------------------
   get "/portfolio", to: "portfolios#show", as: :portfolio
+  get "/credit_line", to: "credit_line#show", as: :credit_line
+
+  # -------------------------------
+  # Watchlist
+  # -------------------------------
+  get "/watchlist", to: "watchlists#index", as: :watchlist
+  post "/watchlist", to: "watchlists#create"
+  delete "/watchlist/:symbol", to: "watchlists#destroy", as: :watchlist_symbol
 
   # -------------------------------
   # Transactions

@@ -22,14 +22,20 @@
   </head>
 
   <body>
-    <% if flash[:notice] %>
-      <div class="notice"><%= flash[:notice] %></div>
-    <% end %>
+    <div class="app-shell">
+      <%= render "shared/top_nav" rescue nil %>
 
-    <% if flash[:alert] %>
-      <div class="alert"><%= flash[:alert] %></div>
-    <% end %>
+      <% if flash[:notice] %>
+        <div class="flash flash--notice"><%= flash[:notice] %></div>
+      <% end %>
 
-    <%= yield %>
+      <% if flash[:alert] %>
+        <div class="flash flash--alert"><%= flash[:alert] %></div>
+      <% end %>
+
+      <main class="content">
+        <%= yield %>
+      </main>
+    </div>
   </body>
 </html>
