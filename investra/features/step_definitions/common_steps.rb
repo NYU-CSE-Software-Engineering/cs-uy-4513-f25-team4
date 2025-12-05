@@ -39,6 +39,10 @@ Given("I am on the {string} page") do |page_name|
     visit stocks_path
   when "Portfolio"
     visit portfolio_path
+  when "Watchlist"
+    visit watchlist_path
+  when "Credit Line"
+    visit credit_line_path
   when "User Management"
     visit user_management_path
   when "Manage Team"
