@@ -103,6 +103,18 @@ jobs:
         working-directory: investra
         run: bundle exec cucumber features/company_management.feature --format pretty
 
+      - name: Run Cucumber tests for portfolio summary API feature
+        working-directory: investra
+        run: bundle exec cucumber features/portfolio_summary_api.feature --format pretty
+
+      - name: Run Cucumber tests for watchlist API feature
+        working-directory: investra
+        run: bundle exec cucumber features/watchlist_api.feature --format pretty
+
+      - name: Run Cucumber tests for credit line API feature
+        working-directory: investra
+        run: bundle exec cucumber features/credit_line_api.feature --format pretty
+
       - name: Run Cucumber tests for buying_and_selling feature
         working-directory: investra
         run: bundle exec cucumber features/buying_and_selling.feature --format pretty
