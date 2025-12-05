@@ -1,0 +1,20 @@
+<header class="topbar">
+  <div class="topbar__brand">
+    <div class="dot"></div>
+    <span class="brand">Investra</span>
+  </div>
+  <nav class="topbar__nav">
+    <%= link_to "Portfolio", portfolio_path, class: nav_class(request.path, portfolio_path) %>
+    <%= link_to "Watchlist", watchlist_path, class: nav_class(request.path, watchlist_path) %>
+    <%= link_to "Credit Line", credit_line_path, class: nav_class(request.path, credit_line_path) %>
+    <%= link_to "Transactions", transactions_path, class: nav_class(request.path, transactions_path) %>
+  </nav>
+  <div class="topbar__actions">
+    <% if current_user %>
+      <span class="topbar__user"><%= current_user.first_name %></span>
+      <%= link_to "Logout", logout_path, data: { turbo_method: :delete }, class: "button button--ghost" %>
+    <% else %>
+      <%= link_to "Login", login_path, class: "button button--ghost" %>
+    <% end %>
+  </div>
+</header>

@@ -1,88 +1,94 @@
-<div class="registration-container">
-  <h1>Sign Up for Investra</h1>
+<% content_for :title, "Sign up" %>
 
-  <% if @user && @user.errors.any? %>
-    <div class="error-messages">
-      <% @user.errors.full_messages.each do |message| %>
-        <p><%= message %></p>
-      <% end %>
-    </div>
-  <% end %>
+<div class="auth-hero">
+  <div class="auth-hero__content">
+    <div class="eyebrow">Investra</div>
+    <h1>Create your account</h1>
+    <p class="lede">Access your portfolio, watchlist, and credit line in one place.</p>
+  </div>
 
-  <%= form_with model: @user, url: '/signup', method: :post, local: true do |f| %>
-    <div class="form-group">
-      <%= f.label :email, "Email" %>
-      <%= f.email_field :email, required: true %>
-    </div>
-
-    <div class="form-group">
-      <%= f.label :password, "Password" %>
-      <%= f.password_field :password, required: true %>
-    </div>
-
-    <div class="form-group">
-      <%= f.label :password_confirmation, "Password confirmation" %>
-      <%= f.password_field :password_confirmation, required: true %>
-    </div>
-
-    <div class="form-group">
-      <%= f.label :first_name, "First name" %>
-      <%= f.text_field :first_name, required: true %>
-    </div>
-
-    <div class="form-group">
-      <%= f.label :last_name, "Last name" %>
-      <%= f.text_field :last_name, required: true %>
-    </div>
-
-    <div class="form-group role-selection">
-      <%= label_tag :role_name, "Role" %>
-      <div>
-        <%= radio_button_tag :role_name, 'Trader', true, id: 'role_trader' %>
-        <%= label_tag :role_trader, 'Trader' %>
+  <div class="auth-card">
+    <% if @user && @user.errors.any? %>
+      <div class="flash flash--alert">
+        <%= @user.errors.full_messages.to_sentence %>
       </div>
-      <div>
-        <%= radio_button_tag :role_name, 'Associate Trader', false, id: 'role_associate_trader' %>
-        <%= label_tag :role_associate_trader, 'Associate Trader' %>
+    <% end %>
+
+    <%= form_with model: @user, url: signup_path, method: :post, local: true, class: "form" do |f| %>
+      <div class="form__row">
+        <%= f.label :email, "Email", class: "label" %>
+        <%= f.email_field :email, required: true, class: "input" %>
       </div>
-      <div>
-        <%= radio_button_tag :role_name, 'Portfolio Manager', false, id: 'role_portfolio_manager' %>
-        <%= label_tag :role_portfolio_manager, 'Portfolio Manager' %>
+
+      <div class="form__row">
+        <%= f.label :password, "Password", class: "label" %>
+        <%= f.password_field :password, required: true, class: "input" %>
       </div>
-    </div>
 
-    <div class="form-group" id="company-name-field">
-      <%= label_tag :company_name, "Company name" %>
-      <%= text_field_tag :company_name, nil, placeholder: 'Leave blank for individual account' %>
-    </div>
+      <div class="form__row">
+        <%= f.label :password_confirmation, "Confirm password", class: "label" %>
+        <%= f.password_field :password_confirmation, required: true, class: "input" %>
+      </div>
 
-    <%= f.submit "Sign Up", class: "btn btn-primary" %>
-  <% end %>
+      <div class="form__row duo">
+        <div>
+          <%= f.label :first_name, "First name", class: "label" %>
+          <%= f.text_field :first_name, required: true, class: "input" %>
+        </div>
+        <div>
+          <%= f.label :last_name, "Last name", class: "label" %>
+          <%= f.text_field :last_name, required: true, class: "input" %>
+        </div>
+      </div>
 
-  <p>Already have an account? <%= link_to "Log In", '/login' %></p>
+      <div class="form__row">
+        <span class="label">Role</span>
+        <div class="chips chips--radio">
+          <label class="chip chip--selectable">
+            <%= radio_button_tag :role_name, 'Trader', true %>
+            <span>Trader</span>
+          </label>
+          <label class="chip chip--selectable">
+            <%= radio_button_tag :role_name, 'Associate Trader', false %>
+            <span>Associate Trader</span>
+          </label>
+          <label class="chip chip--selectable">
+            <%= radio_button_tag :role_name, 'Portfolio Manager', false %>
+            <span>Portfolio Manager</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form__row" id="company-name-field">
+        <%= label_tag :company_name, "Company name (optional for managers/associates)", class: "label" %>
+        <%= text_field_tag :company_name, nil, placeholder: 'Enter company name', class: "input" %>
+      </div>
+
+      <div class="form__actions">
+        <%= f.submit "Create account", class: "button" %>
+      </div>
+    <% end %>
+
+    <p class="auth-meta">Already have an account? <%= link_to "Log in", login_path, class: "link" %></p>
+  </div>
 </div>
 
 <script>
-  #Show/hide company name field based on role selection
   document.addEventListener('DOMContentLoaded', function() {
     const companyField = document.getElementById('company-name-field');
     const roleRadios = document.querySelectorAll('input[name="role_name"]');
-    
+
     function toggleCompanyField() {
-      const selectedRole = document.querySelector('input[name="role_name"]:checked').value;
-      if (selectedRole === 'Portfolio Manager' || selectedRole === 'Associate Trader') {
+      const selected = document.querySelector('input[name="role_name"]:checked');
+      const role = selected ? selected.value : 'Trader';
+      if (role === 'Portfolio Manager' || role === 'Associate Trader') {
         companyField.style.display = 'block';
       } else {
         companyField.style.display = 'none';
       }
     }
-    
-    #Set initial state
+
     toggleCompanyField();
-    
-    #Listen for changes
-    roleRadios.forEach(radio => {
-      radio.addEventListener('change', toggleCompanyField);
-    });
+    roleRadios.forEach(r => r.addEventListener('change', toggleCompanyField));
   });
 </script>

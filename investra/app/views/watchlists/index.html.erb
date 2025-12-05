@@ -1,0 +1,44 @@
+<% content_for :title, "My Watchlist" %>
+
+<div class="page">
+  <div class="page__header">
+    <div class="eyebrow">Watchlist</div>
+    <h1>Symbols I’m Tracking</h1>
+    <p class="lede">Add or remove tickers to keep an eye on market moves.</p>
+  </div>
+
+  <div class="card">
+    <div class="card__header">
+      <div>
+        <div class="label">Add Symbol</div>
+        <h2>Watch a new ticker</h2>
+      </div>
+    </div>
+    <%= form_with url: watchlist_path, method: :post, class: "form", local: true do |f| %>
+      <div class="form__row">
+        <%= f.text_field :symbol, placeholder: "e.g., AAPL", required: true, class: "input" %>
+        <%= f.submit "Add", class: "button" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <div class="card__header">
+      <div>
+        <div class="label">Tracked</div>
+        <h2>My symbols</h2>
+      </div>
+    </div>
+    <div class="chips">
+      <% @symbols.each do |sym| %>
+        <span class="chip">
+          <span class="mono"><%= sym %></span>
+          <%= button_to "Remove", watchlist_symbol_path(sym), method: :delete, class: "chip__delete", form_class: "chip__form" %>
+        </span>
+      <% end %>
+      <% if @symbols.empty? %>
+        <div class="table__empty">No symbols tracked yet.</div>
+      <% end %>
+    </div>
+  </div>
+</div>
