@@ -7,12 +7,12 @@ class PortfolioSummaryService
   def call
     holdings = build_holdings
     holdings_total = holdings.sum { |h| h[:market_value] }
-    cash_balance = @user.balance || 0
+    cash_balance = (@user.balance || 0).to_f
 
     {
       user_id: @user.id,
-      total_value: holdings_total + cash_balance,
-      cash_balance: cash_balance,
+      total_value: (holdings_total + cash_balance).to_f,
+      cash_balance: cash_balance.to_f,
       holdings: holdings
     }
   end
@@ -28,8 +28,8 @@ class PortfolioSummaryService
       {
         symbol: stock.symbol,
         quantity: position.quantity,
-        cost_basis: cost_basis,
-        market_price: market_price,
+        cost_basis: cost_basis.to_f,
+        market_price: market_price.to_f,
         market_value: (market_price * position.quantity).to_f,
         gain_loss: ((market_price - cost_basis) * position.quantity).to_f
       }
