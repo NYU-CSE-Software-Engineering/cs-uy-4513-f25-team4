@@ -17,7 +17,7 @@ RSpec.describe "CreditLine", type: :request do
   end
 
   it "returns credit line summary" do
-    get "/credit_line"
+    get "/credit_line", headers: { "ACCEPT" => "application/json" }
 
     expect(response).to have_http_status(:ok)
     payload = JSON.parse(response.body)

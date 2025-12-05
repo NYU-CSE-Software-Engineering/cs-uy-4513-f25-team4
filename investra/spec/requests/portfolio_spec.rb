@@ -19,7 +19,7 @@ RSpec.describe "Portfolios", type: :request do
   end
 
   it "returns a portfolio summary with holdings" do
-    get "/portfolio"
+    get "/portfolio", headers: { "ACCEPT" => "application/json" }
 
     expect(response).to have_http_status(:ok)
     payload = JSON.parse(response.body)

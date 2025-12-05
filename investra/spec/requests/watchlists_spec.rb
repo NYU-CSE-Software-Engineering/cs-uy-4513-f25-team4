@@ -16,7 +16,7 @@ RSpec.describe "Watchlists", type: :request do
   end
 
   it "adds a symbol to the watchlist" do
-    post "/watchlist", params: { symbol: "MSFT" }
+    post "/watchlist", params: { symbol: "MSFT" }, headers: { "ACCEPT" => "application/json" }
 
     expect(response).to have_http_status(:created)
     expect(JSON.parse(response.body)["symbol"]).to eq("MSFT")
@@ -24,7 +24,7 @@ RSpec.describe "Watchlists", type: :request do
 
   it "lists watched symbols" do
     user.watchlists.create!(symbol: "MSFT")
-    get "/watchlist"
+    get "/watchlist", headers: { "ACCEPT" => "application/json" }
 
     expect(response).to have_http_status(:ok)
     expect(JSON.parse(response.body)["symbols"]).to include("MSFT")
@@ -33,7 +33,7 @@ RSpec.describe "Watchlists", type: :request do
   it "removes a symbol from the watchlist" do
     user.watchlists.create!(symbol: "MSFT")
 
-    delete "/watchlist/MSFT"
+    delete "/watchlist/MSFT", headers: { "ACCEPT" => "application/json" }
     expect(response).to have_http_status(:ok)
     expect(JSON.parse(response.body)["removed"]).to eq(true)
   end
