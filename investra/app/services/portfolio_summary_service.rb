@@ -26,6 +26,7 @@ class PortfolioSummaryService
       cost_basis = cost_basis_per_share(position)
 
       {
+        stock_id: stock.id,
         symbol: stock.symbol,
         quantity: position.quantity,
         cost_basis: cost_basis.to_f,
