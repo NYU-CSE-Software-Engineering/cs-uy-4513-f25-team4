@@ -7,7 +7,9 @@
     <p class="lede">A lightweight view of your positions, market values, and available cash.</p>
   </div>
 
-  <div id="balance" style="display: none;"><%= number_to_currency(@summary[:cash_balance]) %></div>
+  <div id="balance">
+    <strong>Balance: <%= number_to_currency(@summary[:cash_balance]) %></strong>
+  </div>
 
   <div class="grid">
     <div class="card card--stat">
