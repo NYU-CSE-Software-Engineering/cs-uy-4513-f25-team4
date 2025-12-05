@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_02_033139) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_05_153458) do
   create_table "companies", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -22,6 +22,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_02_033139) do
     t.date "ipo_date"
     t.string "domain"
     t.index ["ticker"], name: "index_companies_on_ticker", unique: true
+  end
+
+  create_table "credit_lines", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.decimal "credit_limit", precision: 15, scale: 2, default: "0.0", null: false
+    t.decimal "credit_used", precision: 15, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_credit_lines_on_user_id"
+  end
+
+  create_table "holdings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "symbol"
+    t.decimal "shares", precision: 10
+    t.decimal "average_cost", precision: 10
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_holdings_on_user_id"
   end
 
   create_table "portfolios", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -51,6 +70,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_02_033139) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["symbol"], name: "index_stocks_on_symbol", unique: true
+  end
+
+  create_table "trades", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "symbol"
+    t.string "trade_type"
+    t.decimal "shares", precision: 10
+    t.decimal "price", precision: 10
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_trades_on_user_id"
   end
 
   create_table "transactions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -92,11 +122,24 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_02_033139) do
     t.index ["manager_id"], name: "index_users_on_manager_id"
   end
 
+  create_table "watchlists", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "symbol", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "symbol"], name: "index_watchlists_on_user_id_and_symbol", unique: true
+    t.index ["user_id"], name: "index_watchlists_on_user_id"
+  end
+
+  add_foreign_key "credit_lines", "users"
+  add_foreign_key "holdings", "users"
   add_foreign_key "portfolios", "stocks"
   add_foreign_key "portfolios", "users"
+  add_foreign_key "trades", "users"
   add_foreign_key "transactions", "stocks"
   add_foreign_key "transactions", "users"
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users"
   add_foreign_key "users", "users", column: "manager_id"
+  add_foreign_key "watchlists", "users"
 end
