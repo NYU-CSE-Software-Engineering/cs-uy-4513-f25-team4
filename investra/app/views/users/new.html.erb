@@ -26,7 +26,7 @@
       </div>
 
       <div class="form__row">
-        <%= f.label :password_confirmation, "Confirm password", class: "label" %>
+        <%= f.label :password_confirmation, "Password confirmation", class: "label" %>
         <%= f.password_field :password_confirmation, required: true, class: "input" %>
       </div>
 
@@ -60,12 +60,12 @@
       </div>
 
       <div class="form__row" id="company-name-field">
-        <%= label_tag :company_name, "Company name (optional for managers/associates)", class: "label" %>
+        <%= label_tag :company_name, "Company name", class: "label" %>
         <%= text_field_tag :company_name, nil, placeholder: 'Enter company name', class: "input" %>
       </div>
 
       <div class="form__actions">
-        <%= f.submit "Create account", class: "button" %>
+        <%= f.submit "Sign Up", class: "button" %>
       </div>
     <% end %>
 
