@@ -1,0 +1,304 @@
+<div class="analytics-container">
+  <h1>Portfolio Trend Graph</h1>
+  
+  <% if MarketData::YahooClient::USE_MOCK_DATA %>
+    <div class="alert alert--info" style="margin-bottom: 1rem;">
+      <strong>⚠️ Mock Data Mode:</strong> Using simulated data for development. Set USE_MOCK_DATA=false to use real Yahoo Finance API.
+    </div>
+  <% end %>
+  
+  <div class="analytics-form">
+    <%= form_with url: analytics_index_path, method: :get, local: true, class: "stock-search-form" do |f| %>
+      <div class="form-group">
+        <%= f.label :ticker, "Stock Symbol", class: "form-label" %>
+        <%= f.text_field :ticker, 
+            value: @ticker, 
+            placeholder: "Enter ticker symbol (e.g., AAPL, TSLA, MSFT)", 
+            class: "form-control",
+            required: true,
+            autofocus: true %>
+      </div>
+      
+      <div class="form-group">
+        <%= f.label :range, "Date Range", class: "form-label" %>
+        <%= f.select :range, 
+            options_for_select([
+              ["1 Week", "5d"],
+              ["1 Month", "1mo"],
+              ["3 Months", "3mo"],
+              ["6 Months", "6mo"],
+              ["1 Year", "1y"],
+              ["2 Years", "2y"],
+              ["5 Years", "5y"],
+              ["All Time", "max"]
+            ], @range),
+            {},
+            { class: "form-control" } %>
+      </div>
+      
+      <%= f.submit "View Chart", class: "button button--primary" %>
+    <% end %>
+  </div>
+
+  <% if @error %>
+    <div class="alert alert--error">
+      <strong>Error:</strong> <%= @error %>
+      <% if @error.include?("Rate limit") || @error.include?("429") %>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+          <strong>Tip:</strong> Yahoo Finance API has rate limits. Please wait a few minutes before trying again. 
+          Historical data is cached for 2 hours, so repeated requests for the same stock and date range won't trigger new API calls.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @chart_data %>
+    <div class="chart-container">
+      <h2>Stock Price Trend: <%= @chart_data[:ticker] %></h2>
+      <canvas id="stockChart" width="400" height="200"></canvas>
+    </div>
+    
+    <div class="chart-info">
+      <p><strong>Data Range:</strong> 
+        <%= case @range
+            when "5d" then "Last 5 Days"
+            when "1mo" then "Last Month"
+            when "3mo" then "Last 3 Months"
+            when "6mo" then "Last 6 Months"
+            when "1y" then "Last Year"
+            when "2y" then "Last 2 Years"
+            when "5y" then "Last 5 Years"
+            when "max" then "All Time"
+            else @range
+            end %>
+      </p>
+      <p><strong>Data Points:</strong> <%= @chart_data[:prices]&.length || 0 %></p>
+    </div>
+  <% elsif @ticker.present? && !@error %>
+    <div class="alert alert--info">
+      Enter a stock symbol above to view its price trend chart.
+    </div>
+  <% end %>
+
+  <div class="analytics-links">
+    <%= link_to "What-If Investment Simulator", simulate_analytics_index_path, class: "button button--secondary" %>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  <% if @chart_data && @chart_data[:timestamps] && @chart_data[:prices] %>
+    (function() {
+      const ctx = document.getElementById('stockChart');
+      if (!ctx) return;
+
+      const timestamps = <%= raw @chart_data[:timestamps].to_json %>;
+      const prices = <%= raw @chart_data[:prices].to_json %>;
+      const ticker = '<%= @chart_data[:ticker] %>';
+
+      // Convert timestamps to dates
+      const labels = timestamps.map(ts => {
+        const date = new Date(ts * 1000);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      });
+
+      // Filter out null/undefined prices
+      const validData = prices.map((price, index) => ({
+        x: labels[index],
+        y: price
+      })).filter(item => item.y != null && !isNaN(item.y));
+
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: validData.map(item => item.x),
+          datasets: [{
+            label: `${ticker} Stock Price`,
+            data: validData.map(item => item.y),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1,
+            pointRadius: 2,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            title: {
+              display: true,
+              text: `${ticker} Price Over Time`,
+              font: {
+                size: 18
+              }
+            },
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function(context) {
+                  return `$${context.parsed.y.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              title: {
+                display: true,
+                text: 'Price (USD)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toFixed(2);
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          }
+        }
+      });
+    })();
+  <% end %>
+</script>
+
+<style>
+  .analytics-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .analytics-container h1 {
+    margin-bottom: 2rem;
+    color: #333;
+  }
+
+  .analytics-form {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .chart-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+  }
+
+  .chart-container h2 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
+  .chart-info {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .chart-info p {
+    margin: 0.5rem 0;
+    color: #666;
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .alert--error {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+  }
+
+  .alert--info {
+    background-color: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    color: #0066cc;
+  }
+
+  .analytics-links {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #ddd;
+  }
+
+  .button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+  }
+
+  .button--primary {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .button--primary:hover {
+    background-color: #0056b3;
+  }
+
+  .button--secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .button--secondary:hover {
+    background-color: #545b62;
+  }
+</style>
+

@@ -8,6 +8,7 @@
     <%= link_to "Watchlist", watchlist_path, class: nav_class(request.path, watchlist_path) %>
     <%= link_to "Credit Line", credit_line_path, class: nav_class(request.path, credit_line_path) %>
     <%= link_to "Transactions", transactions_path, class: nav_class(request.path, transactions_path) %>
+    <%= link_to "Analytics", analytics_index_path, class: nav_class(request.path, analytics_index_path) %>
   </nav>
   <div class="topbar__actions">
     <% if current_user %>

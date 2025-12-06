@@ -1,0 +1,303 @@
+<div class="analytics-container">
+  <h1>What-If Investment Simulator</h1>
+  <p class="subtitle">Test hypothetical investment scenarios to see potential returns</p>
+
+  <% if MarketData::YahooClient::USE_MOCK_DATA %>
+    <div class="alert alert--info" style="margin-bottom: 1rem;">
+      <strong>⚠️ Mock Data Mode:</strong> Using simulated data for development. Set USE_MOCK_DATA=false to use real Yahoo Finance API.
+    </div>
+  <% end %>
+
+  <div class="simulation-form">
+    <%= form_with url: simulate_analytics_index_path, method: :post, local: true, class: "what-if-form" do |f| %>
+      <div class="form-group">
+        <%= f.label :ticker, "Stock Symbol", class: "form-label" %>
+        <%= f.text_field :ticker, 
+            value: params[:ticker],
+            placeholder: "Enter ticker symbol (e.g., TSLA, AAPL, MSFT)", 
+            class: "form-control",
+            required: true,
+            autofocus: true %>
+        <small class="form-help">Enter a valid stock ticker symbol</small>
+      </div>
+      
+      <div class="form-group">
+        <%= f.label :amount, "Investment Amount ($)", class: "form-label" %>
+        <%= f.number_field :amount, 
+            value: params[:amount],
+            placeholder: "5000", 
+            step: "0.01",
+            min: "0.01",
+            class: "form-control",
+            required: true %>
+        <small class="form-help">Enter the amount you would have invested</small>
+      </div>
+      
+      <div class="form-group">
+        <%= f.label :start_date, "Purchase Date", class: "form-label" %>
+        <%= f.date_field :start_date, 
+            value: params[:start_date],
+            max: Date.today,
+            class: "form-control",
+            required: true %>
+        <small class="form-help">Select the date you would have purchased the stock</small>
+      </div>
+      
+      <%= f.submit "Simulate Investment", class: "button button--primary" %>
+    <% end %>
+  </div>
+
+  <% if @error %>
+    <div class="alert alert--error">
+      <strong>Error:</strong> <%= @error %>
+      <% if @error.include?("Rate limit") || @error.include?("429") %>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+          <strong>Tip:</strong> Yahoo Finance API has rate limits. Please wait a few minutes before trying again. 
+          Stock data is cached for 2 hours, so repeated requests for the same stock won't trigger new API calls.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @simulation_result && !@simulation_result[:error] %>
+    <div class="simulation-result">
+      <h2>Simulation Results</h2>
+      
+      <div class="result-card">
+        <div class="result-header">
+          <h3><%= @simulation_result[:ticker] %> - <%= @simulation_result[:stock_name] %></h3>
+        </div>
+        
+        <div class="result-details">
+          <div class="detail-row">
+            <span class="detail-label">Investment Amount:</span>
+            <span class="detail-value">$<%= number_with_precision(@simulation_result[:investment_amount], precision: 2, delimiter: ',') %></span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="detail-label">Purchase Date:</span>
+            <span class="detail-value"><%= @simulation_result[:start_date].strftime("%B %d, %Y") %></span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="detail-label">Purchase Price:</span>
+            <span class="detail-value">$<%= number_with_precision(@simulation_result[:start_price], precision: 2) %></span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="detail-label">Shares Purchased:</span>
+            <span class="detail-value"><%= number_with_precision(@simulation_result[:shares], precision: 4) %></span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="detail-label">Current Price:</span>
+            <span class="detail-value">$<%= number_with_precision(@simulation_result[:current_price], precision: 2) %></span>
+          </div>
+          
+          <div class="detail-row highlight">
+            <span class="detail-label">Current Value:</span>
+            <span class="detail-value highlight-value">$<%= number_with_precision(@simulation_result[:current_value], precision: 2, delimiter: ',') %></span>
+          </div>
+          
+          <div class="detail-row <%= @simulation_result[:profit_loss] >= 0 ? 'positive' : 'negative' %>">
+            <span class="detail-label">Profit/Loss:</span>
+            <span class="detail-value <%= @simulation_result[:profit_loss] >= 0 ? 'positive-return' : 'negative-return' %>">
+              <%= @simulation_result[:profit_loss] >= 0 ? '+' : '' %>$<%= number_with_precision(@simulation_result[:profit_loss], precision: 2, delimiter: ',') %>
+            </span>
+          </div>
+          
+          <div class="detail-row <%= @simulation_result[:roi_percent] >= 0 ? 'positive' : 'negative' %>">
+            <span class="detail-label">Return on Investment (ROI):</span>
+            <span class="detail-value <%= @simulation_result[:roi_percent] >= 0 ? 'positive-return' : 'negative-return' %>">
+              <%= @simulation_result[:roi_percent] >= 0 ? '+' : '' %><%= number_with_precision(@simulation_result[:roi_percent], precision: 2) %>%
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="analytics-links">
+    <%= link_to "← Back to Portfolio Trend Graph", analytics_index_path, class: "button button--secondary" %>
+  </div>
+</div>
+
+<style>
+  .analytics-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .analytics-container h1 {
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  .simulation-form {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .form-help {
+    display: block;
+    margin-top: 0.25rem;
+    color: #666;
+    font-size: 0.875rem;
+  }
+
+  .simulation-result {
+    margin-top: 2rem;
+  }
+
+  .simulation-result h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .result-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
+  }
+
+  .result-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+  }
+
+  .result-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+  }
+
+  .result-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 4px;
+  }
+
+  .detail-row.highlight {
+    background-color: #f0f8ff;
+    font-weight: 600;
+  }
+
+  .detail-row.positive {
+    background-color: #f0fff4;
+  }
+
+  .detail-row.negative {
+    background-color: #fff5f5;
+  }
+
+  .detail-label {
+    font-weight: 500;
+    color: #555;
+  }
+
+  .detail-value {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .highlight-value {
+    font-size: 1.2rem;
+    color: #007bff;
+  }
+
+  .positive-return {
+    color: #28a745;
+  }
+
+  .negative-return {
+    color: #dc3545;
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .alert--error {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+  }
+
+  .analytics-links {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #ddd;
+  }
+
+  .button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+  }
+
+  .button--primary {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .button--primary:hover {
+    background-color: #0056b3;
+  }
+
+  .button--secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .button--secondary:hover {
+    background-color: #545b62;
+  }
+</style>
+

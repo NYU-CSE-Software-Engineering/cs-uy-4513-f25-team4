@@ -9,7 +9,7 @@ Feature: User Portfolio Analytics Dashboard
   Scenario: View portfolio trend graph with date filter
     Given I have trading history in my portfolio
     When I visit the analytics dashboard
-    And I select "Last 3 Months" from the date range filter
+    And I select "3 Months" from the date range filter
     Then I should see a line chart displaying my portfolio value over time
     And the chart should update for the selected date range
 
@@ -29,13 +29,14 @@ Feature: User Portfolio Analytics Dashboard
     When I enter "TSLA" as the stock symbol
     And I enter "5000" as the investment amount
     And I select "2025-07-01" as the purchase date
-    And I press "Simulate"
-    Then I should see "Your $5,000 investment in TSLA would now be worth"
+    And I press "Simulate Investment"
+    Then I should see "Simulation Results"
+    And I should see "Investment Amount"
     And I should see the percent return displayed
 
   Scenario: Fail to run simulation with invalid input
     Given I am on the analytics simulation page
     When I leave the stock symbol blank
-    And I press "Simulate"
+    And I press "Simulate Investment"
     Then I should see "Please enter a valid stock symbol"
 
