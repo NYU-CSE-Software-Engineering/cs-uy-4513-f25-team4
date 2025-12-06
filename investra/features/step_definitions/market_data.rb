@@ -9,8 +9,13 @@
   end
   
   Given('I am a signed-in user') do
-    @user = User.create!(email: 'test@example.com', password: 'password')
-    visit new_user_session_path
+    @user = User.create!(
+      email: 'test@example.com', 
+      password: 'password',
+      first_name: 'Test',
+      last_name: 'User'
+    )
+    visit login_path
     fill_in 'Email', with: @user.email
     fill_in 'Password', with: @user.password
     click_button 'Log in'

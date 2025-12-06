@@ -85,4 +85,12 @@ Rails.application.routes.draw do
   # Companies (from main)
   # -------------------------------
   resources :companies, only: [:index, :new, :create, :edit, :update, :show]
+
+  # -------------------------------
+  # Analytics
+  # -------------------------------
+  get "/analytics", to: "analytics#index", as: :analytics_index
+  get "/analytics/simulate", to: "analytics#simulate", as: :simulate_analytics_index
+  post "/analytics/simulate", to: "analytics#simulate"
+  get "/api/analytics/historical_data", to: "analytics#historical_data", as: :analytics_historical_data
 end
