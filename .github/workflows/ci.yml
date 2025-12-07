@@ -130,3 +130,7 @@ jobs:
       - name: Run Cucumber tests for check stock prices feature
         working-directory: investra
         run: bundle exec cucumber features/check_stock_prices.feature --format pretty
+
+      - name: Run Cucumber tests for price trend graph feature
+        working-directory: investra
+        run: bundle exec cucumber features/price_trend_graph.feature --format pretty
