@@ -122,3 +122,7 @@ jobs:
       - name: Run Cucumber tests for portfolio_visualization feature
         working-directory: investra
         run: bundle exec cucumber features/portfolio_visualization.feature --format pretty
+
+      - name: Run Cucumber tests for stock information view feature
+        working-directory: investra
+        run: bundle exec cucumber features/view_stock_information.feature --format pretty
