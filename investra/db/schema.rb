@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_07_000001) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_07_211937) do
   create_table "companies", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -66,6 +66,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_07_000001) do
     t.index ["stock_id"], name: "index_portfolios_on_stock_id"
     t.index ["user_id", "stock_id"], name: "index_portfolios_on_user_id_and_stock_id", unique: true
     t.index ["user_id"], name: "index_portfolios_on_user_id"
+  end
+
+  create_table "price_points", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "stock_id", null: false
+    t.decimal "price", precision: 15, scale: 2, null: false
+    t.datetime "recorded_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recorded_at"], name: "index_price_points_on_recorded_at"
+    t.index ["stock_id", "recorded_at"], name: "index_price_points_on_stock_id_and_recorded_at"
+    t.index ["stock_id"], name: "index_price_points_on_stock_id"
   end
 
   create_table "roles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -154,6 +165,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_07_000001) do
   add_foreign_key "news", "stocks"
   add_foreign_key "portfolios", "stocks"
   add_foreign_key "portfolios", "users"
+  add_foreign_key "price_points", "stocks"
   add_foreign_key "trades", "users"
   add_foreign_key "transactions", "stocks"
   add_foreign_key "transactions", "users"
