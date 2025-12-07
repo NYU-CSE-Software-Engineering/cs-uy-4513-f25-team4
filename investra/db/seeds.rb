@@ -104,21 +104,21 @@ news_data = [
         content: "Apple Inc. announced the iPhone 16 lineup today, featuring groundbreaking AI capabilities powered by the new A18 chip. The devices include improved camera systems and extended battery life.",
         published_at: 2.days.ago,
         source: "TechCrunch",
-        url: "https://techcrunch.com/apple-iphone-16"
+        url: "https://techcrunch.com/tag/apple/"
       },
       {
         title: "Apple Reports Record Q4 Earnings",
         content: "Apple Inc. reported its fourth quarter financial results, beating analyst expectations with revenue of $89.5 billion and earnings per share of $1.46.",
         published_at: 5.days.ago,
         source: "Reuters",
-        url: "https://reuters.com/apple-q4-earnings"
+        url: "https://www.reuters.com/technology/apple/"
       },
       {
         title: "Apple Vision Pro Sees Strong Demand in Enterprise",
         content: "The Apple Vision Pro is gaining traction in enterprise markets, with major corporations adopting the spatial computing platform for training and collaboration.",
         published_at: 7.days.ago,
         source: "Bloomberg",
-        url: "https://bloomberg.com/apple-vision-pro-enterprise"
+        url: "https://www.bloomberg.com/quote/AAPL:US"
       }
     ]
   },
@@ -130,14 +130,14 @@ news_data = [
         content: "Alphabet's Google unveiled major updates to its search engine, integrating advanced AI models to provide more accurate and contextual search results.",
         published_at: 1.day.ago,
         source: "The Verge",
-        url: "https://theverge.com/google-ai-search"
+        url: "https://www.theverge.com/google"
       },
       {
         title: "Alphabet Expands Cloud Computing Infrastructure",
         content: "Alphabet Inc. announced plans to invest $10 billion in data centers and cloud infrastructure across the United States.",
         published_at: 3.days.ago,
         source: "CNBC",
-        url: "https://cnbc.com/alphabet-cloud-expansion"
+        url: "https://www.cnbc.com/quotes/GOOGL"
       }
     ]
   },
@@ -149,14 +149,14 @@ news_data = [
         content: "Tesla Inc. announced that Cybertruck production has significantly increased, with the company now producing over 1,000 units per week.",
         published_at: 1.day.ago,
         source: "Electrek",
-        url: "https://electrek.co/tesla-cybertruck-production"
+        url: "https://electrek.co/guides/tesla/"
       },
       {
         title: "Tesla Opens New Gigafactory in Texas",
         content: "Tesla inaugurated its newest manufacturing facility in Austin, Texas, which will produce batteries and electric vehicle components.",
         published_at: 4.days.ago,
         source: "Reuters",
-        url: "https://reuters.com/tesla-gigafactory-texas"
+        url: "https://www.reuters.com/companies/TSLA.O/"
       }
     ]
   }
