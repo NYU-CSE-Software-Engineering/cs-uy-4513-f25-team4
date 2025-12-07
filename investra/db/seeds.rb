@@ -180,12 +180,35 @@ news_data.each do |stock_news|
   end
 end
 
+# Create price history for stocks (last 30 days)
+puts "\n📈 Creating price history..."
+stocks_data.each do |stock_data|
+  stock = Stock.find_by(symbol: stock_data[:symbol])
+  next unless stock
+  
+  base_price = stock_data[:price]
+  
+  30.times do |i|
+    # Generate realistic price variations (+/- 5%)
+    variation = rand(-5.0..5.0) / 100.0
+    price_for_day = (base_price * (1 + variation)).round(2)
+    
+    PricePoint.create!(
+      stock: stock,
+      price: price_for_day,
+      recorded_at: (30 - i).days.ago
+    )
+  end
+  puts "  📊 Created 30-day price history for #{stock.symbol}"
+end
+
 puts "\n🎉 Seed data created successfully!"
 puts "\n📊 Summary:"
 puts "  - Companies: #{Company.count}"
 puts "  - Users: #{User.count}"
 puts "  - Stocks: #{Stock.count}"
 puts "  - News Articles: #{News.count}"
+puts "  - Price Points: #{PricePoint.count}"
 puts "\n🔑 Login credentials:"
 puts "  Admin - Email: admin@example.com, Password: password"
 puts "  Trader - Email: trader@example.com, Password: password"

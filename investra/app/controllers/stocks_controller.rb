@@ -9,6 +9,8 @@ class StocksController < ApplicationController
 
   def show
     @recent_news = @stock.recent_news(limit: 10)
+    @price_history = @stock.recent_price_history(30)
+    @price_statistics = @stock.price_statistics(30)
   end
 
   def buy

@@ -38,7 +38,16 @@
         <tr class="stock-row" data-symbol="<%= stock.symbol %>">
           <td><%= link_to stock.symbol, stock_path(stock), id: "stock-link-#{stock.symbol}" %></td>
           <td><%= stock.name %></td>
-          <td>$<%= number_with_precision(stock.price, precision: 2) %></td>
+          <td>
+            $<%= number_with_precision(stock.price, precision: 2) %>
+            <% price_change = stock.price_change %>
+            <% if price_change %>
+              <span class="price-change <%= price_change[:direction] == 'positive' ? 'text-success' : 'text-danger' %>">
+                <%= price_change[:direction] == 'positive' ? '+' : '' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %>
+                (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
+              </span>
+            <% end %>
+          </td>
           <td><%= stock.available_quantity %></td>
           <td>
             <button class="buy-btn" data-stock-id="<%= stock.id %>" data-stock-symbol="<%= stock.symbol %>" data-stock-price="<%= stock.price %>">Buy</button>

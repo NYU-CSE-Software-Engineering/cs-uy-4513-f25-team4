@@ -43,10 +43,6 @@ Given("stock {string} has the following price history:") do |symbol, table|
   end
 end
 
-When("I click on {string}") do |link_text|
-  click_link link_text
-end
-
 Then("I should see a price history table") do
   expect(page).to have_selector('table.price-history')
 end

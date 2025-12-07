@@ -4,6 +4,7 @@
   <h2>Company Information</h2>
   <p><strong>Symbol:</strong> <%= @stock.symbol %></p>
   <p><strong>Current Price:</strong> $<%= number_with_precision(@stock.price, precision: 2) %></p>
+  <p><strong>Last Updated:</strong> <%= @stock.last_updated_human %></p>
   <p><strong>Available Quantity:</strong> <%= @stock.available_quantity %></p>
   
   <% if @stock.sector.present? %>
@@ -14,10 +15,41 @@
     <p><strong>Market Cap:</strong> $<%= number_with_delimiter(@stock.market_cap) %></p>
   <% end %>
   
-  <% if @stock.description.present? %>
+  <% if @stock.description.present% %>
     <p><strong>Description:</strong> <%= @stock.description %></p>
   <% end %>
 </div>
+
+<% if @price_statistics[:high].present? %>
+  <div class="price-statistics">
+    <h2>30-Day Price Range</h2>
+    <p><strong>High:</strong> $<%= number_with_precision(@price_statistics[:high], precision: 2) %></p>
+    <p><strong>Low:</strong> $<%= number_with_precision(@price_statistics[:low], precision: 2) %></p>
+    <p><strong>Average:</strong> $<%= number_with_precision(@price_statistics[:average], precision: 2) %></p>
+  </div>
+<% end %>
+
+<% if @price_history.any? %>
+  <div class="price-history-section">
+    <h2><%= link_to 'Price History', '#price-history-table' %></h2>
+    <table class="price-history" id="price-history-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @price_history.each do |point| %>
+          <tr>
+            <td><%= point.recorded_at.strftime("%Y-%m-%d") %></td>
+            <td>$<%= number_with_precision(point.price, precision: 2) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
 
 <% if @recent_news.any? %>
   <div class="recent-news">
