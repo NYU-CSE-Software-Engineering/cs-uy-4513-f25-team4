@@ -48,7 +48,7 @@
             <% price_change = stock.price_change %>
             <% if price_change %>
               <div style="margin-top: 5px;">
-                <span style="background: <%= price_change[:direction] == 'positive' ? '#d4edda' : '#f8d7da' %>; color: <%= price_change[:direction] == 'positive' ? '#155724' : '#721c24' %>; padding: 3px 8px; border-radius: 3px; font-size: 0.9em; font-weight: 500;">
+                <span class="price-change <%= price_change[:direction] == 'positive' ? 'positive text-success' : 'negative text-danger' %>" style="background: <%= price_change[:direction] == 'positive' ? '#d4edda' : '#f8d7da' %>; color: <%= price_change[:direction] == 'positive' ? '#155724' : '#721c24' %>; padding: 3px 8px; border-radius: 3px; font-size: 0.9em; font-weight: 500;">
                   <%= price_change[:direction] == 'positive' ? '▲' : '▼' %>
                   <%= price_change[:direction] == 'positive' ? '+' : '-' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %> 
                   (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
