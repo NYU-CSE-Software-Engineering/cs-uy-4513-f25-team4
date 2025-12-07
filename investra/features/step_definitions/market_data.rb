@@ -1,8 +1,4 @@
-  Given('the following stocks exist:') do |table|
-    table.hashes.each do |row|
-      Stock.create!(ticker: row['ticker'], company_name: row['company_name'], sector: row['sector'], nasdaq: row['nasdaq'])
-    end
-  end
+  # Removed duplicate step - now in stock_information_steps.rb
   
   Given('the current time is {string}') do |string|
     Timecop.freeze(Time.parse(string))
