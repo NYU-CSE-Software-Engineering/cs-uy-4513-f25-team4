@@ -11,6 +11,13 @@ class StocksController < ApplicationController
     @recent_news = @stock.recent_news(limit: 10)
     @price_history = @stock.recent_price_history(30)
     @price_statistics = @stock.price_statistics(30)
+    
+    # Prepare chart data for different timeframes
+    @chart_data = {
+      week: prepare_chart_data(7),
+      month: prepare_chart_data(30),
+      year: prepare_chart_data(365)
+    }
   end
 
   def buy
@@ -45,6 +52,16 @@ class StocksController < ApplicationController
 
   def set_stock
     @stock = Stock.find(params[:id])
+  end
+
+  def prepare_chart_data(days)
+    points = @stock.recent_price_history(days)
+    return { labels: [], prices: [] } if points.empty?
+    
+    {
+      labels: points.map { |p| p.recorded_at.strftime("%Y-%m-%d") },
+      prices: points.map { |p| p.price.to_f.round(2) }
+    }
   end
 
   def parse_quantity

@@ -35,6 +35,46 @@
   <% end %>
 </div>
 
+<!-- Price Trend Graph -->
+<% if @chart_data && (@chart_data[:week][:prices].any? || @chart_data[:month][:prices].any? || @chart_data[:year][:prices].any?) %>
+  <div class="price-trend-graph" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; margin: 20px 0; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+    <h2 style="color: white; margin-top: 0;">📈 Price Trend Graph</h2>
+    <p style="opacity: 0.9; margin-bottom: 20px;">Analyze price movements across different timeframes</p>
+    
+    <!-- Timeframe Buttons -->
+    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+      <button class="timeframe-btn active" data-timeframe="7" style="background: rgba(255,255,255,0.9); color: #667eea; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+        📅 Week
+      </button>
+      <button class="timeframe-btn" data-timeframe="30" style="background: rgba(255,255,255,0.3); color: white; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+        📆 Month
+      </button>
+      <button class="timeframe-btn" data-timeframe="365" style="background: rgba(255,255,255,0.3); color: white; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+        🗓️ Year
+      </button>
+    </div>
+    
+    <!-- Chart Canvas -->
+    <div style="background: white; padding: 20px; border-radius: 8px; position: relative; height: 400px;">
+      <canvas id="price-trend-chart" 
+              data-prices="<%= @chart_data[:week][:prices].to_json %>"
+              data-dates="<%= @chart_data[:week][:labels].to_json %>"
+              data-week-prices="<%= @chart_data[:week][:prices].to_json %>"
+              data-week-dates="<%= @chart_data[:week][:labels].to_json %>"
+              data-month-prices="<%= @chart_data[:month][:prices].to_json %>"
+              data-month-dates="<%= @chart_data[:month][:labels].to_json %>"
+              data-year-prices="<%= @chart_data[:year][:prices].to_json %>"
+              data-year-dates="<%= @chart_data[:year][:labels].to_json %>"
+              style="max-height: 360px;"></canvas>
+    </div>
+  </div>
+<% else %>
+  <div style="background: #f8d7da; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #dc3545; color: #721c24;">
+    <p style="margin: 0;"><strong>📊 No price data available for chart</strong></p>
+    <p style="margin: 10px 0 0 0;">Price trend graph will be available once sufficient historical data is collected.</p>
+  </div>
+<% end %>
+
 <!-- Historical Price Section -->
 <% if @price_statistics[:high].present? %>
   <div class="historical-prices" style="background: #fff3cd; padding: 20px; margin: 20px 0; border-left: 4px solid #ffc107;">
@@ -114,4 +154,149 @@
 <div>
   <%= link_to 'Back to Stocks', stocks_path %>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const canvas = document.getElementById('price-trend-chart');
+  if (!canvas) return;
+  
+  let chart = null;
+  
+  // Initialize chart with default data (week)
+  function initChart(labels, prices) {
+    const ctx = canvas.getContext('2d');
+    
+    if (chart) {
+      chart.destroy();
+    }
+    
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Price ($)',
+          data: prices,
+          borderColor: 'rgb(102, 126, 234)',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: 'rgb(102, 126, 234)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: {
+              size: 14
+            },
+            bodyFont: {
+              size: 13
+            },
+            callbacks: {
+              label: function(context) {
+                return ' $' + context.parsed.y.toFixed(2);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toFixed(2);
+              },
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45,
+              font: {
+                size: 11
+              }
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  // Load initial chart
+  const weekPrices = JSON.parse(canvas.dataset.weekPrices || '[]');
+  const weekDates = JSON.parse(canvas.dataset.weekDates || '[]');
+  if (weekPrices.length > 0) {
+    initChart(weekDates, weekPrices);
+  }
+  
+  // Handle timeframe button clicks
+  document.querySelectorAll('.timeframe-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const timeframe = this.dataset.timeframe;
+      
+      // Update button styles
+      document.querySelectorAll('.timeframe-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'rgba(255,255,255,0.3)';
+        b.style.color = 'white';
+        b.style.border = '1px solid white';
+      });
+      this.classList.add('active');
+      this.style.background = 'rgba(255,255,255,0.9)';
+      this.style.color = '#667eea';
+      this.style.border = 'none';
+      
+      // Load data for selected timeframe
+      let prices, dates;
+      if (timeframe === '7') {
+        prices = JSON.parse(canvas.dataset.weekPrices || '[]');
+        dates = JSON.parse(canvas.dataset.weekDates || '[]');
+      } else if (timeframe === '30') {
+        prices = JSON.parse(canvas.dataset.monthPrices || '[]');
+        dates = JSON.parse(canvas.dataset.monthDates || '[]');
+      } else if (timeframe === '365') {
+        prices = JSON.parse(canvas.dataset.yearPrices || '[]');
+        dates = JSON.parse(canvas.dataset.yearDates || '[]');
+      }
+      
+      if (prices.length > 0) {
+        initChart(dates, prices);
+      }
+    });
+  });
+});
+</script>
 
