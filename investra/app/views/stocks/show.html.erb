@@ -38,7 +38,7 @@
 <!-- Historical Price Section -->
 <% if @price_statistics[:high].present? %>
   <div class="historical-prices" style="background: #fff3cd; padding: 20px; margin: 20px 0; border-left: 4px solid #ffc107;">
-    <h2 style="color: #856404; margin-top: 0;">📈 Historical Price Analysis (Last 30 Days)</h2>
+    <h2 style="color: #856404; margin-top: 0;">30-Day Price Range</h2>
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
       <div style="background: white; padding: 15px; border-radius: 5px;">
         <p style="margin: 0; color: #666;">High</p>
@@ -57,9 +57,9 @@
 <% end %>
 
 <% if @price_history.any? %>
-  <div class="price-history-section" style="margin: 20px 0;">
+  <div class="price-history-section" style="margin: 20px 0;" id="price-history">
     <h2 style="color: #333;">📅 Detailed Price History</h2>
-    <p style="color: #666; margin-bottom: 15px;">View daily closing prices for the last 30 days</p>
+    <p style="color: #666; margin-bottom: 15px;"><%= link_to 'Price History', '#price-history-table' %> - View daily closing prices for the last 30 days</p>
     <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
       <table class="price-history" id="price-history-table" style="width: 100%; border-collapse: collapse;">
         <thead style="background: #f8f9fa; position: sticky; top: 0;">
