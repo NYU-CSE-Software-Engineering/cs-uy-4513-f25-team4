@@ -15,7 +15,7 @@
     <p><strong>Market Cap:</strong> $<%= number_with_delimiter(@stock.market_cap) %></p>
   <% end %>
   
-  <% if @stock.description.present% %>
+  <% if @stock.description.present? %>
     <p><strong>Description:</strong> <%= @stock.description %></p>
   <% end %>
 </div>
