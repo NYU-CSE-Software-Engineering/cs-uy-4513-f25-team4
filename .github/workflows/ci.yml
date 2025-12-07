@@ -81,7 +81,7 @@ jobs:
       - name: Prepare database
         working-directory: investra
         run: |
-          bundle exec rails db:drop db:create db:schema:load
+          bundle exec rails db:drop db:create db:migrate
 
       - name: Run RSpec tests
         working-directory: investra
