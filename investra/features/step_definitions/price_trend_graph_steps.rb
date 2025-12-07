@@ -87,9 +87,7 @@ Then("the graph should show price {string} for date {string}") do |price, date|
   expect(prices_data[date_index].to_f).to eq(price.to_f), "Expected price #{price} for date #{date}"
 end
 
-Then("I should see {string}") do |text|
-  expect(page).to have_content(text)
-end
+# Removed duplicate "I should see {string}" - already defined in common_steps.rb
 
 Then("I should not see a price trend graph") do
   expect(page).not_to have_css('#price-trend-chart', visible: true)
