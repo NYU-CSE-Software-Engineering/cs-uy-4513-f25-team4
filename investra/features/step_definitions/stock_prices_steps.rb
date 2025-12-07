@@ -26,10 +26,6 @@ Then("I should see {string} with current price {string}") do |symbol, price|
   end
 end
 
-Then("I should see {string}") do |text|
-  expect(page).to have_content(text)
-end
-
 Then("I should see {string} followed by a timestamp") do |text|
   expect(page).to have_content(text)
   # Verify timestamp format (e.g., "2025-12-07 10:30:00" or "5 minutes ago")
@@ -119,9 +115,5 @@ Given("stock {string} price was last updated {string}") do |symbol, time_ago|
     5.minutes.ago
   end
   stock.update!(updated_at: time_value)
-end
-
-Then("I should see {string}") do |text|
-  expect(page).to have_content(text)
 end
 
