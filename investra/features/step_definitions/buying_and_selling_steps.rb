@@ -291,9 +291,13 @@ Then("my balance should increase by the correct total amount") do
 end
 
 Then("my portfolio should update to show {string} with quantity {string}") do |symbol, qty|
-  visit portfolio_path unless current_path == portfolio_path
+  # Always visit portfolio path to ensure fresh data after transaction
+  visit portfolio_path
   expect(page).to have_selector('.portfolio-list', wait: 5)
-  within('.portfolio-list') { expect(page).to have_content(symbol) && have_content(qty) }
+  within('.portfolio-list') do 
+    expect(page).to have_content(symbol)
+    expect(page).to have_content(qty)
+  end
 end
 
 Then("I should see the error message {string}") do |message|
