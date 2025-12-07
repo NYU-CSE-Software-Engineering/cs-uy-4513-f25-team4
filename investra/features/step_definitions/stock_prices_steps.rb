@@ -14,11 +14,6 @@ Given("the following stocks exist with price history:") do |table|
   end
 end
 
-When("I visit the stock detail page for {string}") do |symbol|
-  stock = Stock.find_by(symbol: symbol)
-  visit stock_path(stock)
-end
-
 Then("I should see {string} with current price {string}") do |symbol, price|
   within('.stock-list') do
     stock_row = find('.stock-row', text: symbol)

@@ -32,8 +32,10 @@ class Stock < ApplicationRecord
 
   # Calculate price change from yesterday
   def price_change
-    yesterday_price = price_points.where('recorded_at >= ? AND recorded_at < ?', 
-      1.day.ago.beginning_of_day, 1.day.ago.end_of_day).last&.price
+    # Get the most recent price point from yesterday or earlier
+    yesterday_price = price_points.where('recorded_at < ?', Time.current.beginning_of_day)
+                                   .order(recorded_at: :desc)
+                                   .first&.price
     return nil unless yesterday_price
     
     change_amount = price - yesterday_price

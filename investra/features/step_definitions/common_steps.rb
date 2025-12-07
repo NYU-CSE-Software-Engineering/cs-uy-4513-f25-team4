@@ -51,3 +51,9 @@ Given("I am on the {string} page") do |page_name|
     raise "Unknown page: #{page_name}"
   end
 end
+
+# Visit stock detail page
+When("I visit the stock detail page for {string}") do |symbol|
+  stock = Stock.find_by(symbol: symbol)
+  visit stock_path(stock)
+end

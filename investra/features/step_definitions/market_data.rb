@@ -36,10 +36,7 @@
     Prediction.create!(stock: stock, horizon: string2, summary: "Predicted price will rise.", predicted_price: rand(100..200), generated_at: Time.now, confidence: rand(0.1..0.9), model_used: "Finn4")
   end
   
-  When('I visit the stock detail page for {string}') do |string|
-    stock = Stock.find_by(ticker: string)
-    visit stock_path(stock)
-  end
+  # Removed - now in common_steps.rb with correct symbol field
   
   Then('I should see the title {string}') do |string|
     expect(page).to have_content(string)

@@ -43,8 +43,7 @@
             <% price_change = stock.price_change %>
             <% if price_change %>
               <span class="price-change <%= price_change[:direction] == 'positive' ? 'text-success' : 'text-danger' %>">
-                <%= price_change[:direction] == 'positive' ? '+' : '' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %>
-                (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
+                <%= price_change[:direction] == 'positive' ? '+' : '-' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %> (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
               </span>
             <% end %>
           </td>
