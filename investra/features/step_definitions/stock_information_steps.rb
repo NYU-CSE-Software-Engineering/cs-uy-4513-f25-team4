@@ -20,7 +20,10 @@ Given("the following stocks exist:") do |table|
       symbol: row['symbol'],
       name: row['name'],
       price: row['price'].to_f,
-      available_quantity: 1000
+      available_quantity: 1000,
+      sector: row['sector'] || 'Technology',
+      market_cap: row['market_cap'] || 1000000000,
+      description: row['description'] || 'A leading technology company'
     )
   end
 end
