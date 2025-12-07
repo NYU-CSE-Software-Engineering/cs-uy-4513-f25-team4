@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, hanqiLiuBranch ]
+    branches: [ main, hanqiLiuBranch, feature/market-data ]
   pull_request:
 
 jobs:
