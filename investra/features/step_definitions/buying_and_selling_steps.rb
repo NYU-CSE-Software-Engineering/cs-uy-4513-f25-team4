@@ -120,9 +120,9 @@ Given("I am a logged-in user") do
       Capybara.reset_sessions! if defined?(Capybara)
       visit login_path
       expect(page).to have_field('Email', wait: 5)
-      fill_in 'Email', with: @user.email
+  fill_in 'Email', with: @user.email
       fill_in 'Password', with: 'password'
-      click_button 'Log in'
+  click_button 'Log in'
       expect(page).to have_content('Signed in successfully', wait: 5)
     end
   end

@@ -1,0 +1,50 @@
+<h1><%= @stock.name %> (<%= @stock.symbol %>)</h1>
+
+<div class="stock-info">
+  <h2>Company Information</h2>
+  <p><strong>Symbol:</strong> <%= @stock.symbol %></p>
+  <p><strong>Current Price:</strong> $<%= number_with_precision(@stock.price, precision: 2) %></p>
+  <p><strong>Available Quantity:</strong> <%= @stock.available_quantity %></p>
+  
+  <% if @stock.sector.present? %>
+    <p><strong>Sector:</strong> <%= @stock.sector %></p>
+  <% end %>
+  
+  <% if @stock.market_cap.present? %>
+    <p><strong>Market Cap:</strong> $<%= number_with_delimiter(@stock.market_cap) %></p>
+  <% end %>
+  
+  <% if @stock.description.present? %>
+    <p><strong>Description:</strong> <%= @stock.description %></p>
+  <% end %>
+</div>
+
+<% if @recent_news.any? %>
+  <div class="recent-news">
+    <h2>Recent Market News</h2>
+    <% @recent_news.each do |news| %>
+      <div class="news-item">
+        <h3><%= news.title %></h3>
+        <% if news.source.present? %>
+          <p><strong>Source:</strong> <%= news.source %></p>
+        <% end %>
+        <% if news.published_at.present? %>
+          <p><strong>Published:</strong> <%= news.published_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+        <% end %>
+        <% if news.content.present? %>
+          <p><%= news.content %></p>
+        <% end %>
+        <% if news.url.present? %>
+          <p><%= link_to 'Read full article', news.url, target: '_blank' %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p>No recent news available for this stock.</p>
+<% end %>
+
+<div>
+  <%= link_to 'Back to Stocks', stocks_path %>
+</div>
+

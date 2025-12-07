@@ -8,6 +8,7 @@ class StocksController < ApplicationController
   end
 
   def show
+    @recent_news = @stock.recent_news(limit: 10)
   end
 
   def buy
