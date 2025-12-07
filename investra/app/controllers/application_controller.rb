@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       format.json { render json: { error: "Unauthorized" }, status: :unauthorized and return }
       format.html do
-        redirect_to new_user_session_path and return unless login_path?(request.path)
+        redirect_to login_path and return unless login_path?(request.path)
       end
       format.any { head :unauthorized and return }
     end

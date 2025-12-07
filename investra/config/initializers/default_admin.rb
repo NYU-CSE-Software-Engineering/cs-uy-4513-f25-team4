@@ -7,18 +7,20 @@ if Rails.env.development? || Rails.env.test?
 
     begin
       # Skip if tables are not available (e.g., during db:create/db:drop in CI)
-      if ActiveRecord::Base.connection.data_source_exists?("users")
+      if ActiveRecord::Base.connection.data_source_exists?("users") && 
+         ActiveRecord::Base.connection.column_exists?(:users, :password_digest)
         User.find_or_create_by!(email: admin_email) do |user|
           user.password = admin_password
           user.password_confirmation = admin_password
-          user.role = "admin"
+          user.role = "Admin"
           user.first_name = "Admin"
           user.last_name = "User"
         end
       end
     rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid,
-           ActiveRecord::DatabaseConnectionError, ActiveRecord::ConnectionNotEstablished, Mysql2::Error
-      # Database not ready or reachable; ignore and let seeding/tests handle user creation later
+           ActiveRecord::DatabaseConnectionError, ActiveRecord::ConnectionNotEstablished, 
+           Mysql2::Error, NoMethodError
+      # Database not ready, table/column missing, or reachable; ignore and let seeding handle user creation later
     end
   end
 end
