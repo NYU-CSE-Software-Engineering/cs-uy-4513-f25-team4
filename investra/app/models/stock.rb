@@ -8,9 +8,7 @@ class Stock < ApplicationRecord
   validates :name, presence: true
   validates :price, presence: true, numericality: { greater_than: 0 }
   validates :available_quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :sector, presence: true
-  validates :market_cap, presence: true, numericality: { greater_than: 0 }
-  validates :description, presence: true
+  validates :market_cap, numericality: { greater_than: 0, allow_nil: true }
   
   # Get recent news for this stock
   def recent_news(limit: 10)
