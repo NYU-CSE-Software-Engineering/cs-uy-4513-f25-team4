@@ -1,8 +1,11 @@
-<h1>Stocks</h1>
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; margin: -20px -20px 20px -20px; color: white;">
+  <h1 style="margin: 0 0 10px 0; color: white;">📊 Real-time Stock Market</h1>
+  <p style="margin: 0; opacity: 0.9;">Check real-time prices, historical data, and make informed trading decisions</p>
+</div>
 
 <% if current_user %>
-  <div id="balance">
-    <strong>Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
+  <div id="balance" style="background: #28a745; color: white; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <strong>💰 Your Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
   </div>
 <% end %>
 
@@ -28,7 +31,7 @@
       <tr>
         <th>Symbol</th>
         <th>Name</th>
-        <th>Price</th>
+        <th>Real-time Price & 24h Change</th>
         <th>Available</th>
         <th>Actions</th>
       </tr>
@@ -39,12 +42,18 @@
           <td><%= link_to stock.symbol, stock_path(stock), id: "stock-link-#{stock.symbol}" %></td>
           <td><%= stock.name %></td>
           <td>
-            $<%= number_with_precision(stock.price, precision: 2) %>
+            <div style="font-size: 1.1em; font-weight: bold;">
+              $<%= number_with_precision(stock.price, precision: 2) %>
+            </div>
             <% price_change = stock.price_change %>
             <% if price_change %>
-              <span class="price-change <%= price_change[:direction] == 'positive' ? 'text-success' : 'text-danger' %>">
-                <%= price_change[:direction] == 'positive' ? '+' : '-' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %> (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
-              </span>
+              <div style="margin-top: 5px;">
+                <span style="background: <%= price_change[:direction] == 'positive' ? '#d4edda' : '#f8d7da' %>; color: <%= price_change[:direction] == 'positive' ? '#155724' : '#721c24' %>; padding: 3px 8px; border-radius: 3px; font-size: 0.9em; font-weight: 500;">
+                  <%= price_change[:direction] == 'positive' ? '▲' : '▼' %>
+                  <%= price_change[:direction] == 'positive' ? '+' : '-' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %> 
+                  (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
+                </span>
+              </div>
             <% end %>
           </td>
           <td><%= stock.available_quantity %></td>
