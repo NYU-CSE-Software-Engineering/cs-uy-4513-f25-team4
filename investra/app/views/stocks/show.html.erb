@@ -168,16 +168,25 @@ function initializePrediction() {
       }
     })
     .then(response => {
-      console.log('Response status:', response.status);
+      console.log('✅ Response received:', response.status, response.statusText);
+      if (!response.ok) {
+        console.error('❌ Response not OK:', response.status);
+      }
       return response.json();
     })
     .then(data => {
-      console.log('Prediction data:', data);
+      console.log('📊 Full prediction data:', JSON.stringify(data, null, 2));
+      console.log('✓ data.success =', data.success);
+      console.log('✓ typeof data.success =', typeof data.success);
+      
       document.getElementById('prediction-loading').style.display = 'none';
       
-      if (data.success) {
+      if (data.success === true) {
+        console.log('✅ Success branch - displaying results');
         // Display prediction results
         const prediction = data.prediction;
+        console.log('📈 Prediction object:', prediction);
+        
         document.getElementById('predicted-price').textContent = '$' + prediction.predicted_price.toFixed(2);
         
         const trendElement = document.getElementById('prediction-trend');
@@ -194,14 +203,18 @@ function initializePrediction() {
         document.getElementById('data-points-info').innerHTML = '📊 Based on <strong>' + prediction.data_points + ' data points</strong> of historical price analysis';
         
         document.getElementById('prediction-result').style.display = 'block';
+        console.log('✅ Result displayed successfully');
       } else {
+        console.log('⚠️ Error branch - data.success is false or missing');
+        console.log('Error message:', data.message);
         // Show error
         document.getElementById('error-message').textContent = data.message || 'Insufficient data for prediction';
         document.getElementById('prediction-error').style.display = 'block';
       }
     })
     .catch(error => {
-      console.error('Prediction error:', error);
+      console.error('❌ Catch block - Network or parsing error:', error);
+      console.error('Error details:', error.message, error.stack);
       document.getElementById('prediction-loading').style.display = 'none';
       document.getElementById('error-message').textContent = 'An error occurred while generating prediction';
       document.getElementById('prediction-error').style.display = 'block';
