@@ -36,46 +36,155 @@
 </div>
 
 <!-- AI Price Prediction Section -->
-<% if @prediction %>
-  <div class="ai-prediction" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 25px; margin: 20px 0; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-    <h2 style="color: white; margin-top: 0;">🤖 AI Price Prediction</h2>
-    <p style="font-size: 0.9em; opacity: 0.9; margin: 5px 0 20px 0;">Logistic Regression Model</p>
-    
+<div id="ai-prediction-container" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 25px; margin: 20px 0; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+  <h2 style="color: white; margin-top: 0;">🤖 AI Price Prediction</h2>
+  <p style="font-size: 0.9em; opacity: 0.9; margin: 5px 0 20px 0;">Logistic Regression Model</p>
+  
+  <!-- Initial State: Generate Prediction Button -->
+  <div id="prediction-initial" style="text-align: center; padding: 30px 0;">
+    <p style="font-size: 1.1em; margin-bottom: 20px;">Click below to generate AI-powered price prediction using machine learning</p>
+    <button id="generate-prediction-btn" 
+            data-stock-id="<%= @stock.id %>"
+            style="background: white; color: #11998e; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+      🚀 Generate Prediction
+    </button>
+  </div>
+  
+  <!-- Loading State -->
+  <div id="prediction-loading" style="display: none; text-align: center; padding: 30px 0;">
+    <div style="margin-bottom: 20px;">
+      <div class="spinner" style="border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+    </div>
+    <p style="font-size: 1.1em; margin: 0;">🧠 Running Logistic Regression Model...</p>
+    <p style="font-size: 0.9em; opacity: 0.9; margin: 10px 0 0 0;">Analyzing historical price patterns</p>
+  </div>
+  
+  <!-- Result State -->
+  <div id="prediction-result" style="display: none;">
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
       <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
         <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">Predicted Price</p>
-        <p class="prediction-price" style="margin: 5px 0 0 0; font-size: 1.8em; font-weight: bold;">
-          $<%= number_with_precision(@prediction[:predicted_price], precision: 2) %>
+        <p class="prediction-price" id="predicted-price" style="margin: 5px 0 0 0; font-size: 1.8em; font-weight: bold;">
+          --
         </p>
-        <p class="prediction-trend <%= @prediction[:trend] %>" style="margin: 5px 0 0 0; font-size: 0.9em;">
-          <%= @prediction[:trend] == 'upward' ? '📈 Upward' : '📉 Downward' %> Trend
+        <p class="prediction-trend" id="prediction-trend" style="margin: 5px 0 0 0; font-size: 0.9em;">
+          --
         </p>
       </div>
       
       <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
         <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">Confidence</p>
-        <p style="margin: 5px 0 0 0; font-size: 1.8em; font-weight: bold;">
-          <%= @prediction[:confidence] %>%
+        <p id="confidence-value" style="margin: 5px 0 0 0; font-size: 1.8em; font-weight: bold;">
+          --
         </p>
-        <p style="margin: 5px 0 0 0; font-size: 0.9em;">
-          Probability Up: <%= @prediction[:probability_up] %>%
+        <p id="probability-value" style="margin: 5px 0 0 0; font-size: 0.9em;">
+          --
         </p>
       </div>
     </div>
     
     <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
-      <p style="margin: 0; font-size: 0.9em;">
-        📊 Based on <strong><%= @prediction[:data_points] %> data points</strong> of historical price analysis
+      <p id="data-points-info" style="margin: 0; font-size: 0.9em;">
+        --
       </p>
     </div>
+    
+    <div style="text-align: center; margin-top: 15px;">
+      <button id="regenerate-prediction-btn" 
+              style="background: rgba(255,255,255,0.3); color: white; border: 1px solid white; padding: 10px 25px; border-radius: 25px; font-size: 0.9em; cursor: pointer; transition: all 0.3s ease;">
+        🔄 Regenerate Prediction
+      </button>
+    </div>
   </div>
-<% else %>
-  <div class="ai-prediction-unavailable" style="background: #fff3cd; padding: 20px; margin: 20px 0; border-left: 4px solid #ffc107; border-radius: 5px;">
-    <p style="margin: 0; color: #856404;">
-      ⚠️ <strong>Insufficient data for prediction</strong> - At least 7 days of historical price data is required for AI-powered predictions.
-    </p>
+  
+  <!-- Error State -->
+  <div id="prediction-error" style="display: none; text-align: center; padding: 20px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+    <p style="margin: 0; font-size: 1.1em;">⚠️ <strong id="error-message">Insufficient data for prediction</strong></p>
+    <p style="margin: 10px 0 0 0; font-size: 0.9em; opacity: 0.9;">At least 7 days of historical price data is required</p>
   </div>
-<% end %>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#generate-prediction-btn:hover,
+#regenerate-prediction-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+}
+</style>
+
+<script>
+document.addEventListener('turbo:load', function() {
+  const generateBtn = document.getElementById('generate-prediction-btn');
+  const regenerateBtn = document.getElementById('regenerate-prediction-btn');
+  
+  if (generateBtn) {
+    generateBtn.addEventListener('click', generatePrediction);
+  }
+  
+  if (regenerateBtn) {
+    regenerateBtn.addEventListener('click', generatePrediction);
+  }
+  
+  function generatePrediction() {
+    const stockId = document.getElementById('generate-prediction-btn').dataset.stockId;
+    
+    // Show loading state
+    document.getElementById('prediction-initial').style.display = 'none';
+    document.getElementById('prediction-result').style.display = 'none';
+    document.getElementById('prediction-error').style.display = 'none';
+    document.getElementById('prediction-loading').style.display = 'block';
+    
+    // Make AJAX request
+    fetch(`/stocks/${stockId}/predict`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('prediction-loading').style.display = 'none';
+      
+      if (data.success) {
+        // Display prediction results
+        const prediction = data.prediction;
+        document.getElementById('predicted-price').textContent = '$' + prediction.predicted_price.toFixed(2);
+        
+        const trendElement = document.getElementById('prediction-trend');
+        if (prediction.trend === 'upward') {
+          trendElement.innerHTML = '📈 Upward Trend';
+          trendElement.className = 'prediction-trend upward';
+        } else {
+          trendElement.innerHTML = '📉 Downward Trend';
+          trendElement.className = 'prediction-trend downward';
+        }
+        
+        document.getElementById('confidence-value').textContent = prediction.confidence.toFixed(2) + '%';
+        document.getElementById('probability-value').textContent = 'Probability Up: ' + prediction.probability_up.toFixed(2) + '%';
+        document.getElementById('data-points-info').innerHTML = '📊 Based on <strong>' + prediction.data_points + ' data points</strong> of historical price analysis';
+        
+        document.getElementById('prediction-result').style.display = 'block';
+      } else {
+        // Show error
+        document.getElementById('error-message').textContent = data.message;
+        document.getElementById('prediction-error').style.display = 'block';
+      }
+    })
+    .catch(error => {
+      document.getElementById('prediction-loading').style.display = 'none';
+      document.getElementById('error-message').textContent = 'An error occurred while generating prediction';
+      document.getElementById('prediction-error').style.display = 'block';
+      console.error('Prediction error:', error);
+    });
+  }
+});
+</script>
 
 <!-- Price Trend Graph -->
 <% if @chart_data && (@chart_data[:week][:prices].any? || @chart_data[:month][:prices].any? || @chart_data[:year][:prices].any?) %>

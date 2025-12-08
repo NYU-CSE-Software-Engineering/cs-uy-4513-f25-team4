@@ -1,6 +1,6 @@
 class StocksController < ApplicationController
   before_action :require_login, unless: -> { Rails.env.test? }
-  before_action :set_stock, only: [:show, :buy, :sell]
+  before_action :set_stock, only: [:show, :buy, :sell, :predict]
 
   def index
     @stocks = Stock.all
@@ -19,8 +19,28 @@ class StocksController < ApplicationController
       year: prepare_chart_data(365)
     }
     
-    # Generate ML prediction using Logistic Regression
-    @prediction = @stock.predict_price_with_logistic_regression
+    # Don't generate prediction automatically - user will click button
+    @prediction = nil
+  end
+
+  def predict
+    # Simulate ML computation time (0.5-2 seconds)
+    sleep(rand(0.5..2.0))
+    
+    # Run Logistic Regression prediction
+    prediction = @stock.predict_price_with_logistic_regression
+    
+    if prediction
+      render json: {
+        success: true,
+        prediction: prediction
+      }
+    else
+      render json: {
+        success: false,
+        message: 'Insufficient data for prediction. At least 7 days of historical price data is required.'
+      }, status: :unprocessable_entity
+    end
   end
 
   def buy
