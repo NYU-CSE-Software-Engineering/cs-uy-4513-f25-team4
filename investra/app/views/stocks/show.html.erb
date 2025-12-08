@@ -56,16 +56,25 @@
       </p>
     </div>
     
-    <button id="refresh-data-btn" onclick="refreshStockData()" style="background: white; color: #667eea; border: none; padding: 12px 25px; border-radius: 25px; font-size: 1em; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s ease;">
-      <span id="refresh-btn-text">🔄 Refresh Data</span>
+    <button id="refresh-data-btn" onclick="refreshStockData()" style="background: <%= is_stale ? '#ffc107' : 'white' %>; color: <%= is_stale ? 'white' : '#667eea' %>; border: none; padding: 12px 25px; border-radius: 25px; font-size: 1em; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; <%= is_stale ? 'animation: pulse 2s infinite;' : '' %>">
+      <span id="refresh-btn-text">🔄 <%= is_stale ? 'Refresh Now' : 'Refresh Data' %></span>
     </button>
   </div>
   
   <!-- Staleness Warning -->
   <% if is_stale %>
-    <div style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 10px; padding: 15px; margin-top: 20px;">
+    <div class="warning alert-warning" style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 10px; padding: 15px; margin-top: 20px;">
       <p style="margin: 0; font-weight: bold; color: #ffc107;">⚠️ Price data may be outdated</p>
-      <p style="margin: 5px 0 0 0; font-size: 0.9em;">Last updated <%= updated_minutes_ago %> minutes ago. Click "Refresh Data" for the latest price.</p>
+      <p style="margin: 5px 0 0 0; font-size: 0.9em;">
+        Last updated: 
+        <% hours = (updated_minutes_ago / 60.0).floor %>
+        <% if hours >= 1 %>
+          <%= hours %> hour<%= hours > 1 ? 's' : '' %> ago
+        <% else %>
+          <%= updated_minutes_ago %> min ago
+        <% end %>. 
+        Click "Refresh Now" for the latest price.
+      </p>
     </div>
   <% end %>
 </div>
