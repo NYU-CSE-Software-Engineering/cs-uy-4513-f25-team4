@@ -134,3 +134,7 @@ jobs:
       - name: Run Cucumber tests for price trend graph feature
         working-directory: investra
         run: bundle exec cucumber features/price_trend_graph.feature --format pretty
+
+      - name: Run Cucumber tests for stock prediction feature
+        working-directory: investra
+        run: bundle exec cucumber features/stock_prediction.feature --format pretty
