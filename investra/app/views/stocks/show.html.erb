@@ -323,29 +323,117 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   </div>
 <% end %>
 
+<!-- Recent News Section -->
 <% if @recent_news.any? %>
-  <div class="recent-news">
-    <h2>Recent Market News</h2>
-    <% @recent_news.each do |news| %>
-      <div class="news-item">
-        <h3><%= news.title %></h3>
-        <% if news.source.present? %>
-          <p><strong>Source:</strong> <%= news.source %></p>
-        <% end %>
-        <% if news.published_at.present? %>
-          <p><strong>Published:</strong> <%= news.published_at.strftime("%B %d, %Y at %I:%M %p") %></p>
-        <% end %>
-        <% if news.content.present? %>
-          <p><%= news.content %></p>
-        <% end %>
-        <% if news.url.present? %>
-          <p><%= link_to 'Read full article', news.url, target: '_blank' %></p>
-        <% end %>
-      </div>
-    <% end %>
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; margin: 30px 0; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+    <h2 style="color: white; margin: 0 0 30px 0; font-size: 2em; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.2em;">📰</span> Recent Market News
+    </h2>
+    
+    <div style="display: grid; gap: 20px;">
+      <% @recent_news.each_with_index do |news, index| %>
+        <div class="news-card" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); transition: all 0.3s ease; position: relative; overflow: hidden;">
+          <!-- Animated accent bar -->
+          <div style="position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);"></div>
+          
+          <div style="margin-left: 15px;">
+            <!-- News Badge & Metadata -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <% if news.source.present? %>
+                  <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600;">
+                    <%= news.source %>
+                  </span>
+                <% end %>
+                <% if news.published_at.present? %>
+                  <span style="color: #6c757d; font-size: 0.9em; display: flex; align-items: center; gap: 5px;">
+                    <span>🕐</span> <%= time_ago_in_words(news.published_at) %> ago
+                  </span>
+                <% end %>
+              </div>
+              
+              <span style="background: #f0f0f0; color: #667eea; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; font-weight: 500;">
+                #<%= index + 1 %>
+              </span>
+            </div>
+            
+            <!-- News Title -->
+            <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 1.4em; line-height: 1.4; font-weight: 700;">
+              <%= news.title %>
+            </h3>
+            
+            <!-- News Content -->
+            <% if news.content.present? %>
+              <p style="color: #4a5568; line-height: 1.8; margin: 0 0 20px 0; font-size: 1em;">
+                <%= news.content %>
+              </p>
+            <% end %>
+            
+            <!-- Read Full Article Button -->
+            <% if news.url.present? %>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 2px solid #f0f0f0;">
+                <%= link_to news.url, target: '_blank', rel: 'noopener noreferrer', style: 'display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);' do %>
+                  <span>📖 Read Full Article</span>
+                  <span style="font-size: 1.2em;">→</span>
+                <% end %>
+                
+                <div style="display: flex; gap: 10px;">
+                  <button style="background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;" onclick="shareArticle('<%= news.title.gsub("'", "\\'") %>', '<%= news.url %>')">
+                    <span style="font-size: 1.1em;">📤</span>
+                  </button>
+                  <button style="background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;" onclick="bookmarkArticle('<%= news.title.gsub("'", "\\'") %>')">
+                    <span style="font-size: 1.1em;">🔖</span>
+                  </button>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </div>
+  
+  <style>
+    .news-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+    }
+    
+    .news-card a:hover {
+      transform: translateX(5px);
+      box-shadow: 0 6px 15px rgba(102, 126, 234, 0.5) !important;
+    }
+    
+    .news-card button:hover {
+      background: #e0e0e0 !important;
+      transform: scale(1.1);
+    }
+  </style>
+  
+  <script>
+    function shareArticle(title, url) {
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          url: url
+        }).catch(err => console.log('Share cancelled'));
+      } else {
+        navigator.clipboard.writeText(url);
+        alert('Link copied to clipboard!');
+      }
+    }
+    
+    function bookmarkArticle(title) {
+      alert('Bookmarked: ' + title);
+      // In a real app, this would save to a database
+    }
+  </script>
 <% else %>
-  <p>No recent news available for this stock.</p>
+  <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 30px; margin: 20px 0; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+    <div style="font-size: 3em; margin-bottom: 15px;">📭</div>
+    <h3 style="color: #2d3748; margin: 0 0 10px 0;">No Recent News Available</h3>
+    <p style="color: #4a5568; margin: 0; font-size: 1.1em;">We'll update you as soon as news about <%= @stock.name %> becomes available.</p>
+  </div>
 <% end %>
 
 <div>

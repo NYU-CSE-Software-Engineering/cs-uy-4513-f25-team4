@@ -94,31 +94,38 @@ stocks_data.each do |stock_data|
   puts "✅ Created stock: #{stock.symbol} - #{stock.name}"
 end
 
-# Create news articles for stocks
+# Create news articles for stocks with real recent URLs
 news_data = [
   {
     stock_symbol: "AAPL",
     articles: [
       {
         title: "Apple Unveils New iPhone 16 with Advanced AI Features",
-        content: "Apple Inc. announced the iPhone 16 lineup today, featuring groundbreaking AI capabilities powered by the new A18 chip. The devices include improved camera systems and extended battery life.",
-        published_at: 2.days.ago,
+        content: "Apple Inc. announced the iPhone 16 lineup today, featuring groundbreaking AI capabilities powered by the new A18 chip. The devices include improved camera systems, new photographic styles, and extended battery life. The Pro models feature titanium design and the most powerful iPhone chips ever.",
+        published_at: 1.day.ago,
         source: "TechCrunch",
         url: "https://techcrunch.com/tag/apple/"
       },
       {
-        title: "Apple Reports Record Q4 Earnings",
-        content: "Apple Inc. reported its fourth quarter financial results, beating analyst expectations with revenue of $89.5 billion and earnings per share of $1.46.",
-        published_at: 5.days.ago,
+        title: "Apple Reports Record Q4 Earnings, Beats Wall Street Expectations",
+        content: "Apple Inc. reported its fourth quarter financial results, beating analyst expectations with revenue of $89.5 billion and earnings per share of $1.46. Services revenue hit an all-time high, driven by the App Store, iCloud, and Apple Music.",
+        published_at: 3.days.ago,
         source: "Reuters",
         url: "https://www.reuters.com/technology/apple/"
       },
       {
-        title: "Apple Vision Pro Sees Strong Demand in Enterprise",
-        content: "The Apple Vision Pro is gaining traction in enterprise markets, with major corporations adopting the spatial computing platform for training and collaboration.",
-        published_at: 7.days.ago,
+        title: "Apple Vision Pro Gains Momentum in Enterprise Markets",
+        content: "The Apple Vision Pro is gaining significant traction in enterprise markets, with Fortune 500 companies adopting the spatial computing platform for immersive training, virtual collaboration, and 3D design workflows. Major retailers and healthcare providers lead adoption.",
+        published_at: 5.days.ago,
         source: "Bloomberg",
         url: "https://www.bloomberg.com/quote/AAPL:US"
+      },
+      {
+        title: "Apple Invests Billions in AI Research and Development",
+        content: "Apple is ramping up its AI investments, pouring billions into developing on-device AI capabilities. The company's focus on privacy-first AI distinguishes it from competitors, with new features powered by Apple Intelligence arriving across all devices.",
+        published_at: 8.days.ago,
+        source: "The Verge",
+        url: "https://www.theverge.com/apple"
       }
     ]
   },
@@ -126,18 +133,65 @@ news_data = [
     stock_symbol: "GOOGL",
     articles: [
       {
-        title: "Google Launches New AI-Powered Search Features",
-        content: "Alphabet's Google unveiled major updates to its search engine, integrating advanced AI models to provide more accurate and contextual search results.",
+        title: "Google Gemini 2.0 Launches with Multimodal AI Capabilities",
+        content: "Alphabet's Google unveiled Gemini 2.0, the next generation of its AI model with enhanced multimodal capabilities. The model can seamlessly process text, images, audio, and video, positioning Google as a leader in the AI race against OpenAI and Microsoft.",
         published_at: 1.day.ago,
         source: "The Verge",
         url: "https://www.theverge.com/google"
       },
       {
-        title: "Alphabet Expands Cloud Computing Infrastructure",
-        content: "Alphabet Inc. announced plans to invest $10 billion in data centers and cloud infrastructure across the United States.",
-        published_at: 3.days.ago,
+        title: "Alphabet Expands Cloud Infrastructure with $15B Investment",
+        content: "Alphabet Inc. announced plans to invest $15 billion in data centers and cloud infrastructure across the United States and Europe. The expansion aims to support growing AI workloads and Google Cloud's enterprise customers.",
+        published_at: 2.days.ago,
         source: "CNBC",
         url: "https://www.cnbc.com/quotes/GOOGL"
+      },
+      {
+        title: "YouTube Introduces AI-Powered Content Creation Tools",
+        content: "YouTube, owned by Alphabet, launched new AI tools for content creators, including automated video editing, AI-generated thumbnails, and smart caption generation. The platform aims to empower creators with professional-grade AI assistance.",
+        published_at: 4.days.ago,
+        source: "TechCrunch",
+        url: "https://techcrunch.com/tag/google/"
+      },
+      {
+        title: "Google Search Market Share Remains Dominant Despite AI Challengers",
+        content: "Despite the rise of AI-powered search alternatives, Google maintains over 90% global search market share. The company's integration of AI into traditional search has helped it retain its competitive edge.",
+        published_at: 6.days.ago,
+        source: "Bloomberg",
+        url: "https://www.bloomberg.com/quote/GOOGL:US"
+      }
+    ]
+  },
+  {
+    stock_symbol: "MSFT",
+    articles: [
+      {
+        title: "Microsoft Azure Revenue Surges 33% Driven by AI Demand",
+        content: "Microsoft Corporation reported stellar Azure cloud growth of 33% year-over-year, primarily driven by enterprise demand for AI services. The company's partnership with OpenAI continues to drive significant revenue growth across its cloud platform.",
+        published_at: 1.day.ago,
+        source: "Reuters",
+        url: "https://www.reuters.com/technology/microsoft/"
+      },
+      {
+        title: "Microsoft Copilot Now Available Across All Office Applications",
+        content: "Microsoft announced the full rollout of Copilot AI assistant across all Office 365 applications. The AI-powered tool helps users with document creation, data analysis, and email management, transforming workplace productivity.",
+        published_at: 2.days.ago,
+        source: "TechCrunch",
+        url: "https://techcrunch.com/tag/microsoft/"
+      },
+      {
+        title: "Xbox Game Pass Hits 50 Million Subscribers",
+        content: "Microsoft's Xbox Game Pass subscription service reached 50 million subscribers, cementing its position as the leading gaming subscription platform. The service offers access to hundreds of games, including day-one releases of Microsoft first-party titles.",
+        published_at: 5.days.ago,
+        source: "The Verge",
+        url: "https://www.theverge.com/microsoft"
+      },
+      {
+        title: "Microsoft Announces $60B Stock Buyback Program",
+        content: "Microsoft Corporation's board approved a massive $60 billion stock buyback program and increased the quarterly dividend by 10%, signaling confidence in the company's financial strength and future growth prospects.",
+        published_at: 7.days.ago,
+        source: "Bloomberg",
+        url: "https://www.bloomberg.com/quote/MSFT:US"
       }
     ]
   },
@@ -145,18 +199,65 @@ news_data = [
     stock_symbol: "TSLA",
     articles: [
       {
-        title: "Tesla Cybertruck Production Ramps Up",
-        content: "Tesla Inc. announced that Cybertruck production has significantly increased, with the company now producing over 1,000 units per week.",
+        title: "Tesla Cybertruck Production Ramps to 1,000 Units Per Week",
+        content: "Tesla Inc. announced that Cybertruck production has significantly increased, with the Austin Gigafactory now producing over 1,000 units per week. The all-electric pickup truck has received over 2 million pre-orders since its unveiling.",
         published_at: 1.day.ago,
         source: "Electrek",
         url: "https://electrek.co/guides/tesla/"
       },
       {
-        title: "Tesla Opens New Gigafactory in Texas",
-        content: "Tesla inaugurated its newest manufacturing facility in Austin, Texas, which will produce batteries and electric vehicle components.",
-        published_at: 4.days.ago,
+        title: "Tesla Full Self-Driving Beta Expands to All US Customers",
+        content: "Tesla rolled out its Full Self-Driving (FSD) Beta software to all customers in the United States who purchased the feature. The latest version includes significant improvements in city driving and highway navigation capabilities.",
+        published_at: 3.days.ago,
         source: "Reuters",
         url: "https://www.reuters.com/companies/TSLA.O/"
+      },
+      {
+        title: "Tesla Opens Massive New Gigafactory in Mexico",
+        content: "Tesla inaugurated its newest manufacturing facility in Monterrey, Mexico, which will produce next-generation affordable electric vehicles and battery packs. The facility is expected to create 10,000 jobs and produce 1 million vehicles annually.",
+        published_at: 6.days.ago,
+        source: "Bloomberg",
+        url: "https://www.bloomberg.com/quote/TSLA:US"
+      },
+      {
+        title: "Elon Musk Announces Tesla Semi Deliveries Accelerating",
+        content: "Tesla CEO Elon Musk confirmed that production of the all-electric Tesla Semi is accelerating, with major companies like PepsiCo and Walmart receiving their first deliveries. The Semi promises up to 500 miles of range on a single charge.",
+        published_at: 9.days.ago,
+        source: "CNBC",
+        url: "https://www.cnbc.com/quotes/TSLA"
+      }
+    ]
+  },
+  {
+    stock_symbol: "AMZN",
+    articles: [
+      {
+        title: "Amazon AWS Launches New AI Chip to Compete with Nvidia",
+        content: "Amazon Web Services unveiled its latest custom AI chip, Graviton4, designed to offer superior price-performance for machine learning workloads. The chip aims to reduce reliance on Nvidia GPUs and lower costs for enterprise customers.",
+        published_at: 1.day.ago,
+        source: "TechCrunch",
+        url: "https://techcrunch.com/tag/amazon/"
+      },
+      {
+        title: "Amazon Prime Day Breaks All-Time Sales Records",
+        content: "Amazon.com reported record-breaking sales during its annual Prime Day event, with total revenue exceeding $14 billion globally. Electronics, home goods, and fashion categories led the surge, driven by exclusive deals for Prime members.",
+        published_at: 2.days.ago,
+        source: "CNBC",
+        url: "https://www.cnbc.com/quotes/AMZN"
+      },
+      {
+        title: "Amazon Expands Same-Day Delivery to 90 More US Cities",
+        content: "Amazon announced a major expansion of its same-day delivery service, now covering 90 additional U.S. cities. The company continues to invest heavily in logistics infrastructure to maintain its competitive edge in e-commerce.",
+        published_at: 5.days.ago,
+        source: "Reuters",
+        url: "https://www.reuters.com/companies/AMZN.O/"
+      },
+      {
+        title: "Amazon Invests $4B in AI Startup Anthropic",
+        content: "Amazon completed a $4 billion investment in Anthropic, the AI safety company behind Claude AI. The partnership will integrate Claude across Amazon's services and make Anthropic's models available on AWS to enterprise customers.",
+        published_at: 8.days.ago,
+        source: "Bloomberg",
+        url: "https://www.bloomberg.com/quote/AMZN:US"
       }
     ]
   }
