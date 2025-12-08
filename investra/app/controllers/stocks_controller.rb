@@ -31,9 +31,16 @@ class StocksController < ApplicationController
     prediction = @stock.predict_price_with_logistic_regression
     
     if prediction
+      # Ensure all numeric values are floats, not strings
       render json: {
         success: true,
-        prediction: prediction
+        prediction: {
+          predicted_price: prediction[:predicted_price].to_f,
+          probability_up: prediction[:probability_up].to_f,
+          confidence: prediction[:confidence].to_f,
+          trend: prediction[:trend],
+          data_points: prediction[:data_points].to_i
+        }
       }
     else
       render json: {
