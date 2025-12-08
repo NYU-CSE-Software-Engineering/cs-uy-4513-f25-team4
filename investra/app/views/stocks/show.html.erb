@@ -118,20 +118,40 @@
 </style>
 
 <script>
-document.addEventListener('turbo:load', function() {
+function initializePrediction() {
   const generateBtn = document.getElementById('generate-prediction-btn');
   const regenerateBtn = document.getElementById('regenerate-prediction-btn');
   
+  console.log('Initializing prediction buttons...', generateBtn, regenerateBtn);
+  
   if (generateBtn) {
-    generateBtn.addEventListener('click', generatePrediction);
+    // Remove any existing listeners
+    const newGenerateBtn = generateBtn.cloneNode(true);
+    generateBtn.parentNode.replaceChild(newGenerateBtn, generateBtn);
+    
+    newGenerateBtn.addEventListener('click', function() {
+      console.log('Generate button clicked!');
+      generatePrediction();
+    });
   }
   
   if (regenerateBtn) {
-    regenerateBtn.addEventListener('click', generatePrediction);
+    regenerateBtn.addEventListener('click', function() {
+      console.log('Regenerate button clicked!');
+      generatePrediction();
+    });
   }
   
   function generatePrediction() {
-    const stockId = document.getElementById('generate-prediction-btn').dataset.stockId;
+    const btn = document.getElementById('generate-prediction-btn');
+    const stockId = btn ? btn.dataset.stockId : null;
+    
+    console.log('Generating prediction for stock:', stockId);
+    
+    if (!stockId) {
+      console.error('Stock ID not found!');
+      return;
+    }
     
     // Show loading state
     document.getElementById('prediction-initial').style.display = 'none';
@@ -147,8 +167,12 @@ document.addEventListener('turbo:load', function() {
         'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
       }
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log('Response status:', response.status);
+      return response.json();
+    })
     .then(data => {
+      console.log('Prediction data:', data);
       document.getElementById('prediction-loading').style.display = 'none';
       
       if (data.success) {
@@ -172,18 +196,27 @@ document.addEventListener('turbo:load', function() {
         document.getElementById('prediction-result').style.display = 'block';
       } else {
         // Show error
-        document.getElementById('error-message').textContent = data.message;
+        document.getElementById('error-message').textContent = data.message || 'Insufficient data for prediction';
         document.getElementById('prediction-error').style.display = 'block';
       }
     })
     .catch(error => {
+      console.error('Prediction error:', error);
       document.getElementById('prediction-loading').style.display = 'none';
       document.getElementById('error-message').textContent = 'An error occurred while generating prediction';
       document.getElementById('prediction-error').style.display = 'block';
-      console.error('Prediction error:', error);
     });
   }
-});
+}
+
+// Support both Turbo and regular page loads
+document.addEventListener('turbo:load', initializePrediction);
+document.addEventListener('DOMContentLoaded', initializePrediction);
+
+// Also run immediately in case page is already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(initializePrediction, 100);
+}
 </script>
 
 <!-- Price Trend Graph -->
