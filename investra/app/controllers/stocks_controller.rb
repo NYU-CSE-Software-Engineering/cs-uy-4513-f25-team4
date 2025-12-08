@@ -205,21 +205,6 @@ class StocksController < ApplicationController
     @stock = Stock.find(params[:id])
   end
 
-  def prepare_chart_data(days)
-    history = @stock.price_points.where('recorded_at >= ?', days.days.ago)
-    
-    return { dates: [], prices: [] } unless history.exists?
-    
-    prices_by_date = history.order(recorded_at: :desc).map do |pp|
-      { date: pp.recorded_at.strftime('%Y-%m-%d'), price: pp.price.to_f }
-    end
-    
-    {
-      dates: prices_by_date.map { |p| p[:date] },
-      prices: prices_by_date.map { |p| p[:price] }
-    }
-  end
-
   # Simulate real-time price fetch from external API
   # In production, replace this with actual API calls to:
   # - Yahoo Finance API
