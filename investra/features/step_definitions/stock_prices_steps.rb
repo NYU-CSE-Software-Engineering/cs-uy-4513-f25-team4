@@ -30,10 +30,11 @@ end
 Given("stock {string} has the following price history:") do |symbol, table|
   stock = Stock.find_by(symbol: symbol)
   table.hashes.each do |row|
+    date_str = row['recorded_at'] || row['date']
     PricePoint.create!(
       stock: stock,
       price: row['price'].to_f,
-      recorded_at: DateTime.parse(row['recorded_at'])
+      recorded_at: DateTime.parse(date_str)
     )
   end
 end

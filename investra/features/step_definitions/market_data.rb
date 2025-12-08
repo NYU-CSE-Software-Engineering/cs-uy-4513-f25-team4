@@ -46,9 +46,7 @@
     expect(page).to have_content(/\$?\d+/)
   end
   
-  Then('I should see a price trend graph') do
-    expect(page).to have_css('#price-graph')
-  end
+  # Removed - duplicate of price_trend_graph_steps.rb
   
   Then('I should see controls labeled {string}, {string}, {string}, {string}') do |string, string2, string3, string4|
     expect(page).to have_button(string)
