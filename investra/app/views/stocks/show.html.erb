@@ -43,10 +43,10 @@
     
     <!-- Timeframe Buttons -->
     <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-      <button class="timeframe-btn active" data-timeframe="7" style="background: rgba(255,255,255,0.9); color: #667eea; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      <button class="timeframe-btn" data-timeframe="7" style="background: rgba(255,255,255,0.3); color: white; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
         📅 Week
       </button>
-      <button class="timeframe-btn" data-timeframe="30" style="background: rgba(255,255,255,0.3); color: white; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      <button class="timeframe-btn active" data-timeframe="30" style="background: rgba(255,255,255,0.9); color: #667eea; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
         📆 Month
       </button>
       <button class="timeframe-btn" data-timeframe="365" style="background: rgba(255,255,255,0.3); color: white; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
@@ -57,8 +57,8 @@
     <!-- Chart Canvas -->
     <div style="background: white; padding: 20px; border-radius: 8px; position: relative; height: 400px;">
       <canvas id="price-trend-chart" 
-              data-prices="<%= @chart_data[:week][:prices].to_json %>"
-              data-dates="<%= @chart_data[:week][:labels].to_json %>"
+              data-prices="<%= @chart_data[:month][:prices].to_json %>"
+              data-dates="<%= @chart_data[:month][:labels].to_json %>"
               data-week-prices="<%= @chart_data[:week][:prices].to_json %>"
               data-week-dates="<%= @chart_data[:week][:labels].to_json %>"
               data-month-prices="<%= @chart_data[:month][:prices].to_json %>"
@@ -255,11 +255,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Load initial chart
-  const weekPrices = JSON.parse(canvas.dataset.weekPrices || '[]');
-  const weekDates = JSON.parse(canvas.dataset.weekDates || '[]');
-  if (weekPrices.length > 0) {
-    initChart(weekDates, weekPrices);
+  // Load initial chart (default: month)
+  const monthPrices = JSON.parse(canvas.dataset.monthPrices || '[]');
+  const monthDates = JSON.parse(canvas.dataset.monthDates || '[]');
+  if (monthPrices.length > 0) {
+    initChart(monthDates, monthPrices);
   }
   
   // Handle timeframe button clicks
