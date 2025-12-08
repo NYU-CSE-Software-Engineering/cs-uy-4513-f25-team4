@@ -38,8 +38,19 @@
     </thead>
     <tbody>
       <% @stocks.each do |stock| %>
+        <% updated_minutes_ago = ((Time.now - stock.updated_at) / 60).round %>
+        <% is_fresh = updated_minutes_ago < 10 %>
+        
         <tr class="stock-row" data-symbol="<%= stock.symbol %>">
-          <td><%= link_to stock.symbol, stock_path(stock), id: "stock-link-#{stock.symbol}" %></td>
+          <td>
+            <%= link_to stock.symbol, stock_path(stock), id: "stock-link-#{stock.symbol}" %>
+            <% if is_fresh %>
+              <span style="display: inline-block; margin-left: 8px; background: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; font-weight: bold; vertical-align: middle; animation: pulse 2s infinite;">
+                <span style="display: inline-block; width: 6px; height: 6px; background: white; border-radius: 50%; margin-right: 3px; animation: blink 1s infinite;"></span>
+                LIVE
+              </span>
+            <% end %>
+          </td>
           <td><%= stock.name %></td>
           <td>
             <div style="font-size: 1.1em; font-weight: bold;">
@@ -55,6 +66,9 @@
                 </span>
               </div>
             <% end %>
+            <div style="margin-top: 5px; font-size: 0.8em; color: #6c757d;">
+              Last Updated: <%= updated_minutes_ago %> min ago
+            </div>
           </td>
           <td><%= stock.available_quantity %></td>
           <td>

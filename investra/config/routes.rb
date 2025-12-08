@@ -61,6 +61,7 @@ Rails.application.routes.draw do
       post :buy
       post :sell
       post :predict
+      post :refresh
     end
   end
 

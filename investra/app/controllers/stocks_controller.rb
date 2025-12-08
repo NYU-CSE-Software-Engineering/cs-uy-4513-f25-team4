@@ -1,6 +1,6 @@
 class StocksController < ApplicationController
   before_action :require_login, unless: -> { Rails.env.test? }
-  before_action :set_stock, only: [:show, :buy, :sell, :predict]
+  before_action :set_stock, only: [:show, :buy, :sell, :predict, :refresh]
 
   def index
     @stocks = Stock.all
@@ -48,6 +48,39 @@ class StocksController < ApplicationController
         message: 'Insufficient data for prediction. At least 7 days of historical price data is required.'
       }, status: :unprocessable_entity
     end
+  end
+
+  def refresh
+    # Simulate fetching fresh data from external API
+    # In production, this would call Yahoo Finance, Alpha Vantage, or similar API
+    new_price = simulate_real_time_price_fetch(@stock)
+    
+    # Update stock price and timestamp
+    @stock.update(price: new_price, updated_at: Time.current)
+    
+    # Create new price point for historical tracking
+    PricePoint.create!(
+      stock: @stock,
+      price: new_price,
+      recorded_at: Time.current
+    )
+    
+    render json: {
+      success: true,
+      message: 'Data refreshed successfully',
+      stock: {
+        symbol: @stock.symbol,
+        name: @stock.name,
+        price: @stock.price.to_f,
+        updated_at: @stock.updated_at.iso8601,
+        last_updated_human: @stock.last_updated_human
+      }
+    }
+  rescue => e
+    render json: {
+      success: false,
+      message: "Failed to refresh data: #{e.message}"
+    }, status: :unprocessable_entity
   end
 
   def buy
@@ -166,6 +199,45 @@ class StocksController < ApplicationController
 
       @stock.update!(available_quantity: @stock.available_quantity + quantity)
     end
+  end
+
+  def set_stock
+    @stock = Stock.find(params[:id])
+  end
+
+  def prepare_chart_data(days)
+    history = @stock.price_points.where('recorded_at >= ?', days.days.ago)
+    
+    return { dates: [], prices: [] } unless history.exists?
+    
+    prices_by_date = history.order(recorded_at: :desc).map do |pp|
+      { date: pp.recorded_at.strftime('%Y-%m-%d'), price: pp.price.to_f }
+    end
+    
+    {
+      dates: prices_by_date.map { |p| p[:date] },
+      prices: prices_by_date.map { |p| p[:price] }
+    }
+  end
+
+  # Simulate real-time price fetch from external API
+  # In production, replace this with actual API calls to:
+  # - Yahoo Finance API
+  # - Alpha Vantage API
+  # - IEX Cloud API
+  # - Twelve Data API
+  def simulate_real_time_price_fetch(stock)
+    # Simulate realistic price movement (±2% volatility)
+    base_price = stock.price
+    volatility = 0.02 # 2% max movement
+    change_percent = rand(-volatility..volatility)
+    
+    new_price = (base_price * (1 + change_percent)).round(2)
+    
+    # Ensure price stays positive and reasonable
+    new_price = [new_price, 1.0].max
+    
+    new_price
   end
 end
 
