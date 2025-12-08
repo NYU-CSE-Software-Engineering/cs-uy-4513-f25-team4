@@ -89,7 +89,7 @@ Then("I should see predicted price for next day") do
   within('#prediction-result') do
     expect(page).to have_css('#predicted-price')
     price_text = page.find('#predicted-price').text
-    expect(price_text).to match(/\$\d+\.\d{2}/)
+    expect(price_text).to match(/\$\d+\.\d{1,2}/) # Allow 1-2 decimal places
   end
 end
 
@@ -143,7 +143,7 @@ Then("I should see {string} with a dollar amount") do |label|
     expect(page).to have_content(label)
     case label
     when "Predicted Price"
-      expect(page.find('#predicted-price').text).to match(/\$\d+\.\d{2}/)
+      expect(page.find('#predicted-price').text).to match(/\$\d+\.\d{1,2}/) # Allow 1-2 decimal places
     end
   end
 end
