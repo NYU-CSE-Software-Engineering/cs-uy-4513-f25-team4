@@ -45,15 +45,18 @@ Then("the graph should display {string} timeframe by default") do |timeframe|
 end
 
 When("I click on {string} timeframe button") do |timeframe|
-  case timeframe
+  btn_selector = case timeframe
   when "Week"
-    find('.timeframe-btn[data-timeframe="7"]').click
+    '.timeframe-btn[data-timeframe="7"]'
   when "Month"
-    find('.timeframe-btn[data-timeframe="30"]').click
+    '.timeframe-btn[data-timeframe="30"]'
   when "Year"
-    find('.timeframe-btn[data-timeframe="365"]').click
+    '.timeframe-btn[data-timeframe="365"]'
   end
-  sleep 0.5 # Allow time for the graph to update
+  
+  find(btn_selector).click
+  # Wait for button to become active
+  expect(page).to have_css("#{btn_selector}.active", wait: 2)
 end
 
 Then("the graph should display {string} data") do |timeframe|
