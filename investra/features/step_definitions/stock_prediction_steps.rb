@@ -81,3 +81,8 @@ Then("I should see {string} with number of data points") do |label|
   expect(page.text).to match(/#{label}.*\d+/)
 end
 
+Then("I should see {string} with a percentage") do |label|
+  expect(page).to have_content(label)
+  expect(page.text).to match(/#{label}.*\d+(\.\d+)?%/)
+end
+

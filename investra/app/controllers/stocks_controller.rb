@@ -18,6 +18,9 @@ class StocksController < ApplicationController
       month: prepare_chart_data(30),
       year: prepare_chart_data(365)
     }
+    
+    # Generate ML prediction using Logistic Regression
+    @prediction = @stock.predict_price_with_logistic_regression
   end
 
   def buy

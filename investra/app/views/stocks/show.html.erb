@@ -35,6 +35,48 @@
   <% end %>
 </div>
 
+<!-- AI Price Prediction Section -->
+<% if @prediction %>
+  <div class="ai-prediction" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 25px; margin: 20px 0; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+    <h2 style="color: white; margin-top: 0;">🤖 AI Price Prediction</h2>
+    <p style="font-size: 0.9em; opacity: 0.9; margin: 5px 0 20px 0;">Logistic Regression Model</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+      <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+        <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">Predicted Price</p>
+        <p class="prediction-price" style="margin: 5px 0 0 0; font-size: 1.8em; font-weight: bold;">
+          $<%= number_with_precision(@prediction[:predicted_price], precision: 2) %>
+        </p>
+        <p class="prediction-trend <%= @prediction[:trend] %>" style="margin: 5px 0 0 0; font-size: 0.9em;">
+          <%= @prediction[:trend] == 'upward' ? '📈 Upward' : '📉 Downward' %> Trend
+        </p>
+      </div>
+      
+      <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+        <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">Confidence</p>
+        <p style="margin: 5px 0 0 0; font-size: 1.8em; font-weight: bold;">
+          <%= @prediction[:confidence] %>%
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 0.9em;">
+          Probability Up: <%= @prediction[:probability_up] %>%
+        </p>
+      </div>
+    </div>
+    
+    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+      <p style="margin: 0; font-size: 0.9em;">
+        📊 Based on <strong><%= @prediction[:data_points] %> data points</strong> of historical price analysis
+      </p>
+    </div>
+  </div>
+<% else %>
+  <div class="ai-prediction-unavailable" style="background: #fff3cd; padding: 20px; margin: 20px 0; border-left: 4px solid #ffc107; border-radius: 5px;">
+    <p style="margin: 0; color: #856404;">
+      ⚠️ <strong>Insufficient data for prediction</strong> - At least 7 days of historical price data is required for AI-powered predictions.
+    </p>
+  </div>
+<% end %>
+
 <!-- Price Trend Graph -->
 <% if @chart_data && (@chart_data[:week][:prices].any? || @chart_data[:month][:prices].any? || @chart_data[:year][:prices].any?) %>
   <div class="price-trend-graph" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; margin: 20px 0; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
