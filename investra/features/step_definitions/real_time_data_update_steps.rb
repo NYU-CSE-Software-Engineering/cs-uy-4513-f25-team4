@@ -19,14 +19,6 @@ Then("I should see {string} for stock {string}") do |text, symbol|
   expect(page).to have_content(symbol)
 end
 
-Then("I should see {string}") do |text|
-  expect(page).to have_content(text)
-end
-
-When("I click the {string} button") do |button_text|
-  click_button button_text
-end
-
 Then("the stock price should be updated") do
   # Check that the page has been refreshed or updated
   expect(page).to have_css('.stock-price', wait: 5)
@@ -110,15 +102,6 @@ end
 
 Then("I should see a prominent {string} button") do |button_text|
   expect(page).to have_button(button_text)
-end
-
-Given("I am on the stock detail page for {string}") do |symbol|
-  stock = Stock.find_by(symbol: symbol)
-  visit stock_path(stock)
-end
-
-Then("I should see {string}") do |text|
-  expect(page).to have_content(text)
 end
 
 When("I wait for {int} seconds") do |seconds|
