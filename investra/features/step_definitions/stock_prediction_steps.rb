@@ -46,7 +46,12 @@ end
 
 Then("I should see predicted price for next day") do
   # Click generate prediction button first using CSS selector
-  find('#generate-prediction-btn').click
+  find('#generate-prediction-btn', visible: true).click
+  
+  # Wait for loading to disappear and result to appear
+  expect(page).to have_no_css('#prediction-initial', visible: true, wait: 1)
+  expect(page).to have_css('#prediction-loading', visible: true, wait: 2)
+  expect(page).to have_no_css('#prediction-loading', visible: true, wait: 10)
   expect(page).to have_css('#prediction-result', visible: true, wait: 5)
   
   within('#prediction-result') do
@@ -65,7 +70,12 @@ end
 
 Then("the predicted price should indicate an upward trend") do
   # Click generate prediction button first using CSS selector
-  find('#generate-prediction-btn').click
+  find('#generate-prediction-btn', visible: true).click
+  
+  # Wait for loading to disappear and result to appear
+  expect(page).to have_no_css('#prediction-initial', visible: true, wait: 1)
+  expect(page).to have_css('#prediction-loading', visible: true, wait: 2)
+  expect(page).to have_no_css('#prediction-loading', visible: true, wait: 10)
   expect(page).to have_css('#prediction-result', visible: true, wait: 5)
   
   within('#prediction-result') do
@@ -75,7 +85,12 @@ end
 
 Then("the predicted price should indicate a downward trend") do
   # Click generate prediction button first using CSS selector
-  find('#generate-prediction-btn').click
+  find('#generate-prediction-btn', visible: true).click
+  
+  # Wait for loading to disappear and result to appear
+  expect(page).to have_no_css('#prediction-initial', visible: true, wait: 1)
+  expect(page).to have_css('#prediction-loading', visible: true, wait: 2)
+  expect(page).to have_no_css('#prediction-loading', visible: true, wait: 10)
   expect(page).to have_css('#prediction-result', visible: true, wait: 5)
   
   within('#prediction-result') do
@@ -85,15 +100,28 @@ end
 
 Then("I should not see predicted price") do
   # Click generate prediction button - should show error for insufficient data
-  find('#generate-prediction-btn').click
+  find('#generate-prediction-btn', visible: true).click
+  
+  # Wait for loading to disappear and error to appear
+  expect(page).to have_no_css('#prediction-initial', visible: true, wait: 1)
+  expect(page).to have_css('#prediction-loading', visible: true, wait: 2)
+  expect(page).to have_no_css('#prediction-loading', visible: true, wait: 10)
   expect(page).to have_css('#prediction-error', visible: true, wait: 5)
   expect(page).not_to have_css('#prediction-result', visible: true)
+  
+  # Verify error message is visible
+  within('#prediction-error') do
+    expect(page).to have_content('Insufficient data', visible: true)
+  end
 end
 
 Then("I should see {string} with a dollar amount") do |label|
   # Click generate prediction button first if not already clicked
   if page.has_css?('#prediction-initial', visible: true)
-    find('#generate-prediction-btn').click
+    find('#generate-prediction-btn', visible: true).click
+    expect(page).to have_no_css('#prediction-initial', visible: true, wait: 1)
+    expect(page).to have_css('#prediction-loading', visible: true, wait: 2)
+    expect(page).to have_no_css('#prediction-loading', visible: true, wait: 10)
     expect(page).to have_css('#prediction-result', visible: true, wait: 5)
   end
   
