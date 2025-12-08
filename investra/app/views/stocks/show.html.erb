@@ -5,7 +5,7 @@
   <% 
     updated_minutes_ago = ((Time.now - @stock.updated_at) / 60).round
     is_fresh = updated_minutes_ago < 10
-    is_stale = updated_minutes_ago > 120 # 2 hours
+    is_stale = updated_minutes_ago >= 120 # 2 hours or more
   %>
   
   <!-- LIVE Badge -->

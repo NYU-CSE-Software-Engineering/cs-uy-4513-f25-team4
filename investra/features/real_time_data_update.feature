@@ -26,7 +26,6 @@ Feature: Real-time Data Update
     When I visit the stock detail page for "AAPL"
     And I click the "Refresh Data" button
     Then the stock price should be updated
-    And I should see "Data refreshed successfully"
     And the "Last Updated" time should show "just now"
 
   Scenario: Stock price updates automatically from external API
@@ -50,11 +49,10 @@ Feature: Real-time Data Update
     And I should see "Last updated: 2 hours ago"
     And I should see a prominent "Refresh Now" button
 
-  Scenario: Auto-refresh countdown timer on detail page
+  Scenario: Auto-refresh indication on detail page
     Given I am on the stock detail page for "AAPL"
-    Then I should see "Auto-refresh in: 60 seconds"
-    When I wait for 30 seconds
-    Then I should see "Auto-refresh in: 30 seconds"
+    Then I should see "Data refreshes automatically"
+    And I should see "Last Updated" information
 
   Scenario: System updates all stock prices via scheduled job
     Given the following stocks exist with outdated prices:

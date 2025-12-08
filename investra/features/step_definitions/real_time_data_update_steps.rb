@@ -119,6 +119,10 @@ Given("I am on the stock detail page for {string}") do |symbol|
   visit stock_path(stock)
 end
 
+Then("I should see {string} information") do |text|
+  expect(page).to have_content(text)
+end
+
 Given("the following stocks exist with outdated prices:") do |table|
   table.hashes.each do |row|
     stock = Stock.find_by(symbol: row['symbol'])
