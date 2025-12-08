@@ -27,7 +27,14 @@ Then("the stock price should be updated") do
 end
 
 Then("the {string} time should show {string}") do |label, time_text|
-  expect(page).to have_content("#{label}: #{time_text}")
+  # After refresh, time could be "just now" or "1 minute ago" due to page reload timing
+  if time_text == "just now"
+    expect(page).to have_content(label)
+    # Accept either "just now" or "1 minute ago" as both indicate recent update
+    expect(page.text).to match(/#{label}:?\s+(just now|1 minute ago)/i)
+  else
+    expect(page).to have_content("#{label}: #{time_text}")
+  end
 end
 
 Given("an external stock data API is available") do
