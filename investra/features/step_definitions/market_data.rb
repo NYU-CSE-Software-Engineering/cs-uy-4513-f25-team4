@@ -1,8 +1,4 @@
-  Given('the following stocks exist:') do |table|
-    table.hashes.each do |row|
-      Stock.create!(ticker: row['ticker'], company_name: row['company_name'], sector: row['sector'], nasdaq: row['nasdaq'])
-    end
-  end
+  # Removed duplicate step - now in stock_information_steps.rb
   
   Given('the current time is {string}') do |string|
     Timecop.freeze(Time.parse(string))
@@ -40,10 +36,7 @@
     Prediction.create!(stock: stock, horizon: string2, summary: "Predicted price will rise.", predicted_price: rand(100..200), generated_at: Time.now, confidence: rand(0.1..0.9), model_used: "Finn4")
   end
   
-  When('I visit the stock detail page for {string}') do |string|
-    stock = Stock.find_by(ticker: string)
-    visit stock_path(stock)
-  end
+  # Removed - now in common_steps.rb with correct symbol field
   
   Then('I should see the title {string}') do |string|
     expect(page).to have_content(string)
@@ -53,9 +46,7 @@
     expect(page).to have_content(/\$?\d+/)
   end
   
-  Then('I should see a price trend graph') do
-    expect(page).to have_css('#price-graph')
-  end
+  # Removed - duplicate of price_trend_graph_steps.rb
   
   Then('I should see controls labeled {string}, {string}, {string}, {string}') do |string, string2, string3, string4|
     expect(page).to have_button(string)

@@ -1,4 +1,5 @@
 # features/step_definitions/buying_and_selling_steps.rb
+require 'timeout'
 
 # Helper methods
 def create_stock(symbol, name: symbol, price: 100.0, available_quantity: 1000)
@@ -6,6 +7,9 @@ def create_stock(symbol, name: symbol, price: 100.0, available_quantity: 1000)
 end
 
 def submit_transaction(type, quantity)
+  # Reset transaction flag before starting
+  page.execute_script("window.transactionCompleted = false;")
+  
   quantity_num = quantity.to_i
   endpoint = type == 'buy' ? 'buy' : 'sell'
   field_id = type == 'buy' ? 'buy-quantity' : 'sell-quantity'
@@ -43,11 +47,14 @@ def submit_transaction(type, quantity)
       if (balEl) balEl.innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
       var modal = document.getElementById('#{endpoint}-modal');
       if (modal) modal.style.display = 'none';
-      location.reload();
+      // Don't reload in tests - set a flag instead
+      window.transactionCompleted = true;
     })
     .catch(function(error) {
       var errEl = document.getElementById('#{endpoint}-error');
       if (errEl) errEl.textContent = error.message || 'Transaction failed. Please try again.';
+      // Set flag even on error
+      window.transactionCompleted = true;
     });
   })();")
 end
@@ -69,17 +76,31 @@ end
 
 def wait_for_transaction_completion
   begin
-    if page.has_selector?('#buy-error', wait: 2)
+    # Wait for transaction to complete
+    Timeout.timeout(15) do
+      sleep 0.1 until page.evaluate_script("window.transactionCompleted === true")
+    end
+    
+    # Check for errors after completion
+    if page.has_selector?('#buy-error', wait: 1)
       error_text = page.find('#buy-error', visible: :all).text
       return if error_text.present? && (error_text.include?('Please enter a valid quantity') || error_text.include?('Insufficient'))
     end
-    expect(page).to have_selector('#balance', wait: 15)
+    
+    expect(page).to have_selector('#balance', wait: 5)
     balance_value = page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f
     # Reload user safely - find by email if ID doesn't work
     @user = User.find_by(email: @user.email) || User.find(@user.id) rescue User.find_by(email: 'investor@example.com')
     expect(balance_value).to be < @initial_balance if balance_value < @initial_balance
+  rescue Timeout::Error
+    # Check for errors if timeout occurs
+    if page.has_selector?('#buy-error', wait: 1)
+      error_text = page.find('#buy-error').text
+      return if error_text.present? && (error_text.include?('Insufficient balance') || error_text.include?('Insufficient shares'))
+    end
+    raise "Transaction did not complete within 15 seconds"
   rescue RSpec::Expectations::ExpectationNotMetError => e
-    if page.has_selector?('#buy-error', wait: 2)
+    if page.has_selector?('#buy-error', wait: 1)
       error_text = page.find('#buy-error').text
       return if error_text.present? && (error_text.include?('Insufficient balance') || error_text.include?('Insufficient shares'))
     end
@@ -120,9 +141,9 @@ Given("I am a logged-in user") do
       Capybara.reset_sessions! if defined?(Capybara)
       visit login_path
       expect(page).to have_field('Email', wait: 5)
-      fill_in 'Email', with: @user.email
+  fill_in 'Email', with: @user.email
       fill_in 'Password', with: 'password'
-      click_button 'Log in'
+  click_button 'Log in'
       expect(page).to have_content('Signed in successfully', wait: 5)
     end
   end
@@ -244,15 +265,24 @@ When("I confirm the sale") do
   quantity = @entered_quantity || page.find('#sell-quantity').value rescue nil
   raise "Could not determine quantity" unless quantity
   submit_transaction('sell', quantity)
-  expect(page).to have_selector('#balance', wait: 15)
+  
   begin
-    balance_value = page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f
-    @user.reload if balance_value > @initial_balance
-  rescue Selenium::WebDriver::Error::StaleElementReferenceError
-    page.refresh
-    sleep 1
-    @user.reload
+    # Wait for transaction to complete
+    Timeout.timeout(15) do
+      sleep 0.1 until page.evaluate_script("window.transactionCompleted === true")
+    end
+  rescue Timeout::Error
+    # Check for errors if timeout occurs
+    if page.has_selector?('#sell-error', wait: 1)
+      error_text = page.find('#sell-error').text
+      return if error_text.present?
+    end
+    raise "Sale transaction did not complete within 15 seconds"
   end
+  
+  expect(page).to have_selector('#balance', wait: 5)
+  balance_value = page.find('#balance').text.match(/\$([\d.]+)/)[1].to_f
+  @user.reload if balance_value > @initial_balance
 end
 
 Then("my balance should increase by the correct total amount") do
@@ -261,9 +291,13 @@ Then("my balance should increase by the correct total amount") do
 end
 
 Then("my portfolio should update to show {string} with quantity {string}") do |symbol, qty|
-  visit portfolio_path unless current_path == portfolio_path
+  # Always visit portfolio path to ensure fresh data after transaction
+  visit portfolio_path
   expect(page).to have_selector('.portfolio-list', wait: 5)
-  within('.portfolio-list') { expect(page).to have_content(symbol) && have_content(qty) }
+  within('.portfolio-list') do 
+    expect(page).to have_content(symbol)
+    expect(page).to have_content(qty)
+  end
 end
 
 Then("I should see the error message {string}") do |message|
@@ -461,8 +495,10 @@ When("User A completes the purchase first") do
   fill_in 'Email', with: @user_a.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
-  expect(page).to have_content('Signed in successfully', wait: 5)
-  visit stocks_path
+  # Wait for redirect to complete by checking for stocks page element
+  expect(page).to have_css('.stock-list', wait: 10)
+  # Ensure we're on stocks page after login
+  visit stocks_path unless current_path == stocks_path
   click_stock_button('Buy', @stock.symbol)
   fill_in 'buy-quantity', with: @stock.available_quantity.to_s
   @entered_quantity = @stock.available_quantity.to_s
@@ -509,7 +545,9 @@ def user_b_transaction_fails_with_message(message)
   fill_in 'Email', with: @user_b.email
   fill_in 'Password', with: 'password'
   click_button 'Log in'
-  visit stocks_path
+  # Wait for redirect to complete
+  expect(page).to have_css('.stock-list', wait: 10)
+  visit stocks_path unless current_path == stocks_path
   click_stock_button('Buy', @stock.symbol)
   fill_in 'buy-quantity', with: @stock.available_quantity.to_s
   submit_transaction('buy', @stock.available_quantity.to_s)

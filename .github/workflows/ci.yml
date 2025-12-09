@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, hanqiLiuBranch ]
+    branches: [ main, hanqiLiuBranch, feature/market-data ]
   pull_request:
 
 jobs:
@@ -81,7 +81,7 @@ jobs:
       - name: Prepare database
         working-directory: investra
         run: |
-          bundle exec rails db:drop db:create db:schema:load
+          bundle exec rails db:drop db:create db:migrate
 
       - name: Run RSpec tests
         working-directory: investra
@@ -122,3 +122,23 @@ jobs:
       - name: Run Cucumber tests for portfolio_visualization feature
         working-directory: investra
         run: bundle exec cucumber features/portfolio_visualization.feature --format pretty
+
+      - name: Run Cucumber tests for stock information view feature
+        working-directory: investra
+        run: bundle exec cucumber features/view_stock_information.feature --format pretty
+
+      - name: Run Cucumber tests for check stock prices feature
+        working-directory: investra
+        run: bundle exec cucumber features/check_stock_prices.feature --format pretty
+
+      - name: Run Cucumber tests for price trend graph feature
+        working-directory: investra
+        run: bundle exec cucumber features/price_trend_graph.feature --format pretty
+
+      - name: Run Cucumber tests for stock prediction feature
+        working-directory: investra
+        run: bundle exec cucumber features/stock_prediction.feature --format pretty
+
+      - name: Run Cucumber tests for real-time data update feature
+        working-directory: investra
+        run: bundle exec cucumber features/real_time_data_update.feature --format pretty

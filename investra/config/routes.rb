@@ -60,6 +60,8 @@ Rails.application.routes.draw do
     member do
       post :buy
       post :sell
+      post :predict
+      post :refresh
     end
   end
 

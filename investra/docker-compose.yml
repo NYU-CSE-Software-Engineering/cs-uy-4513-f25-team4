@@ -20,7 +20,7 @@ services:
 
   web:
     build: .
-    command: bash -c "./wait-for-it.sh db:3306 -- bundle install && bin/rails db:test:prepare && bin/rails server -b 0.0.0.0 -p 3000"
+    command: bash -c "./wait-for-it.sh db:3306 -- bundle install && bin/rails db:create db:migrate && bin/rails db:seed && bin/rails server -b 0.0.0.0 -p 3000"
     volumes:
       - .:/app
     ports:
@@ -29,10 +29,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      RAILS_ENV: test
+      RAILS_ENV: development
       DB_HOST: db
       DB_PORT: 3306
-      DATABASE_URL: mysql2://investra:investra@db/investra_test
       MASSIVE_API_KEY: ${MASSIVE_API_KEY:-}
 
 volumes:

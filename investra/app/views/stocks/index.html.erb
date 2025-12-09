@@ -1,8 +1,11 @@
-<h1>Stocks</h1>
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; margin: -20px -20px 20px -20px; color: white;">
+  <h1 style="margin: 0 0 10px 0; color: white;">📊 Real-time Stock Market</h1>
+  <p style="margin: 0; opacity: 0.9;">Check real-time prices, historical data, and make informed trading decisions</p>
+</div>
 
 <% if current_user %>
-  <div id="balance">
-    <strong>Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
+  <div id="balance" style="background: #28a745; color: white; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <strong>💰 Your Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
   </div>
 <% end %>
 
@@ -28,17 +31,45 @@
       <tr>
         <th>Symbol</th>
         <th>Name</th>
-        <th>Price</th>
+        <th>Real-time Price & 24h Change</th>
         <th>Available</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <% @stocks.each do |stock| %>
+        <% updated_minutes_ago = ((Time.now - stock.updated_at) / 60).round %>
+        <% is_fresh = updated_minutes_ago < 10 %>
+        
         <tr class="stock-row" data-symbol="<%= stock.symbol %>">
-          <td><%= stock.symbol %></td>
+          <td>
+            <%= link_to stock.symbol, stock_path(stock), id: "stock-link-#{stock.symbol}" %>
+            <% if is_fresh %>
+              <span style="display: inline-block; margin-left: 8px; background: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; font-weight: bold; vertical-align: middle; animation: pulse 2s infinite;">
+                <span style="display: inline-block; width: 6px; height: 6px; background: white; border-radius: 50%; margin-right: 3px; animation: blink 1s infinite;"></span>
+                LIVE
+              </span>
+            <% end %>
+          </td>
           <td><%= stock.name %></td>
-          <td>$<%= number_with_precision(stock.price, precision: 2) %></td>
+          <td>
+            <div style="font-size: 1.1em; font-weight: bold;">
+              $<%= number_with_precision(stock.price, precision: 2) %>
+            </div>
+            <% price_change = stock.price_change %>
+            <% if price_change %>
+              <div style="margin-top: 5px;">
+                <span class="price-change <%= price_change[:direction] == 'positive' ? 'positive text-success' : 'negative text-danger' %>" style="background: <%= price_change[:direction] == 'positive' ? '#d4edda' : '#f8d7da' %>; color: <%= price_change[:direction] == 'positive' ? '#155724' : '#721c24' %>; padding: 3px 8px; border-radius: 3px; font-size: 0.9em; font-weight: 500;">
+                  <%= price_change[:direction] == 'positive' ? '▲' : '▼' %>
+                  <%= price_change[:direction] == 'positive' ? '+' : '-' %>$<%= number_with_precision(price_change[:amount].abs, precision: 2) %> 
+                  (<%= price_change[:direction] == 'positive' ? '+' : '' %><%= price_change[:percentage] %>%)
+                </span>
+              </div>
+            <% end %>
+            <div style="margin-top: 5px; font-size: 0.8em; color: #6c757d;">
+              Last Updated: <%= updated_minutes_ago %> min ago
+            </div>
+          </td>
           <td><%= stock.available_quantity %></td>
           <td>
             <button class="buy-btn" data-stock-id="<%= stock.id %>" data-stock-symbol="<%= stock.symbol %>" data-stock-price="<%= stock.price %>">Buy</button>
@@ -152,7 +183,7 @@
       buyConfirmBtn.disabled = true;
       buyCancelBtn.disabled = true;
 
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
                        document.querySelector('input[name="authenticity_token"]')?.value;
       
       if (!window.currentStockId) {

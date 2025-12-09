@@ -1,6 +1,6 @@
 class StocksController < ApplicationController
   before_action :require_login, unless: -> { Rails.env.test? }
-  before_action :set_stock, only: [:show, :buy, :sell]
+  before_action :set_stock, only: [:show, :buy, :sell, :predict, :refresh]
 
   def index
     @stocks = Stock.all
@@ -8,6 +8,79 @@ class StocksController < ApplicationController
   end
 
   def show
+    @recent_news = @stock.recent_news(limit: 10)
+    @price_history = @stock.recent_price_history(30)
+    @price_statistics = @stock.price_statistics(30)
+    
+    # Prepare chart data for different timeframes
+    @chart_data = {
+      week: prepare_chart_data(7),
+      month: prepare_chart_data(30),
+      year: prepare_chart_data(365)
+    }
+    
+    # Don't generate prediction automatically - user will click button
+    @prediction = nil
+  end
+
+  def predict
+    # Simulate ML computation time (0.5-2 seconds)
+    sleep(rand(0.5..2.0))
+    
+    # Run Logistic Regression prediction
+    prediction = @stock.predict_price_with_logistic_regression
+    
+    if prediction
+      # Ensure all numeric values are floats, not strings
+      render json: {
+        success: true,
+        prediction: {
+          predicted_price: prediction[:predicted_price].to_f,
+          probability_up: prediction[:probability_up].to_f,
+          confidence: prediction[:confidence].to_f,
+          trend: prediction[:trend],
+          data_points: prediction[:data_points].to_i
+        }
+      }
+    else
+      render json: {
+        success: false,
+        message: 'Insufficient data for prediction. At least 7 days of historical price data is required.'
+      }, status: :unprocessable_entity
+    end
+  end
+
+  def refresh
+    # Simulate fetching fresh data from external API
+    # In production, this would call Yahoo Finance, Alpha Vantage, or similar API
+    new_price = simulate_real_time_price_fetch(@stock)
+    
+    # Update stock price and timestamp
+    @stock.update(price: new_price, updated_at: Time.current)
+    
+    # Create new price point for historical tracking
+    PricePoint.create!(
+      stock: @stock,
+      price: new_price,
+      recorded_at: Time.current
+    )
+    
+    render json: {
+      success: true,
+      message: 'Data refreshed successfully',
+      stock: {
+        symbol: @stock.symbol,
+        name: @stock.name,
+        price: @stock.price.to_f,
+        updated_at: @stock.updated_at.iso8601,
+        last_updated_human: @stock.last_updated_human
+      }
+    }
+  rescue => e
+    render json: {
+      success: false,
+      message: "Failed to refresh data: #{e.message}"
+    }, status: :unprocessable_entity
   end
 
   def buy
@@ -42,6 +115,16 @@ class StocksController < ApplicationController
 
   def set_stock
     @stock = Stock.find(params[:id])
+  end
+
+  def prepare_chart_data(days)
+    points = @stock.recent_price_history(days)
+    return { labels: [], prices: [] } if points.empty?
+    
+    {
+      labels: points.map { |p| p.recorded_at.strftime("%Y-%m-%d") },
+      prices: points.map { |p| p.price.to_f.round(2) }
+    }
   end
 
   def parse_quantity
@@ -116,6 +199,30 @@ class StocksController < ApplicationController
 
       @stock.update!(available_quantity: @stock.available_quantity + quantity)
     end
+  end
+
+  def set_stock
+    @stock = Stock.find(params[:id])
+  end
+
+  # Simulate real-time price fetch from external API
+  # In production, replace this with actual API calls to:
+  # - Yahoo Finance API
+  # - Alpha Vantage API
+  # - IEX Cloud API
+  # - Twelve Data API
+  def simulate_real_time_price_fetch(stock)
+    # Simulate realistic price movement (±2% volatility)
+    base_price = stock.price
+    volatility = 0.02 # 2% max movement
+    change_percent = rand(-volatility..volatility)
+    
+    new_price = (base_price * (1 + change_percent)).round(2)
+    
+    # Ensure price stays positive and reasonable
+    new_price = [new_price, 1.0].max
+    
+    new_price
   end
 end
 

@@ -4,6 +4,7 @@
     <span class="brand">Investra</span>
   </div>
   <nav class="topbar__nav">
+    <%= link_to "Stocks", stocks_path, class: nav_class(request.path, stocks_path) %>
     <%= link_to "Portfolio", portfolio_path, class: nav_class(request.path, portfolio_path) %>
     <%= link_to "Watchlist", watchlist_path, class: nav_class(request.path, watchlist_path) %>
     <%= link_to "Credit Line", credit_line_path, class: nav_class(request.path, credit_line_path) %>
