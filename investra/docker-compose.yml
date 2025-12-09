@@ -32,6 +32,8 @@ services:
       RAILS_ENV: development
       DB_HOST: db
       DB_PORT: 3306
+      # Force Yahoo mock data when desired (set USE_MOCK_DATA=true before compose)
+      USE_MOCK_DATA: ${USE_MOCK_DATA:-false}
       MASSIVE_API_KEY: ${MASSIVE_API_KEY:-}
 
 volumes:

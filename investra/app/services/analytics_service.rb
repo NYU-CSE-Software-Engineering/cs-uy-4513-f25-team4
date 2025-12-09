@@ -1,7 +1,9 @@
 class AnalyticsService
-  def initialize(user, yahoo_client: MarketData::YahooClient.new)
+  def initialize(user, market_client: nil)
     @user = user
-    @yahoo_client = yahoo_client
+    massive_key = ENV.fetch("MASSIVE_API_KEY", "").strip
+    use_massive = massive_key.present? && !MarketData::YahooClient::USE_MOCK_DATA
+    @client = market_client || (use_massive ? MarketData::MassiveClient.new(api_key: massive_key) : MarketData::YahooClient.new)
   end
 
   # Calculate what-if investment simulation
@@ -20,14 +22,14 @@ class AnalyticsService
     return { error: "Start date cannot be in the future" } if start_date > Date.today
 
     # Fetch price at start date
-    start_price_data = @yahoo_client.fetch_price_at_date(ticker, start_date)
+    start_price_data = @client.fetch_price_at_date(ticker, start_date)
     return start_price_data if start_price_data[:error]
 
     start_price = start_price_data[:price]
     return { error: "Could not fetch price for #{ticker} at #{start_date}" } unless start_price && start_price > 0
 
     # Fetch current price
-    current_quote = @yahoo_client.fetch_quote(ticker)
+    current_quote = @client.fetch_quote(ticker)
     return current_quote if current_quote[:error]
 
     current_price = current_quote[:price]

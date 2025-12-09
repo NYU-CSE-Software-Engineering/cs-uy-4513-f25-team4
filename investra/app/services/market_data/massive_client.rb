@@ -4,13 +4,14 @@ require "cgi"
 
 module MarketData
   class MassiveClient
-    BASE_URL = ENV.fetch("MASSIVE_API_BASE", "https://api.polygon.io").freeze
+    BASE_URL = ENV.fetch("MASSIVE_API_BASE", "https://api.massive.com").freeze
     TIMEOUT_SECONDS = 5
 
     def initialize(api_key: ENV.fetch("MASSIVE_API_KEY", nil))
       @api_key = api_key
     end
 
+    # Fetch current-ish quote (uses previous close from Polygon/Massive)
     def fetch_quote(ticker)
       return { error: "Missing ticker" } if ticker.to_s.strip.empty?
       return { error: "Missing Massive API key" } if @api_key.to_s.strip.empty?
@@ -37,7 +38,112 @@ module MarketData
       { error: "Lookup failed: #{e.message}" }
     end
 
+    # Fetch historical OHLCV data as daily candles
+    # Returns structure aligned with Yahoo client:
+    # { ticker:, timestamps:, prices:, price_data: [ { timestamp, date, open, high, low, close, volume } ], meta: {} }
+    def fetch_historical_data(ticker, range: "1y", interval: "1d")
+      return { error: "Missing ticker" } if ticker.to_s.strip.empty?
+      return { error: "Missing Massive API key" } if @api_key.to_s.strip.empty?
+
+      days = range_to_days(range)
+      from_date = (Date.today - days).strftime("%Y-%m-%d")
+      to_date = Date.today.strftime("%Y-%m-%d")
+
+      path = "/v2/aggs/ticker/#{CGI.escape(ticker)}/range/1/day/#{from_date}/#{to_date}"
+      response = get_json(path, adjusted: true, sort: "asc", limit: 5000)
+      return response if response[:error]
+
+      results = response[:results] || []
+      return { error: "No historical data for #{ticker}" } if results.empty?
+
+      timestamps = []
+      prices = []
+      price_data = []
+
+      results.each do |bar|
+        ts = bar[:t] / 1000 # polygon returns ms
+        timestamps << ts
+        prices << bar[:c]
+        price_data << {
+          timestamp: ts,
+          date: Time.at(ts).to_date,
+          open: bar[:o],
+          high: bar[:h],
+          low: bar[:l],
+          close: bar[:c],
+          volume: bar[:v]
+        }
+      end
+
+      {
+        ticker: ticker.upcase,
+        timestamps: timestamps,
+        prices: prices,
+        price_data: price_data,
+        meta: { source: "massive" }
+      }
+    rescue StandardError => e
+      { error: "Historical data lookup failed: #{e.message}" }
+    end
+
+    # Fetch price at a specific date by using aggregated bars
+    def fetch_price_at_date(ticker, date)
+      return { error: "Missing ticker" } if ticker.to_s.strip.empty?
+      return { error: "Invalid date" } unless date.is_a?(Date) || date.is_a?(Time)
+
+      target_date = date.to_date
+      range = date_range_for(target_date)
+      historical = fetch_historical_data(ticker, range: range, interval: "1d")
+      return historical if historical[:error]
+
+      timestamps = historical[:timestamps] || []
+      prices = historical[:prices] || []
+      return { error: "No data available" } if timestamps.empty?
+
+      target_ts = target_date.to_time.to_i
+      closest_index =
+        if timestamps.first && timestamps.first > target_ts
+          0
+        else
+          timestamps.find_index { |ts| ts >= target_ts } || timestamps.length - 1
+        end
+
+      return { error: "No price data for date" } if closest_index.nil? || prices[closest_index].nil?
+
+      {
+        price: prices[closest_index],
+        date: Time.at(timestamps[closest_index]).to_date,
+        timestamp: timestamps[closest_index]
+      }
+    end
+
     private
+
+    def range_to_days(range)
+      case range
+      when "5d" then 5
+      when "1mo" then 30
+      when "3mo" then 90
+      when "6mo" then 180
+      when "1y" then 365
+      when "2y" then 730
+      when "5y" then 1825
+      when "max" then 1825
+      else 365
+      end
+    end
+
+    def date_range_for(date)
+      days_diff = (Date.today - date).to_i
+      case days_diff
+      when 0..5 then "5d"
+      when 6..30 then "1mo"
+      when 31..90 then "3mo"
+      when 91..180 then "6mo"
+      when 181..365 then "1y"
+      else "2y"
+      end
+    end
 
     def fetch_ticker_details(ticker)
       path = "/v3/reference/tickers/#{CGI.escape(ticker)}"

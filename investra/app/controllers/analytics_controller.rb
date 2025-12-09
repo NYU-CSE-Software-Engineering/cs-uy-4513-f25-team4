@@ -6,9 +6,9 @@ class AnalyticsController < ApplicationController
     @range = params[:range] || "1y"
     @chart_data = nil
     @error = nil
+    client = analytics_client
 
     if @ticker.present?
-      client = MarketData::YahooClient.new
       result = client.fetch_historical_data(@ticker, range: @range, interval: "1d")
       
       if result[:error]
@@ -58,7 +58,7 @@ class AnalyticsController < ApplicationController
       return
     end
 
-    client = MarketData::YahooClient.new
+    client = analytics_client
     result = client.fetch_historical_data(ticker, range: range, interval: interval)
 
     if result[:error]
@@ -72,6 +72,17 @@ class AnalyticsController < ApplicationController
         prices: result[:prices],
         price_data: result[:price_data]
       }
+    end
+  end
+
+  private
+
+  def analytics_client
+    massive_key = ENV.fetch("MASSIVE_API_KEY", "").strip
+    if massive_key.present? && !MarketData::YahooClient::USE_MOCK_DATA
+      MarketData::MassiveClient.new(api_key: massive_key)
+    else
+      MarketData::YahooClient.new
     end
   end
 end
