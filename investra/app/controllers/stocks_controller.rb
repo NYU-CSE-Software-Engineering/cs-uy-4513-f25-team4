@@ -3,6 +3,12 @@ class StocksController < ApplicationController
   before_action :set_stock, only: [:show, :buy, :sell, :predict, :refresh]
 
   def index
+    @lookup_error = nil
+    if params[:search].present?
+      lookup_result = StockLookupService.new.fetch_and_persist(params[:search])
+      @lookup_error = lookup_result[:error] if lookup_result[:error]
+    end
+
     @stocks = Stock.all
     @stocks = @stocks.where("symbol LIKE ? OR name LIKE ?", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
   end
@@ -173,7 +179,6 @@ class StocksController < ApplicationController
       portfolio = Portfolio.find_or_initialize_by(user: current_user, stock: @stock)
       portfolio.quantity = (portfolio.quantity || 0) + quantity
       portfolio.save!
-
       @stock.update!(available_quantity: @stock.available_quantity - quantity)
     end
   end
@@ -196,7 +201,6 @@ class StocksController < ApplicationController
       else
         portfolio.destroy!
       end
-
       @stock.update!(available_quantity: @stock.available_quantity + quantity)
     end
   end
@@ -225,4 +229,3 @@ class StocksController < ApplicationController
     new_price
   end
 end
-

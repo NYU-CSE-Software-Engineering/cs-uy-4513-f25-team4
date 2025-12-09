@@ -6,4 +6,4 @@
 <p>Welcome, <%= @user&.first_name || 'Trader' %>!</p>
 <p>My Portfolio</p>
 
-<%= link_to "Log Out", logout_path, data: { turbo_method: :delete } %>
+<%= button_to "Log Out", logout_path, method: :delete %>

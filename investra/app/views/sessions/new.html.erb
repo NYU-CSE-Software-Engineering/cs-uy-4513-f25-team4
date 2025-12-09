@@ -1,20 +1,115 @@
-<h1>Log In</h1>
+<style>
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #e5e7eb;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: transparent;
+  position: fixed;
+  inset: 0;
+}
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(120deg, rgba(103,232,249,0.12), rgba(165,180,252,0.08)), rgba(17, 24, 39, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+    color: #f8f9ff;
+  }
+  .auth-card h1 {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+  }
+  .auth-subtitle {
+    margin: 0 0 20px 0;
+    color: #d8ddf0;
+    font-size: 14px;
+  }
+  .auth-form label {
+    display: block;
+    margin-bottom: 6px;
+    color: #e5e9f7;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .auth-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .auth-form input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+  }
+  .auth-form .field {
+    margin-bottom: 16px;
+  }
+  .auth-submit {
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    margin-top: 6px;
+  }
+  .auth-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(102,126,234,0.35);
+  }
+  .alert {
+    background: rgba(220, 53, 69, 0.12);
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    color: #f5c2c7;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+</style>
 
-<% if flash[:alert] %>
-  <div class="alert"><%= flash[:alert] %></div>
-<% end %>
+<div class="auth-shell">
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="auth-subtitle">Sign in to your Investra account</p>
 
-<%= form_with url: login_path, local: true do |f| %>
-  <div>
-    <%= f.label :email, "Email" %>
-    <%= f.email_field :email, id: "Email" %>
+    <% if flash[:alert] %>
+      <div class="alert"><%= flash[:alert] %></div>
+    <% end %>
+
+    <%= form_with url: login_path, local: true, html: { class: "auth-form" } do |f| %>
+      <div class="field">
+        <%= f.label :email, "Email" %>
+        <%= f.email_field :email, id: "Email", autofocus: true %>
+      </div>
+      
+      <div class="field">
+        <%= f.label :password, "Password" %>
+        <%= f.password_field :password, id: "Password" %>
+      </div>
+      
+      <%= f.submit "Log in", class: "auth-submit" %>
+    <% end %>
+
+    <div style="margin-top: 14px; text-align: center; font-size: 13px; color: #4b5566;">
+      New here?
+      <%= link_to "Create an account", signup_path, style: "color: #6151d9; font-weight: 700; text-decoration: none;" %>
+    </div>
   </div>
-  
-  <div>
-    <%= f.label :password, "Password" %>
-    <%= f.password_field :password, id: "Password" %>
-  </div>
-  
-  <%= f.submit "Log in" %>
-<% end %>
+</div>
 

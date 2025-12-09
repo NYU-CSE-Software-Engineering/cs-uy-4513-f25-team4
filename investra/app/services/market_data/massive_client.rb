@@ -23,12 +23,19 @@ module MarketData
         price_info = fetch_previous_close(ticker)
         return price_info if price_info[:error]
 
+        realtime = fetch_realtime_price(ticker)
+        latest_price = realtime[:price] || price_info[:price]
+        latest_ts = realtime[:at] || price_info[:previous_close_at]
+
         {
           name: details[:name],
           ticker: details[:ticker],
           sector: details[:sector],
           market_cap: details[:market_cap],
-          price: price_info[:price],
+          price: latest_price,
+          previous_close: price_info[:previous_close],
+          previous_close_at: price_info[:previous_close_at],
+          price_at: latest_ts,
           currency: details[:currency] || "USD",
           exchange: details[:exchange],
           fetched_at: Time.current
@@ -117,6 +124,32 @@ module MarketData
       }
     end
 
+    # Search tickers by company name or symbol fragment
+    def search_tickers(query, limit: 3)
+      term = query.to_s.strip
+      return { error: "Missing search term" } if term.empty?
+      return { error: "Missing Massive API key" } if @api_key.to_s.strip.empty?
+
+      response = get_json("/v3/reference/tickers", search: term, active: true, limit: limit, sort: "market_cap", order: "desc")
+      return response if response[:error]
+
+      results = response[:results] || []
+      return { error: "No tickers found for #{term}" } if results.empty?
+
+      results.map do |r|
+        {
+          ticker: r[:ticker],
+          name: r[:name],
+          market_cap: r[:market_cap],
+          currency: r[:currency_name],
+          exchange: r[:primary_exchange],
+          locale: r[:locale]
+        }
+      end
+    rescue StandardError => e
+      { error: "Search failed: #{e.message}" }
+    end
+
     private
 
     def range_to_days(range)
@@ -171,7 +204,52 @@ module MarketData
       result = response[:results]&.first
       return { error: "No pricing data for #{ticker}" } unless result
 
-      { price: result[:c] }
+      {
+        price: result[:c],
+        previous_close: result[:c],
+        previous_close_at: result[:t] ? Time.at(result[:t] / 1000).to_datetime : nil
+      }
+    end
+
+    def fetch_realtime_price(ticker)
+      snap = fetch_snapshot(ticker)
+      return snap if snap[:price]
+
+      last = fetch_last_trade(ticker)
+      return last if last[:price]
+
+      {}
+    end
+
+    def fetch_snapshot(ticker)
+      path = "/v2/snapshot/locale/us/markets/stocks/tickers/#{CGI.escape(ticker)}"
+      response = get_json(path)
+      return {} if response[:error]
+
+      snap = response[:ticker] || {}
+      last_trade = snap[:last_trade] || {}
+      price = last_trade[:p]
+      return {} unless price
+
+      {
+        price: price,
+        at: last_trade[:t] ? Time.at(last_trade[:t] / 1000).to_datetime : nil
+      }
+    end
+
+    def fetch_last_trade(ticker)
+      path = "/v2/last/trade/#{CGI.escape(ticker)}"
+      response = get_json(path)
+      return {} if response[:error]
+
+      trade = response[:results] || response[:result] || {}
+      price = trade[:p] || trade[:price]
+      return {} unless price
+
+      {
+        price: price,
+        at: trade[:t] ? Time.at(trade[:t] / 1000).to_datetime : nil
+      }
     end
 
     def get_json(path, params = {})
