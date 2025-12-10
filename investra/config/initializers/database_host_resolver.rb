@@ -2,7 +2,7 @@
 # This allows database.yml to use 'investra-db-1' while tests run from host machine
 if Rails.env.test? && !ENV['DB_HOST']
   require 'resolv'
-  
+
   begin
     # Try to resolve investra-db-1
     Resolv.getaddress('investra-db-1')
@@ -12,4 +12,3 @@ if Rails.env.test? && !ENV['DB_HOST']
     ENV['DB_HOST'] = 'localhost'
   end
 end
-

@@ -383,8 +383,13 @@ end
 When("I click {string} and the transaction is processing") do |button|
   fill_in 'buy-quantity', with: '10'
   @entered_quantity = '10'
+  # Target the modal confirm button to avoid backdrop intercepts from the open modal.
   page.execute_script("document.getElementById('buy-confirm-btn').disabled = true; document.getElementById('buy-cancel-btn').disabled = true;")
-  click_button button
+  if page.has_selector?('#buy-confirm-btn', wait: 2)
+    page.find('#buy-confirm-btn').click
+  else
+    click_button button
+  end
 end
 
 Then("the {string} and {string} buttons should be disabled") do |btn1, btn2|

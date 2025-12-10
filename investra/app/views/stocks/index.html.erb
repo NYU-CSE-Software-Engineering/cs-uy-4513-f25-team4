@@ -302,6 +302,8 @@
         window.currentStockId = this.dataset.stockId;
         buySymbol.textContent = this.dataset.stockSymbol;
         buyPrice.textContent = parseFloat(this.dataset.stockPrice).toFixed(2);
+        // Inline display: none on the modal was preventing visibility in tests; set display explicitly.
+        buyModal.style.display = 'block';
         buyModal.classList.add('active');
         buyError.textContent = '';
         buyQuantity.value = '';
@@ -310,10 +312,12 @@
 
     buyCancelBtn.addEventListener('click', function() {
       buyModal.classList.remove('active');
+      buyModal.style.display = 'none';
       window.currentStockId = null;
     });
     buyCancelBtn2.addEventListener('click', function() {
       buyModal.classList.remove('active');
+      buyModal.style.display = 'none';
       window.currentStockId = null;
     });
 
@@ -371,6 +375,7 @@
         document.getElementById('message').textContent = data.message;
         document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
         buyModal.classList.remove('active');
+        buyModal.style.display = 'none';
         <% unless Rails.env.test? %>
         location.reload(); // Refresh to show updated data (skip reload in test to avoid stale elements)
         <% end %>
