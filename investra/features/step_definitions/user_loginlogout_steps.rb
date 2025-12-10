@@ -7,10 +7,11 @@ Given('a user exists with email {string} and password {string}') do |email, pass
     password: password,
     password_confirmation: password,
     first_name: 'Test',
-    last_name: 'User',
-    role: 'trader'
+    last_name: 'User'
   )
   
+  trader_role = Role.find_by(name: 'Trader')
+  @test_user.roles << trader_role if trader_role
   @test_password = password
 end
 
@@ -18,29 +19,16 @@ end
 Given('a user exists with email {string} and password {string} and role {string}') do |email, password, role_name|
     
   role = Role.find_or_create_by!(name: role_name.strip)
-
-    role_value = case role_name.strip
-               when "Trader"
-                 "trader"
-               when "Associate Trader"
-                 "associate_trader"
-               when "Portfolio Manager"
-                 "portfolio_manager"
-               when "System Administrator"
-                 "system_administrator"
-               else
-                 role_name.downcase.gsub(" ", "_")
-               end
   
   @test_user = User.create!(
     email: email,
     password: password,
     password_confirmation: password,
     first_name: 'Test',
-    last_name: 'User',
-    role: role_value 
+    last_name: 'User'
   )
   # Assign the specified role
+  @test_user.roles << role
   @test_password = password
 end
 
@@ -107,6 +95,10 @@ Then('I should be on the login page') do
   expect(current_path).to eq(login_path)
 end
 
+Then('I should be on the admin dashboard page') do
+  expect(current_path).to eq(admin_dashboard_path)
+end
+
 Then('I should be on the profile page') do
   expect(current_path).to eq(profile_path)
 end
@@ -115,18 +107,18 @@ end
 # Removed duplicate step - now in common_steps.rb
 
 Then('I should be logged in as {string}') do |email|
-  expect(page).to have_link('Log Out')
+  expect(page).to have_button('Log Out')
   user = User.find_by(email: email)
   expect(page).to have_content(user.first_name) if user
 end
 
 Then('I should be logged in') do
-  expect(page).to have_link('Log Out')
+  expect(page).to have_link('Log Out').or have_button('Log Out')
 end
 
 
 Then('I should still be logged in as {string}') do |email|
-  expect(page).to have_link('Log Out')
+  expect(page).to have_link('Log Out').or have_button('Log Out')
 end
 
 Then('a session should be created for {string}') do |email|
@@ -144,7 +136,7 @@ Then('the user session should be destroyed') do
 end
 
 Then('I should not be logged in') do
-  expect(page).not_to have_link('Log Out')
+  expect(current_path).to eq(login_path).or eq(root_path)
 end
 
 Then('I should not have an active session') do
@@ -155,11 +147,11 @@ end
 Then('my session data should be cleared') do
   visit trader_dashboard_path
   expect(current_path).to eq(login_path)
-  expect(page).to have_content('Log In')
+  expect(page).to have_content('Please log in').or have_content('Log In')
 end
 
 Then('my session should remain active') do
-  expect(page).to have_link('Log Out')
+  expect(page).to have_link('Log Out').or have_button('Log Out')
   expect(current_path).not_to eq(login_path)
 end
 

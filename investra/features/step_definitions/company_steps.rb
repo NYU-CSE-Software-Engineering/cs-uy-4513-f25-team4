@@ -12,7 +12,7 @@ Given("I am logged in as an admin") do
   visit login_path
   fill_in "Email", with: @admin.email
   fill_in "Password", with: "password"
-  click_button "Log In"
+  click_button "Log in"
 end
 
 Given("I am logged in as a non-admin user") do
@@ -25,7 +25,7 @@ Given("I am logged in as a non-admin user") do
   visit login_path
   fill_in "Email", with: @user.email
   fill_in "Password", with: "password"
-  click_button "Log In"
+  click_button "Log in"
 end
 
 Given("I am on the new company page") do

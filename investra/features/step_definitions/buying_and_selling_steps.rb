@@ -126,7 +126,7 @@ Given("I am a logged-in user") do
     expect(page).to have_field('Email', wait: 5)
     fill_in 'Email', with: @user.email
     fill_in 'Password', with: 'password'
-    click_button 'Log In'
+    click_button 'Log in'
     expect(page).to have_content('Signed in successfully', wait: 5)
   rescue Selenium::WebDriver::Error::StaleElementReferenceError, 
          Selenium::WebDriver::Error::UnknownError => e
@@ -143,7 +143,7 @@ Given("I am a logged-in user") do
       expect(page).to have_field('Email', wait: 5)
   fill_in 'Email', with: @user.email
       fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
       expect(page).to have_content('Signed in successfully', wait: 5)
     end
   end
@@ -494,7 +494,7 @@ When("User A completes the purchase first") do
   visit login_path
   fill_in 'Email', with: @user_a.email
   fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
   # Wait for redirect to complete by checking for stocks page element
   expect(page).to have_css('.stock-list', wait: 10)
   # Ensure we're on stocks page after login
@@ -544,7 +544,7 @@ def user_b_transaction_fails_with_message(message)
   visit login_path
   fill_in 'Email', with: @user_b.email
   fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
   # Wait for redirect to complete
   expect(page).to have_css('.stock-list', wait: 10)
   visit stocks_path unless current_path == stocks_path

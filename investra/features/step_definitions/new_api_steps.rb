@@ -44,7 +44,7 @@ Given('I am logged in as that trader') do
   visit login_path
   fill_in "Email", with: @current_user.email
   fill_in "Password", with: "password123"
-  click_button "Log In"
+  click_button "Log in"
 end
 
 When('I visit the credit line page') do
