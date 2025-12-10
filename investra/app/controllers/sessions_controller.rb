@@ -26,7 +26,7 @@ class SessionsController < ApplicationController
                         stocks_path
                       end
       
-      redirect_to redirect_path, notice: "Signed in Successfully"
+      redirect_to redirect_path, notice: "Signed in successfully"
     else
       flash.now[:alert] = "Invalid email or password"
       render :new, status: :unprocessable_entity
