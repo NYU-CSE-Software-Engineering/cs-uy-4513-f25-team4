@@ -139,6 +139,7 @@ end
 # ============================================================================
 
 Given("I am a logged-in user") do
+  # Create or find test user
   @user = User.find_or_create_by!(email: 'investor@example.com') do |u|
     u.password = u.password_confirmation = 'password'
     u.first_name = 'Test'
@@ -147,86 +148,26 @@ Given("I am a logged-in user") do
   end
   @user.update!(balance: 5000) unless @user.balance == 5000
   
-  # Retry logic for stale element errors
-  retries = 0
-  begin
-    visit login_path
-    if page.has_field?('Email', wait: 5)
-      fill_in 'Email', with: @user.email
-      fill_in 'Password', with: 'password'
-      click_button 'Log in'
-      expect(page).to have_content('Signed in successfully', wait: 5)
-    elsif Capybara.current_driver == :rack_test
-      # For non-JS driver, use direct POST
-      page.driver.post(login_path, { email: @user.email, password: 'password' })
-      visit stocks_path
-    else
-      # Fallback for environments where the login form isn't rendered (JS driver only)
-      page.execute_script <<~JS
-        (function() {
-          var payload = { email: '#{@user.email}', password: 'password' };
-          fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(payload)
-          }).then(function() {
-            window.location = '/stocks';
-          }).catch(function() {});
-        })();
-      JS
-      visit stocks_path
-    end
-  rescue Errno::ENOENT => e
-    if e.message.include?('chromedriver') || e.message.include?('ChromeDriver')
-      # Provide helpful error message with installation instructions
-      error_msg = <<~MSG
-        ChromeDriver not found. JavaScript scenarios require ChromeDriver.
-        
-        To install ChromeDriver:
-        - macOS: brew install chromedriver
-        - Linux: Download from https://chromedriver.chromium.org/
-        - Or set CHROMEDRIVER_PATH environment variable to the chromedriver executable path
-        
-        Original error: #{e.message}
-      MSG
-      raise error_msg
-    else
-      raise
-    end
-  rescue Selenium::WebDriver::Error::WebDriverError => e
-    if e.message.include?('chromedriver') || e.message.include?('ChromeDriver')
-      error_msg = <<~MSG
-        ChromeDriver error. JavaScript scenarios require ChromeDriver.
-        
-        To install ChromeDriver:
-        - macOS: brew install chromedriver
-        - Linux: Download from https://chromedriver.chromium.org/
-        - Or set CHROMEDRIVER_PATH environment variable to the chromedriver executable path
-        
-        Original error: #{e.message}
-      MSG
-      raise error_msg
-    else
-      raise
-    end
-  rescue Selenium::WebDriver::Error::StaleElementReferenceError, 
-         Selenium::WebDriver::Error::UnknownError => e
-    retries += 1
-    if retries < 3
-      page.refresh
-      sleep 1
-      retry
-    else
-      Capybara.reset_sessions! if defined?(Capybara)
-      visit login_path
-      expect(page).to have_field('Email', wait: 5)
-      fill_in 'Email', with: @user.email
-      fill_in 'Password', with: 'password'
-      click_button 'Log in'
-      expect(page).to have_content('Signed in successfully', wait: 5)
-    end
-  end
+  # Clear any existing session to ensure clean state
+  Capybara.reset_sessions! if defined?(Capybara)
+  
+  # Navigate to login page
+  visit login_path
+  
+  # Wait for form to be ready - Capybara's have_field will wait and re-find elements
+  expect(page).to have_field('Email', wait: 10)
+  expect(page).to have_field('Password', wait: 10)
+  
+  # Fill in form fields - Capybara re-finds elements on each call, avoiding stale references
+  fill_in 'Email', with: @user.email
+  fill_in 'Password', with: 'password'
+  
+  # Click submit button - Capybara will wait for button to be ready
+  click_button 'Log in'
+  
+  # Wait for successful login - check we're redirected away from login page
+  # Using have_current_path with wait ensures we wait for navigation
+  expect(page).to have_current_path(stocks_path, wait: 10)
 end
 
 Given("I am not logged in") do
