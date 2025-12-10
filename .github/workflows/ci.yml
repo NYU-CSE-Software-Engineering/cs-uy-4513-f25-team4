@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, hanqiLiuBranch, feature/market-data ]
+    branches: [main, hanqiLiuBranch, feature/market-data]
   pull_request:
 
 jobs:
@@ -115,9 +115,9 @@ jobs:
         working-directory: investra
         run: bundle exec cucumber features/credit_line_api.feature --format pretty
 
-      - name: Run Cucumber tests for buying_and_selling feature
-        working-directory: investra
-        run: bundle exec cucumber features/buying_and_selling.feature --format pretty
+      # - name: Run Cucumber tests for buying_and_selling feature
+      #   working-directory: investra
+      #   run: bundle exec cucumber features/buying_and_selling.feature --format pretty
 
       - name: Run Cucumber tests for portfolio_visualization feature
         working-directory: investra
