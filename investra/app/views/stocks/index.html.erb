@@ -384,6 +384,8 @@
         document.getElementById('balance').innerHTML = '<strong>Balance: $' + parseFloat(data.balance).toFixed(2) + '</strong>';
         buyModal.classList.remove('active');
         buyModal.style.display = 'none';
+        buyConfirmBtn.disabled = false;
+        buyCancelBtn.disabled = false;
         <% unless Rails.env.test? %>
         location.reload(); // Refresh to show updated data (skip reload in test to avoid stale elements)
         <% end %>

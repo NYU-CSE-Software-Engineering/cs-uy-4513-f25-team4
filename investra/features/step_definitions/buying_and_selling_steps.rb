@@ -67,7 +67,8 @@ def click_stock_button(button_type, symbol)
   end
   expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
   page.execute_script("(function() {
-    var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.#{button_type.downcase}-btn');
+    var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.#{button_type.downcase}-btn') ||
+              document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.sell-open-btn');
     if (btn) { window.currentStockId = btn.dataset.stockId; btn.click(); }
   })();")
   sleep 0.5
@@ -258,7 +259,7 @@ end
 
 When("I confirm the sale") do
   stock_id = page.evaluate_script("window.currentStockId") || 
-             page.evaluate_script("(function() { var btn = document.querySelector('button.sell-btn[data-stock-id]'); return btn ? btn.dataset.stockId : null; })();")
+             page.evaluate_script("(function() { var btn = document.querySelector('button.sell-btn[data-stock-id]') || document.querySelector('button.sell-open-btn[data-stock-id]'); return btn ? btn.dataset.stockId : null; })();")
   raise "Could not determine stock ID" unless stock_id
   page.execute_script("window.currentStockId = '#{stock_id}';") unless page.evaluate_script("window.currentStockId")
   @initial_balance = @user.reload.balance
@@ -383,8 +384,6 @@ end
 When("I click {string} and the transaction is processing") do |button|
   fill_in 'buy-quantity', with: '10'
   @entered_quantity = '10'
-  # Target the modal confirm button to avoid backdrop intercepts from the open modal.
-  page.execute_script("document.getElementById('buy-confirm-btn').disabled = true; document.getElementById('buy-cancel-btn').disabled = true;")
   if page.has_selector?('#buy-confirm-btn', wait: 2)
     page.find('#buy-confirm-btn').click
   else
@@ -591,14 +590,17 @@ Then("I should see a notification {string}") do |message|
 end
 
 Given("I am not logged in") do
+  Capybara.reset_sessions!
+  page.driver.browser.manage.delete_all_cookies if page.driver.browser.respond_to?(:manage)
   visit login_path
 end
 
 When("I try to access the {string} or {string} functionality") do |btn1, btn2|
   Capybara.reset_sessions!
   page.driver.browser.manage.delete_all_cookies if page.driver.browser.respond_to?(:manage)
+  # Ensure a stock exists so the unauthorized fetch hits a valid endpoint
+  stock = Stock.first || create_stock('TEST', price: 50, available_quantity: 100)
   visit stocks_path
-  stock = Stock.first
   if stock
     page.execute_script("(function() {
       var csrfToken = (document.querySelector('meta[name=\"csrf-token\"]') && document.querySelector('meta[name=\"csrf-token\"]').content);
