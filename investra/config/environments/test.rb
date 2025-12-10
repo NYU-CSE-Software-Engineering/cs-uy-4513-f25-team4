@@ -46,6 +46,9 @@ Rails.application.configure do
   # Allow Capybara rack_test default host to avoid HostAuthorization blocking.
   config.hosts << "www.example.com"
   config.hosts << "example.com"
+  # Allow JS driver hostnames (Puma on 127.0.0.1/local host)
+  config.hosts << "127.0.0.1"
+  config.hosts << "localhost"
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
