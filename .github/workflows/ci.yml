@@ -41,6 +41,20 @@ jobs:
           bundler-cache: true
           working-directory: investra
 
+      # Add this to your CI workflow before running tests
+    - name: Install Chrome and ChromeDriver
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+        CHROMEDRIVER_VERSION=131.0.6778.204
+        wget -q "https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip"
+        unzip chromedriver-linux64.zip
+        sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver  
+
       - name: Install system dependencies
         run: |
           sudo apt-get update -y
@@ -142,3 +156,7 @@ jobs:
       - name: Run Cucumber tests for real-time data update feature
         working-directory: investra
         run: bundle exec cucumber features/real_time_data_update.feature --format pretty
+
+      - name: Run Cucumber tests for user login/logout feature
+        working-directory: investra
+        run: bundle exec cucumber features/user_loginlogout.feature --format pretty
