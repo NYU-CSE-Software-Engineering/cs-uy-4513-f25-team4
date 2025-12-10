@@ -46,6 +46,7 @@ Feature: Buying and Selling Stocks
     Then I should see the error message "Insufficient shares"
     And the transaction should not be recorded
 
+  @javascript
   Scenario: Unauthorized user attempts to trade
     Given I am not logged in
     When I try to access the "Buy" or "Sell" functionality
