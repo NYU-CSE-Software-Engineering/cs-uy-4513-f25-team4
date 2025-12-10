@@ -1,9 +1,0 @@
-<% if flash[:notice] %>
-  <div class="notice"><%= flash[:notice] %></div>
-<% end %>
-
-<h1>Trader Dashboard</h1>
-<p>Welcome, <%= @user&.first_name || 'Trader' %>!</p>
-<p>My Portfolio</p>
-
-<%= button_to "Log Out", logout_path, method: :delete %>

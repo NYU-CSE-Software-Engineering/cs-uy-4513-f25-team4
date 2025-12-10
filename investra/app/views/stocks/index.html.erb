@@ -1,11 +1,12 @@
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; margin: -20px -20px 20px -20px; color: white;">
-  <h1 style="margin: 0 0 10px 0; color: white;">📊 Real-time Stock Market</h1>
-  <p style="margin: 0; opacity: 0.9;">Check real-time prices, historical data, and make informed trading decisions</p>
+<div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 28px; margin: -20px -20px 20px -20px; color: white; border-bottom: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 40px rgba(0,0,0,0.25);">
+  <h1 style="margin: 0 0 8px 0; color: white;">📊 Markets</h1>
+  <p style="margin: 0; opacity: 0.9;">Track live quotes, search tickers, and trade instantly.</p>
 </div>
 
 <% if current_user %>
-  <div id="balance" style="background: #28a745; color: white; padding: 15px; margin: 20px 0; border-radius: 5px;">
-    <strong>💰 Your Balance: $<%= number_with_precision(current_user.balance, precision: 2) %></strong>
+  <div id="balance" style="background: #0ea5e9; color: white; padding: 14px 16px; margin: 16px 0 10px 0; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 10px 30px rgba(14,165,233,0.35);">
+    <span style="font-weight: 700;">💰 Balance</span>
+    <span style="font-weight: 700;">$<%= number_with_precision(current_user.balance, precision: 2) %></span>
   </div>
 <% end %>
 
@@ -22,23 +23,30 @@
 <% end %>
 
 <style>
-  .stock-list table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
+  .stock-list { margin-top: 10px; }
+  .stock-list table { width: 100%; border-collapse: collapse; }
+  .stock-list thead th { padding: 12px 10px; text-align: left; color: #94a3b8; font-size: 13px; font-weight: 700; border-bottom: 1px solid rgba(148,163,184,0.2); }
+  .stock-list tbody tr { background: #0f172a; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; box-shadow: 0 14px 30px rgba(0,0,0,0.2); }
+  .stock-list tbody tr + tr { margin-top: 8px; }
+  .stock-list tbody tr td { padding: 12px 14px; text-align: left; vertical-align: middle; color: #e2e8f0; border-top: 1px solid rgba(255,255,255,0.04); }
+  .stock-list tbody tr td:first-child { border-left: 0; }
+  .stock-list tbody tr td:last-child { border-right: 0; }
+
+  .buy-btn {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(79,70,229,0.35);
   }
-  .stock-list th, .stock-list td {
-    padding: 12px 14px;
-    text-align: left;
-    vertical-align: middle;
-  }
-  .stock-list thead tr {
-    background: transparent;
-  }
-  .stock-list tbody tr {
-    background: transparent;
-    box-shadow: none;
-  }
+  .buy-btn:hover { transform: translateY(-1px); }
+
+  #search-form { display: flex; gap: 8px; align-items: center; margin: 12px 0 4px 0; }
+  #search-form input[type='text'] { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.4); background: #0b1220; color: #e2e8f0; }
+  #search-form input[type='submit'] { padding: 10px 14px; border-radius: 10px; border: none; background: #22c55e; color: #0b1220; font-weight: 700; cursor: pointer; }
   /* Modal styling */
   #buy-modal {
     position: fixed;

@@ -1,80 +1,146 @@
+<style>
+  .mt-layout { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .mt-card { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+  .mt-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; }
+  .mt-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .mt-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .mt-metrics { font-size: 13px; color: #cbd5e1; display: flex; gap: 8px; flex-wrap: wrap; }
+  .mt-actions form { display: inline; }
+  .mt-badge { padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 12px; }
+  .mt-search { display: flex; gap: 8px; margin-bottom: 10px; }
+  .mt-search input { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: #e2e8f0; }
+  .mt-btn { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #e2e8f0; cursor: pointer; }
+  .mt-btn:hover { background: rgba(255,255,255,0.12); }
+  .mt-empty { color: #94a3b8; font-size: 13px; }
+</style>
+
 <h1>Manage Team</h1>
 
 <% if flash[:notice] %>
   <div class="notice"><%= flash[:notice] %></div>
 <% end %>
-
 <% if flash[:alert] %>
   <div class="alert"><%= flash[:alert] %></div>
 <% end %>
 
-<h2>My Associates</h2>
-<% if @associates.any? %>
-  <ul>
-    <% @associates.each do |associate| %>
-      <li>
-        <strong><%= associate.email %></strong>
-        <% if @confirm_remove_user&.id == associate.id %>
-          <%= form_with url: remove_associate_user_path(associate), method: :delete, local: true do |f| %>
-            <%= f.submit "Confirm" %>
-          <% end %>
-        <% else %>
-          <%= form_with url: manage_team_path, method: :get, local: true do %>
-            <%= hidden_field_tag :confirm_remove_id, associate.id %>
-            <%= hidden_field_tag :show_traders, 'true' if @show_traders %>
-            <%= hidden_field_tag :search, @search_term if @search_term.present? %>
-            <%= submit_tag "Remove" %>
-          <% end %>
+<div class="mt-layout">
+  <div class="mt-card">
+    <h2 class="mt-title">My Associates</h2>
+    <% if @associates.any? %>
+      <ul class="mt-list">
+        <% @associates.each do |associate| %>
+          <li class="mt-item">
+            <div>
+              <div><strong><%= associate.email %></strong></div>
+              <% if @associate_performance[associate.id] %>
+                <% perf = @associate_performance[associate.id] %>
+                <div class="mt-metrics">
+                  <span class="mt-badge">Trades: <%= perf[:trades] %></span>
+                  <span class="mt-badge">Qty: <%= perf[:quantity] %></span>
+                  <span class="mt-badge">Net: <span style="color: <%= perf[:net] >= 0 ? '#28a745' : '#c0392b' %>;"><%= number_to_currency(perf[:net]) %></span></span>
+                  <% if perf[:last_trade_at] %>
+                    <span class="mt-badge">Last: <%= l(perf[:last_trade_at], format: :short) %></span>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="mt-metrics mt-empty">No trades yet</div>
+              <% end %>
+            </div>
+            <div class="mt-actions">
+              <% if @confirm_remove_user&.id == associate.id %>
+                <%= form_with url: remove_associate_user_path(associate), method: :delete, local: true do |f| %>
+                  <%= f.submit "Confirm", class: "mt-btn" %>
+                <% end %>
+              <% else %>
+                <%= form_with url: manage_team_path, method: :get, local: true do %>
+                  <%= hidden_field_tag :confirm_remove_id, associate.id %>
+                  <%= hidden_field_tag :show_traders, 'true' if @show_traders %>
+                  <%= hidden_field_tag :search, @search_term if @search_term.present? %>
+                  <%= submit_tag "Remove", class: "mt-btn" %>
+                <% end %>
+              <% end %>
+            </div>
+          </li>
         <% end %>
-      </li>
-    <% end %>
-  </ul>
-<% else %>
-  <p>No associates yet.</p>
-<% end %>
-
-<h2>Available Traders</h2>
-<% link_params = { show_traders: 'true' } %>
-<% link_params[:search] = @search_term if @search_term.present? %>
-<%= link_to "Add Associate", manage_team_path(link_params), id: "add_associate_link" %>
-
-<% if @show_traders %>
-  <div id="trader_list">
-    <%= form_with url: manage_team_path, method: :get, local: true, id: "search_form" do %>
-      <%= hidden_field_tag :show_traders, 'true' %>
-      <% if @selected_trader %>
-        <%= hidden_field_tag :selected_user_id, @selected_trader.id %>
-      <% end %>
-      <%= text_field_tag :search, @search_term, id: "search", placeholder: "Search by name..." %>
-      <%= submit_tag "Filter" %>
-    <% end %>
-
-    <% base_link_params = { show_traders: 'true' } %>
-    <% base_link_params[:search] = @search_term if @search_term.present? %>
-
-    <ul id="trader_items">
-      <% @available_traders.each do |trader| %>
-        <% trader_params = base_link_params.merge(selected_user_id: trader.id) %>
-        <li class="trader-item" data-name="<%= "#{trader.first_name} #{trader.last_name}" %>">
-          <%= link_to trader.email, manage_team_path(trader_params), id: trader.email %>
-          <% if @selected_trader&.id == trader.id %>
-            <span>(selected)</span>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-
-    <% if @available_traders.none? %>
-      <p>No traders available.</p>
-    <% end %>
-
-    <% if @selected_trader %>
-      <%= form_with url: assign_as_associate_user_path(@selected_trader), method: :post, local: true do |f| %>
-        <%= f.submit "Assign as Associate" %>
-      <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-empty">No associates yet.</p>
     <% end %>
   </div>
-<% end %>
+
+  <div class="mt-card">
+    <h2 class="mt-title">Pending Requests</h2>
+    <% if @pending_requests&.any? %>
+      <ul class="mt-list">
+        <% @pending_requests.each do |req| %>
+          <li class="mt-item">
+            <div><strong><%= req.user.email %></strong></div>
+            <div class="mt-actions">
+              <%= form_with url: approve_manager_request_path(req), method: :post, local: true do |f| %>
+                <%= f.submit "Approve", class: "mt-btn" %>
+              <% end %>
+              <%= form_with url: reject_manager_request_path(req), method: :post, local: true do |f| %>
+                <%= f.submit "Reject", class: "mt-btn" %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-empty">No pending requests.</p>
+    <% end %>
+  </div>
+</div>
+
+<div class="mt-card" style="margin-top:16px;">
+  <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <h2 class="mt-title" style="margin:0;">Available Traders</h2>
+    <% link_params = { show_traders: 'true' } %>
+    <% link_params[:search] = @search_term if @search_term.present? %>
+    <%= link_to "Add Associate", manage_team_path(link_params), id: "add_associate_link", class: "mt-btn" %>
+  </div>
+
+  <% if @show_traders %>
+    <div id="trader_list">
+      <%= form_with url: manage_team_path, method: :get, local: true, id: "search_form", class: "mt-search" do %>
+        <%= hidden_field_tag :show_traders, 'true' %>
+        <% if @selected_trader %>
+          <%= hidden_field_tag :selected_user_id, @selected_trader.id %>
+        <% end %>
+        <%= text_field_tag :search, @search_term, id: "search", placeholder: "Search by name or email..." %>
+        <%= submit_tag "Filter", class: "mt-btn" %>
+      <% end %>
+
+      <% base_link_params = { show_traders: 'true' } %>
+      <% base_link_params[:search] = @search_term if @search_term.present? %>
+
+      <ul id="trader_items" class="mt-list">
+        <% @available_traders.each do |trader| %>
+          <% trader_params = base_link_params.merge(selected_user_id: trader.id) %>
+          <li class="mt-item">
+            <div>
+              <div><%= link_to trader.email, manage_team_path(trader_params), id: trader.email %></div>
+              <div class="mt-metrics mt-badge">Role: <%= trader.role.presence || 'Trader' %></div>
+            </div>
+            <% if @selected_trader&.id == trader.id %>
+              <span class="mt-badge">Selected</span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <% if @available_traders.none? %>
+        <p class="mt-empty">No traders available.</p>
+      <% end %>
+
+      <% if @selected_trader %>
+        <%= form_with url: assign_as_associate_user_path(@selected_trader), method: :post, local: true do |f| %>
+          <%= f.submit "Assign as Associate", class: "mt-btn" %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
 
 <script>
   function attachSearchAutoSubmit() {

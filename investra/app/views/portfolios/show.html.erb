@@ -24,6 +24,44 @@
       <div class="label">Positions</div>
       <div class="value"><%= @summary[:holdings].size %></div>
     </div>
+    <% if @performance %>
+      <div class="card card--stat" style="grid-column: span 2;">
+        <div class="label">Performance</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:8px;">
+          <div>
+            <div class="label" style="font-size:12px;">Trades</div>
+            <div class="value"><%= @performance[:trades] %></div>
+          </div>
+          <div>
+            <div class="label" style="font-size:12px;">Quantity</div>
+            <div class="value"><%= @performance[:quantity] %></div>
+          </div>
+          <div>
+            <div class="label" style="font-size:12px;">Buy Total</div>
+            <div class="value"><%= number_to_currency(@performance[:buy_total]) %></div>
+          </div>
+          <div>
+            <div class="label" style="font-size:12px;">Sell Total</div>
+            <div class="value"><%= number_to_currency(@performance[:sell_total]) %></div>
+          </div>
+          <div>
+            <div class="label" style="font-size:12px;">Net</div>
+            <% net = @performance[:net].to_f %>
+            <div class="value" style="color:<%= net >= 0 ? '#22c55e' : '#ef4444' %>;">
+              <%= number_to_currency(net) %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <div class="card card--stat" style="grid-column: span 2;">
+      <div class="label">Top Up Balance</div>
+      <p style="margin:6px 0 10px 0; color:#94a3b8;">Add funds to your trading balance.</p>
+      <%= form_with url: deposit_trader_dashboard_path, method: :patch, local: true, style: "display:flex; gap:8px; align-items:center; flex-wrap: wrap;" do |f| %>
+        <%= number_field_tag :amount, nil, min: 0.01, step: 0.01, placeholder: "Amount (USD)", style: "padding:10px 12px; border-radius:10px; border:1px solid rgba(148,163,184,0.4); background:#0b1220; color:#e2e8f0; flex:1;" %>
+        <%= f.submit "Deposit", class: "button", style: "padding:10px 14px; border-radius:10px; border:none; background:linear-gradient(135deg,#22c55e,#0ea5e9); color:#0b1220; font-weight:700; cursor:pointer;" %>
+      <% end %>
+    </div>
   </div>
 
   <div class="card">
@@ -33,7 +71,7 @@
         <h2>Positions & P/L</h2>
       </div>
     </div>
-    <div id="message"></div>
+    <div id="message"><%= flash[:notice] %></div>
     <div class="portfolio-list">
       <div class="table">
         <div class="table__head">
@@ -58,7 +96,7 @@
                 <%= gain_loss >= 0 ? "+" : "" %><%= number_to_currency(gain_loss) %>
               </div>
               <div>
-                <button class="sell-btn button button--ghost" data-stock-id="<%= holding[:stock_id] %>" data-stock-symbol="<%= holding[:symbol] %>" data-stock-price="<%= holding[:market_price] %>" data-max-quantity="<%= holding[:quantity] %>">
+                <button class="sell-open-btn button button--ghost" data-stock-id="<%= holding[:stock_id] %>" data-stock-symbol="<%= holding[:symbol] %>" data-stock-price="<%= holding[:market_price] %>" data-max-quantity="<%= holding[:quantity] %>">
                   Sell
                 </button>
               </div>
@@ -74,24 +112,44 @@
 </div>
 
 <!-- Sell Modal (keeps compatibility with Cucumber steps) -->
-<div id="sell-modal" style="display: none;">
-  <div class="modal-content">
+<style>
+  .sell-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; z-index: 1000; align-items: center; justify-content: center; }
+  .sell-card { width: 360px; background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 18px 20px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 24px 50px rgba(0,0,0,0.35); }
+  .sell-card h2 { margin: 0 0 8px 0; }
+  .sell-meta { margin: 0 0 6px 0; color: #cbd5e1; }
+  .sell-form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .sell-form label { font-weight: 600; color: #cbd5e1; }
+  .sell-form input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.4); background: #0b1220; color: #e2e8f0; }
+  .sell-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .sell-btn { padding: 10px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; }
+  .sell-btn.primary { background: linear-gradient(135deg, #22c55e, #0ea5e9); color: #0b1220; }
+  .sell-btn.secondary { background: rgba(255,255,255,0.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); }
+  #sell-error { color: #fca5a5; font-size: 13px; min-height: 18px; }
+</style>
+
+<div id="sell-modal" class="sell-overlay" style="display:none;">
+  <div class="sell-card">
     <h2>Sell Stock</h2>
-    <p>Symbol: <span id="sell-symbol"></span></p>
-    <p>Price: $<span id="sell-price"></span></p>
-    <p>Max Quantity: <span id="sell-max-quantity"></span></p>
-    <%= form_with url: "#", id: "sell-form", local: false do |f| %>
-      <%= f.label :quantity, "Quantity" %>
-      <%= f.number_field :quantity, id: "sell-quantity", min: 1, required: true %>
-      <%= f.submit "Confirm", id: "sell-confirm-btn" %>
-      <button type="button" id: "sell-cancel-btn">Cancel</button>
+    <p class="sell-meta">Symbol: <span id="sell-symbol"></span></p>
+    <p class="sell-meta">Price: $<span id="sell-price"></span></p>
+    <p class="sell-meta">Max Quantity: <span id="sell-max-quantity"></span></p>
+    <%= form_with url: "#", id: "sell-form", local: true, data: { turbo: false }, html: { class: "sell-form" } do |f| %>
+      <div>
+        <%= f.label :quantity, "Quantity" %>
+        <%= f.number_field :quantity, id: "sell-quantity", min: 1, required: true, step: 1 %>
+      </div>
+      <%= f.hidden_field :authenticity_token, value: form_authenticity_token %>
+      <div class="sell-actions">
+        <button type="button" id="sell-cancel-btn" class="sell-btn secondary">Cancel</button>
+        <%= f.button "Confirm", id: "sell-confirm-btn", type: "submit", class: "sell-btn primary" %>
+      </div>
     <% end %>
     <div id="sell-error"></div>
   </div>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  function initSellModal() {
     // Show persisted transaction message (from buy/sell)
     (function() {
       let persistedMessage = sessionStorage.getItem('transactionMessage');
@@ -114,9 +172,9 @@
       }
     })();
 
-    const sellButtons = document.querySelectorAll('.sell-btn');
-    const sellModal = document.getElementById('sell-modal');
+    const sellButtons = document.querySelectorAll('.sell-open-btn');
     const sellForm = document.getElementById('sell-form');
+    const sellModal = document.getElementById('sell-modal');
     const sellCancelBtn = document.getElementById('sell-cancel-btn');
     const sellSymbol = document.getElementById('sell-symbol');
     const sellPrice = document.getElementById('sell-price');
@@ -124,6 +182,7 @@
     const sellQuantity = document.getElementById('sell-quantity');
     const sellError = document.getElementById('sell-error');
     const sellConfirmBtn = document.getElementById('sell-confirm-btn');
+    if (!sellModal || !sellButtons.length || !sellForm || !sellConfirmBtn) return;
     window.currentStockId = window.currentStockId || null;
 
     sellButtons.forEach(btn => {
@@ -133,69 +192,44 @@
         sellPrice.textContent = parseFloat(this.dataset.stockPrice).toFixed(2);
         sellMaxQuantity.textContent = this.dataset.maxQuantity;
         sellQuantity.max = this.dataset.maxQuantity;
-        sellModal.style.display = 'block';
+        sellModal.style.display = 'flex';
         sellError.textContent = '';
         sellQuantity.value = '';
+        sellForm.action = `/stocks/${window.currentStockId}/sell`;
+        sellForm.method = 'post';
       });
     });
 
-    sellCancelBtn.addEventListener('click', function() {
-      sellModal.style.display = 'none';
-      window.currentStockId = null;
-    });
+    if (sellCancelBtn) {
+      sellCancelBtn.addEventListener('click', function() {
+        sellModal.style.display = 'none';
+        window.currentStockId = null;
+      });
+    }
 
     sellForm.addEventListener('submit', function(e) {
-      e.preventDefault();
+      if (!window.currentStockId) {
+        sellError.textContent = 'Missing stock id';
+        e.preventDefault();
+        return;
+      }
       const quantity = sellQuantity.value;
-
       if (!quantity || quantity <= 0) {
         sellError.textContent = 'Please enter a valid quantity';
+        e.preventDefault();
         return;
       }
-
       if (parseInt(quantity) > parseInt(sellMaxQuantity.textContent)) {
         sellError.textContent = 'Insufficient shares';
+        e.preventDefault();
         return;
       }
-
       sellConfirmBtn.disabled = true;
-      sellCancelBtn.disabled = true;
-
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
-                       document.querySelector('input[name="authenticity_token"]')?.value;
-      fetch(`/stocks/${window.currentStockId}/sell`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ quantity: quantity })
-      })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(data => {
-            throw new Error(data.error || 'Transaction failed');
-          });
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.message) {
-          sessionStorage.setItem('transactionMessage', data.message);
-          document.cookie = 'transactionMessage=' + encodeURIComponent(data.message) + '; path=/';
-        }
-        document.getElementById('message').textContent = data.message;
-        sellModal.style.display = 'none';
-        <% unless Rails.env.test? %>
-        location.reload(); // Skip reload in test to avoid stale element issues
-        <% end %>
-      })
-      .catch(error => {
-        sellError.textContent = error.message || 'Transaction failed. Please try again.';
-        sellConfirmBtn.disabled = false;
-        sellCancelBtn.disabled = false;
-      });
+      if (sellCancelBtn) sellCancelBtn.disabled = true;
+      // allow normal form submission to /stocks/:id/sell
     });
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', initSellModal);
+  document.addEventListener('turbo:load', initSellModal);
 </script>

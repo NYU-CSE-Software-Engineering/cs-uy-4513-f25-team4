@@ -1,8 +1,0 @@
-<% if flash[:notice] %>
-  <div class="notice"><%= flash[:notice] %></div>
-<% end %>
-
-<h1>System Administrator Dashboard</h1>
-<p>Welcome, <%= @user&.first_name %>!</p>
-
-<%= button_to "Log Out", logout_path, method: :delete %>

@@ -43,6 +43,10 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "example.com" }
 
+  # Allow Capybara rack_test default host to avoid HostAuthorization blocking.
+  config.hosts << "www.example.com"
+  config.hosts << "example.com"
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 

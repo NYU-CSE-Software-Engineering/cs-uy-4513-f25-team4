@@ -100,7 +100,13 @@ class StocksController < ApplicationController
     return insufficient_stock_response(quantity) if @stock.available_quantity < quantity
 
     execute_buy_transaction(quantity, total_cost)
-    render json: { message: 'Purchase successful.', balance: current_user.reload.balance }
+    respond_to do |format|
+      format.json { render json: { message: 'Purchase successful.', balance: current_user.reload.balance } }
+      format.html do
+        flash[:notice] = 'Purchase successful.'
+        redirect_to portfolio_path
+      end
+    end
   end
 
   def sell
@@ -114,7 +120,13 @@ class StocksController < ApplicationController
 
     total_value = calculate_total_cost(quantity)
     execute_sell_transaction(quantity, total_value, portfolio)
-    render json: { message: 'Sale successful.', balance: current_user.reload.balance }
+    respond_to do |format|
+      format.json { render json: { message: 'Sale successful.', balance: current_user.reload.balance } }
+      format.html do
+        flash[:notice] = 'Sale successful.'
+        redirect_to portfolio_path
+      end
+    end
   end
 
   private
