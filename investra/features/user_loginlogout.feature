@@ -12,7 +12,7 @@ Scenario: User successfully logs in with valid credentials
     And I fill in "Password" with "SecurePass123"
     And I press "Log In"
     Then I should be on the trader dashboard page
-    And I should see "Login successful"
+    And I should see "Signed in successfully"
     And I should be logged in as "trader@example.com"     
 
 Scenario: Login creates a user session
