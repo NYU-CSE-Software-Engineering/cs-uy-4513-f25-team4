@@ -141,3 +141,4 @@ jobs:
       - name: Run Cucumber tests for real-time data update feature
         working-directory: investra
         run: bundle exec cucumber features/real_time_data_update.feature --format pretty
+
