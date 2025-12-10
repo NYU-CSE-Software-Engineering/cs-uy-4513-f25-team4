@@ -583,7 +583,8 @@ When("I attempt to sell {string} shares of {string}") do |qty, symbol|
   @entered_quantity = qty
   expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
   page.execute_script("(function() {
-    var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.sell-btn');
+    var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.sell-btn') ||
+              document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.sell-open-btn');
     if (btn) { window.currentStockId = btn.dataset.stockId; btn.click(); }
   })();")
   sleep 0.5
