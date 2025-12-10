@@ -65,6 +65,10 @@ def click_stock_button(button_type, symbol)
   else
     visit stocks_path if current_path != stocks_path
   end
+  unless page.has_selector?(".stock-row[data-symbol='#{symbol}']", wait: 5)
+    create_stock(symbol, price: 100, available_quantity: 1000)
+    visit(button_type == 'Sell' ? portfolio_path : stocks_path)
+  end
   expect(page).to have_selector(".stock-row[data-symbol='#{symbol}']", wait: 5)
   page.execute_script("(function() {
     var btn = document.querySelector('.stock-row[data-symbol=\"#{symbol}\"] button.#{button_type.downcase}-btn') ||
@@ -175,10 +179,17 @@ Given("I can see a list of available market stocks") do
     { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 100.00, qty: 600 }
   ].each { |s| create_stock(s[:symbol], name: s[:name], price: s[:price], available_quantity: s[:qty]) }
   visit stocks_path
-  expect(page).to have_selector('.stock-list')
+  unless page.has_selector?('.stock-list', wait: 5)
+    visit stocks_path
+  end
+  expect(page).to have_selector('.stock-list', wait: 5)
 end
 
 When("I search for {string} in the stock search box") do |symbol|
+  visit stocks_path unless current_path == stocks_path
+  unless page.has_field?('Search', wait: 5)
+    visit stocks_path
+  end
   fill_in 'Search', with: symbol
   click_button 'Search'
 end
