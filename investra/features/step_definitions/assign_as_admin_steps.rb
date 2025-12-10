@@ -3,7 +3,7 @@ Given("I am logged in as a System Administrator") do
   visit login_path
   fill_in 'Email', with: @current_user.email
   fill_in 'Password', with: 'password'
-  click_button 'Log in'
+  click_button 'Log In'
 end
 
 # Removed duplicate - using generic step from buying_and_selling_steps.rb
