@@ -3,7 +3,12 @@ require 'timeout'
 
 # Helper methods
 def create_stock(symbol, name: symbol, price: 100.0, available_quantity: 1000)
-  Stock.find_or_create_by!(symbol: symbol) { |s| s.name = name; s.price = price; s.available_quantity = available_quantity }
+  stock = Stock.find_or_initialize_by(symbol: symbol)
+  stock.name = stock.name.presence || name
+  stock.price = price
+  stock.available_quantity = available_quantity
+  stock.save!
+  stock
 end
 
 def submit_transaction(type, quantity)
@@ -280,6 +285,12 @@ end
 
 Given("I own {string} with quantity {string}") do |symbol, qty|
   stock = create_stock(symbol, price: 100, available_quantity: 1000)
+  @user ||= User.find_or_create_by!(email: 'investor@example.com') do |u|
+    u.password = u.password_confirmation = 'password'
+    u.first_name = 'Test'
+    u.last_name = 'User'
+    u.balance = 5000
+  end
   portfolio = Portfolio.find_or_create_by!(user: @user, stock: stock) { |p| p.quantity = qty.to_i }
   portfolio.update(quantity: qty.to_i) if portfolio.quantity != qty.to_i
 end
