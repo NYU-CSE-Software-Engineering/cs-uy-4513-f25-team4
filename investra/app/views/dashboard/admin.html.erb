@@ -1,0 +1,23 @@
+<% content_for :title, "Admin Dashboard" %>
+
+<div class="page">
+  <div class="page__header">
+    <div class="eyebrow">Dashboard</div>
+    <h1>System Administrator</h1>
+    <p class="lede">Maintain company records and keep an eye on the platform.</p>
+  </div>
+
+  <div class="card">
+    <div class="card__header">
+      <div>
+        <div class="label">Admin shortcuts</div>
+        <h2>Go to</h2>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <%= link_to "Companies", companies_path, class: "button" %>
+      <%= link_to "Users", user_management_path, class: "button button--ghost" %>
+      <%= link_to "Analytics", analytics_index_path, class: "button button--ghost" %>
+    </div>
+  </div>
+</div>
