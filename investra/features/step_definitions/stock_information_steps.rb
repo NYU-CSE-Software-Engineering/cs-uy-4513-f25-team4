@@ -11,7 +11,7 @@ Given("I am logged in as a trader") do
   visit '/login'
   fill_in 'Email', with: @user.email
   fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
 end
 
 Given("the following stocks exist:") do |table|

@@ -9,10 +9,17 @@ Given("I am logged in as an admin") do
     user.first_name = "Admin"
     user.last_name = "User"
   end
-  visit login_path
-  fill_in "Email", with: @admin.email
-  fill_in "Password", with: "password"
-  click_button "Log In"
+  Capybara.reset_sessions! if defined?(Capybara)
+  if Capybara.current_driver == :rack_test
+    page.driver.post(login_path, { email: @admin.email, password: "password" })
+    visit stocks_path
+  else
+    visit login_path
+    expect(page).to have_field("Email", wait: 5)
+    fill_in "Email", with: @admin.email, id: "Email"
+    fill_in "Password", with: "password", id: "Password"
+    click_button "Log in"
+  end
 end
 
 Given("I am logged in as a non-admin user") do
@@ -22,10 +29,17 @@ Given("I am logged in as a non-admin user") do
     user.first_name = "Regular"
     user.last_name = "User"
   end
-  visit login_path
-  fill_in "Email", with: @user.email
-  fill_in "Password", with: "password"
-  click_button "Log In"
+  Capybara.reset_sessions! if defined?(Capybara)
+  if Capybara.current_driver == :rack_test
+    page.driver.post(login_path, { email: @user.email, password: "password" })
+    visit stocks_path
+  else
+    visit login_path
+    expect(page).to have_field("Email", wait: 5)
+    fill_in "Email", with: @user.email, id: "Email"
+    fill_in "Password", with: "password", id: "Password"
+    click_button "Log in"
+  end
 end
 
 Given("I am on the new company page") do

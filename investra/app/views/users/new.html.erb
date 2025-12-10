@@ -61,7 +61,13 @@
 
       <div class="form__row" id="company-name-field">
         <%= label_tag :company_name, "Company name", class: "label" %>
-        <%= text_field_tag :company_name, nil, placeholder: 'Enter company name', class: "input" %>
+        <%= text_field_tag :company_name, nil, placeholder: 'Enter company name', class: "input", list: "company-options" %>
+        <datalist id="company-options">
+          <% (@companies || Company.order(:name)).each do |company| %>
+            <option value="<%= company.name %>"></option>
+          <% end %>
+        </datalist>
+        <p class="hint" style="font-size: 12px; margin-top: 4px;">Associate Trader must join an existing company.</p>
       </div>
 
       <div class="form__actions">

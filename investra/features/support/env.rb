@@ -33,6 +33,8 @@ ActionController::Base.allow_rescue = false
 # Remove/comment out the lines below if your app doesn't have a database.
 # For some databases (like MongoDB and CouchDB) you may need to use :truncation instead.
 begin
+  # Use truncation so data created in test steps is visible to the app server
+  # when running JavaScript scenarios (separate DB connections).
   DatabaseCleaner.strategy = :truncation
 rescue NameError
   raise "You need to add database_cleaner to your Gemfile (in the :test group) if you wish to use it."
@@ -53,9 +55,7 @@ end
 #   end
 #
 
-# Possible values are :truncation and :transaction
-# The :transaction strategy is faster, but might give you threading problems.
-# See https://github.com/cucumber/cucumber-rails/blob/master/features/choose_javascript_database_strategy.feature
+# Align JS scenarios with truncation to avoid data visibility issues in CI.
 Cucumber::Rails::Database.javascript_strategy = :truncation
 
 # Setup DatabaseCleaner hooks

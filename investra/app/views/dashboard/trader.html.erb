@@ -1,8 +1,72 @@
-<% if flash[:notice] %>
-  <div class="notice"><%= flash[:notice] %></div>
-<% end %>
+<% content_for :title, "Trader Dashboard" %>
 
-<h1>Trader Dashboard</h1>
-<p>Welcome, <%= @user&.first_name || 'Trader' %>!</p>
-<p>My Portfolio</p>
+<div class="page">
+  <div class="page__header">
+    <div class="eyebrow">Dashboard</div>
+    <h1>Welcome, <%= @user.first_name.presence || "Trader" %></h1>
+    <p class="lede">Track your recent performance and jump straight into trading.</p>
+  </div>
 
+  <div class="grid">
+    <div class="card card--stat">
+      <div class="label">Trades</div>
+      <div class="value"><%= @performance[:trades] %></div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Quantity</div>
+      <div class="value"><%= @performance[:quantity] %></div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Buy Total</div>
+      <div class="value"><%= number_to_currency(@performance[:buy_total]) %></div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Sell Total</div>
+      <div class="value"><%= number_to_currency(@performance[:sell_total]) %></div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Net</div>
+      <% net = @performance[:net].to_f %>
+      <div class="value" style="color:<%= net >= 0 ? '#22c55e' : '#ef4444' %>;">
+        <%= number_to_currency(net) %>
+      </div>
+    </div>
+    <div class="card card--stat">
+      <div class="label">Last Trade</div>
+      <div class="value">
+        <% if @performance[:last_trade_at].present? %>
+          <%= @performance[:last_trade_at].strftime("%b %-d, %Y %-l:%M %p") %>
+        <% else %>
+          No trades yet
+        <% end %>
+      </div>
+    </div>
+    <div class="card card--stat" style="grid-column: span 2;">
+      <div class="label">Cash Balance</div>
+      <div class="value"><%= number_to_currency(@user.balance.to_f) %></div>
+      <p class="hint" style="margin-top:6px; color:#94a3b8;">Top up your balance before placing your next trade.</p>
+      <%= form_with url: deposit_trader_dashboard_path, method: :patch, local: true do %>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+          <%= number_field_tag :amount, nil, min: 0.01, step: 0.01, placeholder: "Amount (USD)", class: "input", style: "max-width:220px;" %>
+          <%= submit_tag "Deposit", class: "button" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card__header">
+      <div>
+        <div class="label">Next steps</div>
+        <h2>Quick links</h2>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <%= link_to "Browse Stocks", stocks_path, class: "button button--ghost" %>
+      <%= link_to "View Portfolio", portfolio_path, class: "button button--ghost" %>
+      <%= link_to "Watchlist", watchlist_path, class: "button button--ghost" %>
+      <%= link_to "Transactions", transactions_path, class: "button button--ghost" %>
+      <%= link_to "Analytics", analytics_index_path, class: "button button--ghost" %>
+    </div>
+  </div>
+</div>

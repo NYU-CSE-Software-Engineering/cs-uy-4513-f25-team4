@@ -41,6 +41,8 @@ docker compose logs -f web
 - Set `MASSIVE_API_KEY` to use Massive for live quotes. Requests authenticate with `Authorization: Bearer <key>` per the Massive REST Quickstart. Without it, the app falls back to Yahoo Finance.
 - Optionally override the base URL (defaults to `https://api.polygon.io`) with `MASSIVE_API_BASE` if your account uses a different Massive endpoint.
 - Example for Compose: `MASSIVE_API_KEY=your_key_here docker compose up --build`
+- Team-friendly setup: copy `.env.example` to `.env` in `investra/`, put your `MASSIVE_API_KEY` there (and optional `MASSIVE_API_BASE`). Compose will auto-load it so everyone can `docker compose up` without exporting env vars manually.
+- Company-name search: with Massive configured, searching a company name (e.g., “Twitter”) will first resolve to a ticker via Massive reference search, then fetch a quote and persist it.
 
 ## Running tests in Docker
 - RSpec (all): `docker compose run --rm web bundle exec rspec`

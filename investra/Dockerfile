@@ -4,7 +4,14 @@ FROM ruby:3.2.2
 
 # ✅ Install dependencies (MySQL client dev headers for mysql2 gem)
 RUN apt-get update -qq && \
-    apt-get install -y build-essential libmariadb-dev-compat libmariadb-dev nodejs yarn && \
+    apt-get install -y \
+      build-essential \
+      libmariadb-dev-compat \
+      libmariadb-dev \
+      nodejs \
+      yarn \
+      chromium \
+      chromium-driver && \
     rm -rf /var/lib/apt/lists/*
 
 

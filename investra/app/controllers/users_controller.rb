@@ -21,7 +21,8 @@ class UsersController < ApplicationController
 
     @associates = User.where(manager: @current_user)
 
-    base_scope = User.where(role: ['Trader', 'trader'])
+    # Show available users who can be assigned: Traders or unassigned Associate Traders
+    base_scope = User.where(role: ['Trader', 'trader', 'Associate Trader', 'associate_trader'], manager_id: nil)
     base_scope =
       if @current_user.company
         base_scope.where(company: [nil, @current_user.company])
@@ -48,6 +49,35 @@ class UsersController < ApplicationController
     @confirm_remove_user = nil
     if params[:confirm_remove_id].present?
       @confirm_remove_user = @associates.find_by(id: params[:confirm_remove_id])
+    end
+
+    @pending_requests = ManagerRequest.where(manager: @current_user, status: "pending")
+
+    # Basic performance metrics for associates (from transactions)
+    @associate_performance = {}
+    if @associates.any?
+      rows = Transaction.where(user_id: @associates.pluck(:id))
+                        .group(:user_id)
+                        .pluck(
+                          :user_id,
+                          Arel.sql("COUNT(*) AS trades"),
+                          Arel.sql("SUM(quantity) AS total_qty"),
+                          Arel.sql("SUM(CASE WHEN transaction_type = 'sell' THEN price * quantity ELSE 0 END) AS sell_total"),
+                          Arel.sql("SUM(CASE WHEN transaction_type = 'buy' THEN price * quantity ELSE 0 END) AS buy_total"),
+                          Arel.sql("MAX(created_at) AS last_trade_at")
+                        )
+      rows.each do |user_id, trades, qty, sell_total, buy_total, last_trade_at|
+        sell_total = sell_total.to_f
+        buy_total = buy_total.to_f
+        @associate_performance[user_id] = {
+          trades: trades.to_i,
+          quantity: qty.to_i,
+          buy_total: buy_total,
+          sell_total: sell_total,
+          net: sell_total - buy_total,
+          last_trade_at: last_trade_at
+        }
+      end
     end
 
     @show_traders = params[:show_traders] == 'true' || @selected_trader.present? || @search_term.present?
@@ -165,6 +195,7 @@ class UsersController < ApplicationController
   # GET /signup
   def new
     @user = User.new
+    @companies = Company.order(:name)
   end
 
   # POST /users
@@ -174,9 +205,21 @@ class UsersController < ApplicationController
     # Assign selected role
     role_name = params[:role_name] || 'Trader'
     role = Role.find_or_create_by(name: role_name)
+    company_name = params[:company_name].to_s.strip
     
     # Handle company for Portfolio Manager and Associate Trader
-    if ['Portfolio Manager', 'Associate Trader'].include?(role_name)
+    if role_name == 'Associate Trader'
+      domain = @user.email.split('@').last
+      company = Company.find_by(name: company_name.presence) || Company.find_by(domain: domain)
+
+      unless company
+        @user.errors.add(:company, "must be an existing company for Associate Trader")
+        @companies = Company.order(:name)
+        return render :new, status: :unprocessable_entity, layout: true
+      end
+
+      @user.company = company
+    elsif role_name == 'Portfolio Manager'
       domain = @user.email.split('@').last
       company = Company.find_by(domain: domain)
       
@@ -189,9 +232,14 @@ class UsersController < ApplicationController
       
       @user.company = company if company
     end
-    
+
+    @user.role = role_name
     if @user.save
       @user.roles << role unless @user.roles.exists?(id: role.id)
+      if role_name == 'Associate Trader' && @user.company_id.present?
+        manager = User.find_by(role: ['Portfolio Manager', 'portfolio_manager'], company_id: @user.company_id)
+        ManagerRequest.create!(user: @user, manager: manager) if manager
+      end
       session[:user_id] = @user.id
       
       dashboard_path = case role_name

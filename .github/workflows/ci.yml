@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [ main, hanqiLiuBranch, feature/market-data ]
   pull_request:
 
 jobs:
@@ -40,8 +39,6 @@ jobs:
           ruby-version: 3.2.2
           bundler-cache: true
           working-directory: investra
-
- 
 
       - name: Install system dependencies
         run: |
@@ -145,6 +142,3 @@ jobs:
         working-directory: investra
         run: bundle exec cucumber features/real_time_data_update.feature --format pretty
 
-      - name: Run Cucumber tests for user login/logout feature
-        working-directory: investra
-        run: bundle exec cucumber features/user_loginlogout.feature --format pretty

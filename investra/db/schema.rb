@@ -43,6 +43,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_07_211937) do
     t.index ["user_id"], name: "index_holdings_on_user_id"
   end
 
+  create_table "manager_requests", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "manager_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["manager_id"], name: "index_manager_requests_on_manager_id"
+    t.index ["user_id"], name: "index_manager_requests_on_user_id"
+  end
+
   create_table "news", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "stock_id", null: false
     t.string "title", null: false
@@ -162,6 +172,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_07_211937) do
 
   add_foreign_key "credit_lines", "users"
   add_foreign_key "holdings", "users"
+  add_foreign_key "manager_requests", "users"
+  add_foreign_key "manager_requests", "users", column: "manager_id"
   add_foreign_key "news", "stocks"
   add_foreign_key "portfolios", "stocks"
   add_foreign_key "portfolios", "users"

@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   # Dashboard routes
   # -------------------------------
   get "/dashboard/trader", to: "dashboard#trader", as: :trader_dashboard
+  patch "/dashboard/trader/deposit", to: "dashboard#deposit", as: :deposit_trader_dashboard
   get "/dashboard/associate", to: "dashboard#associate", as: :associate_dashboard
   get "/dashboard/manager", to: "dashboard#manager", as: :manager_dashboard
   get "/dashboard/admin", to: "dashboard#admin", as: :admin_dashboard
@@ -52,6 +53,8 @@ Rails.application.routes.draw do
   # Associate assignment
   post "users/:id/assign_as_associate", to: "users#assign_as_associate", as: :assign_as_associate_user
   delete "users/:id/remove_associate", to: "users#remove_associate", as: :remove_associate_user
+  post "manager_requests/:id/approve", to: "manager_requests#approve", as: :approve_manager_request
+  post "manager_requests/:id/reject", to: "manager_requests#reject", as: :reject_manager_request
 
   # -------------------------------
   # Stocks (from both versions)

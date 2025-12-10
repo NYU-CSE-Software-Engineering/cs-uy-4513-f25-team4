@@ -1,7 +1,24 @@
-<% if flash[:notice] %>
-  <div class="notice"><%= flash[:notice] %></div>
-<% end %>
+<% content_for :title, "Manager Dashboard" %>
 
-<h1>Portfolio Manager Dashboard</h1>
-<p>Welcome, <%= @user&.first_name %>!</p>
+<div class="page">
+  <div class="page__header">
+    <div class="eyebrow">Dashboard</div>
+    <h1>Manager Overview</h1>
+    <p class="lede">Review your team, approve associates, and keep tabs on company activity.</p>
+  </div>
 
+  <div class="card">
+    <div class="card__header">
+      <div>
+        <div class="label">Team actions</div>
+        <h2>What would you like to do?</h2>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <%= link_to "Manage Team", manage_team_path, class: "button" %>
+      <%= link_to "Companies", companies_path, class: "button button--ghost" %>
+      <%= link_to "Analytics", analytics_index_path, class: "button button--ghost" %>
+      <%= link_to "Portfolio", portfolio_path, class: "button button--ghost" %>
+    </div>
+  </div>
+</div>

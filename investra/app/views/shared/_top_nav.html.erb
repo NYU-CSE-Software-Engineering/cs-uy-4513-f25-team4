@@ -1,20 +1,84 @@
+<style>
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+  .topbar__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .topbar__nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .topbar__nav a,
+  .topbar__nav span.topbar__pill {
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .topbar__nav a:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .topbar__nav a.active {
+    background: #4f46e5;
+    color: #fff;
+  }
+  .topbar__company {
+    color: #cbd5e1;
+    font-size: 14px;
+  }
+  .topbar__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar__user {
+    font-weight: 600;
+  }
+</style>
+
 <header class="topbar">
   <div class="topbar__brand">
     <div class="dot"></div>
     <span class="brand">Investra</span>
   </div>
-  <nav class="topbar__nav">
-    <%= link_to "Stocks", stocks_path, class: nav_class(request.path, stocks_path) %>
-    <%= link_to "Portfolio", portfolio_path, class: nav_class(request.path, portfolio_path) %>
-    <%= link_to "Watchlist", watchlist_path, class: nav_class(request.path, watchlist_path) %>
-    <%= link_to "Credit Line", credit_line_path, class: nav_class(request.path, credit_line_path) %>
-    <%= link_to "Transactions", transactions_path, class: nav_class(request.path, transactions_path) %>
-    <%= link_to "Analytics", analytics_index_path, class: nav_class(request.path, analytics_index_path) %>
-  </nav>
+  <% if current_user %>
+    <nav class="topbar__nav">
+      <%= link_to "Stocks", stocks_path, class: nav_class(request.path, stocks_path) %>
+      <%= link_to "Portfolio", portfolio_path, class: nav_class(request.path, portfolio_path) %>
+      <%= link_to "Watchlist", watchlist_path, class: nav_class(request.path, watchlist_path) %>
+      <%= link_to "Transactions", transactions_path, class: nav_class(request.path, transactions_path) %>
+      <%= link_to "Analytics", analytics_index_path, class: nav_class(request.path, analytics_index_path) %>
+      <%= link_to "Credit Line", credit_line_path, class: nav_class(request.path, credit_line_path) %>
+      <% if current_user.role.to_s.downcase == "admin" %>
+        <%= link_to "Companies", companies_path, class: nav_class(request.path, companies_path) %>
+      <% elsif current_user.role.to_s.downcase == "portfolio manager" || current_user.role.to_s == "portfolio_manager" %>
+        <%= link_to "Manage Team", manage_team_path, class: nav_class(request.path, manage_team_path) %>
+      <% end %>
+      <% if current_user.company.present? %>
+        <span class="topbar__pill topbar__company">Company: <%= current_user.company&.name %></span>
+      <% end %>
+    </nav>
+  <% end %>
   <div class="topbar__actions">
     <% if current_user %>
       <span class="topbar__user"><%= current_user.first_name %></span>
-      <%= link_to "Log Out", logout_path, data: { turbo_method: :delete }, class: "button button--ghost" %>
+      <%= button_to "Logout", logout_path, method: :delete, form: { style: "display:inline;" }, class: "button button--ghost" %>
     <% else %>
       <%= link_to "Login", login_path, class: "button button--ghost" %>
     <% end %>

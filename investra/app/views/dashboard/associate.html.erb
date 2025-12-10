@@ -1,7 +1,22 @@
-<% if flash[:notice] %>
-  <div class="notice"><%= flash[:notice] %></div>
-<% end %>
+<% content_for :title, "Associate Dashboard" %>
 
-<h1>Associate Trader Dashboard</h1>
-<p>Welcome, <%= @user&.first_name %>!</p>
+<div class="page">
+  <div class="page__header">
+    <div class="eyebrow">Dashboard</div>
+    <h1>Associate Trader</h1>
+    <p class="lede">Keep trading, watch your holdings, and stay aligned with your manager.</p>
+  </div>
 
+  <div class="card">
+    <% manager_name = [@user.manager&.first_name, @user.manager&.last_name].compact.join(" ").presence || "your assigned manager" %>
+    <p style="margin:0 0 12px 0; color:#94a3b8;">
+      You are trading under <%= manager_name %>. Use the links below to monitor positions and place orders.
+    </p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <%= link_to "Stocks", stocks_path, class: "button button--ghost" %>
+      <%= link_to "Portfolio", portfolio_path, class: "button button--ghost" %>
+      <%= link_to "Transactions", transactions_path, class: "button button--ghost" %>
+      <%= link_to "Watchlist", watchlist_path, class: "button button--ghost" %>
+    </div>
+  </div>
+</div>
