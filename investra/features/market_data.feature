@@ -54,7 +54,7 @@ Feature: Market Data viewing and interactions
     Given there are price points for "AMZN" covering the last year, month, and week
     And the news feed is empty for "AMZN"
     When I visit the stock detail page for "AMZN"
-    Then I should see "No recent news available"
+    Then I should see "No Recent News Available"
 
   Scenario: User views a newly launched stock with no historical price data (edge case)
     Given a new stock "NEW" exists with ticker "NEW"
