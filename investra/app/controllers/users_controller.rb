@@ -211,6 +211,7 @@ class UsersController < ApplicationController
     role_name = params[:role_name] || 'Trader'
     role = Role.find_or_create_by(name: role_name)
     company_name = params[:company_name].to_s.strip
+    domain = @user.email.to_s.split('@').last
     
     # Handle company for Portfolio Manager and Associate Trader
     if role_name == 'Associate Trader'
@@ -223,7 +224,6 @@ class UsersController < ApplicationController
         return render :new, status: :unprocessable_entity, layout: true
       end
     elsif role_name == 'Portfolio Manager'
-      domain = @user.email.split('@').last
       company = Company.find_by(domain: domain)
       
       if company.nil? && params[:company_name].present?
@@ -244,7 +244,7 @@ class UsersController < ApplicationController
         company_ids << @user.company_id
         manager_scope = User.where(role: ['Portfolio Manager', 'portfolio_manager'])
         manager = manager_scope.where(company_id: company_ids.uniq).first
-        manager ||= manager_scope.where("LOWER(email) LIKE ?", "%@#{domain.downcase}").first
+        manager ||= manager_scope.where("LOWER(email) LIKE ?", "%@#{domain.downcase}").first if domain.present?
         ManagerRequest.create!(user: @user, manager: manager) if manager
       end
         session[:user_id] = @user.id
