@@ -7,11 +7,10 @@ Given('a user exists with email {string} and password {string}') do |email, pass
     password: password,
     password_confirmation: password,
     first_name: 'Test',
-    last_name: 'User'
+    last_name: 'User',
+    role: 'Trader'  # Added role attribute for SessionsController redirect
   )
-  
-  trader_role = Role.find_by(name: 'Trader')
-  @test_user.roles << trader_role if trader_role
+  # The after_commit hook in User model handles assigning to roles association
   @test_password = password
 end
 
@@ -79,7 +78,7 @@ Given('I am logged in as {string}') do |email|
   visit login_path
   fill_in 'Email', with: email
   fill_in 'Password', with: 'SecurePass123'
-  click_button 'Log In'
+  click_button 'Log in'
   
   @current_user = user
   @current_email = email
@@ -147,11 +146,11 @@ end
 Then('my session data should be cleared') do
   visit trader_dashboard_path
   expect(current_path).to eq(login_path)
-  expect(page).to have_content('Please log in').or have_content('Log In')
+  expect(page.has_content?('Please log in') || page.has_content?('Log in')).to be true
 end
 
 Then('my session should remain active') do
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page.has_link?('Log Out') || page.has_button?('Log Out')).to be true
   expect(current_path).not_to eq(login_path)
 end
 

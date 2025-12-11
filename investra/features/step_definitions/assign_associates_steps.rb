@@ -10,7 +10,7 @@ Given("I am logged in as a Portfolio Manager") do
   visit login_path
   fill_in 'Email', with: @current_user.email
   fill_in 'Password', with: 'password'
-  click_button 'Log In'
+  click_button 'Log in'
 end
 
 Given("my company is {string}") do |company_name|
