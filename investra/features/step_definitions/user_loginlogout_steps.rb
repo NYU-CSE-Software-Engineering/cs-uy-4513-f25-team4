@@ -117,7 +117,7 @@ end
 
 
 Then('I should still be logged in as {string}') do |email|
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page.has_link?('Log Out') || page.has_button?('Log Out')).to be true
 end
 
 Then('a session should be created for {string}') do |email|

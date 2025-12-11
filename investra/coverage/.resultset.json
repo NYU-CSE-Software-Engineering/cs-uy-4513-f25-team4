@@ -2540,7 +2540,7 @@
         "branches": {}
       }
     },
-    "timestamp": 1765440250
+    "timestamp": 1765440513
   },
   "Cucumber": {
     "coverage": {
@@ -3598,12 +3598,12 @@
           4,
           null,
           4,
-          12,
-          6,
-          6,
-          6,
-          6,
-          6,
+          8,
+          4,
+          4,
+          4,
+          4,
+          4,
           null,
           null,
           null,
@@ -5075,6 +5075,6 @@
         "branches": {}
       }
     },
-    "timestamp": 1765440334
+    "timestamp": 1765440606
   }
 }
