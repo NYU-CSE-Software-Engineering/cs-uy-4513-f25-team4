@@ -28,6 +28,8 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  before_action :set_no_cache_headers, if: -> { request.format.html? }, unless: -> { Rails.env.test? }
+
   def current_user
     @current_user ||= begin
       User.find_by(id: session[:user_id]) || User.find_by(email: session[:user_email])
@@ -57,5 +59,12 @@ class ApplicationController < ActionController::Base
 
   def login_path?(path)
     path == new_user_session_path || path == login_path rescue false
+  end
+
+  # Prevent authenticated pages from being served from browser history after logout
+  def set_no_cache_headers
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"
   end
 end

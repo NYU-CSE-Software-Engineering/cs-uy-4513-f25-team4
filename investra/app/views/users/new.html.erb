@@ -61,7 +61,7 @@
 
       <div class="form__row" id="company-name-field">
         <%= label_tag :company_name, "Company name", class: "label" %>
-        <%= text_field_tag :company_name, nil, placeholder: 'Enter company name', class: "input", list: "company-options" %>
+        <%= text_field_tag :company_name, nil, placeholder: 'Select an existing company', class: "input", list: "company-options" %>
         <datalist id="company-options">
           <% (@companies || Company.order(:name)).each do |company| %>
             <option value="<%= company.name %>"></option>
@@ -82,6 +82,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const companyField = document.getElementById('company-name-field');
+    const companyInput = document.getElementById('company_name');
     const roleRadios = document.querySelectorAll('input[name="role_name"]');
 
     function toggleCompanyField() {
@@ -89,8 +90,10 @@
       const role = selected ? selected.value : 'Trader';
       if (role === 'Portfolio Manager' || role === 'Associate Trader') {
         companyField.style.display = 'block';
+        if (companyInput) companyInput.required = true;
       } else {
         companyField.style.display = 'none';
+        if (companyInput) companyInput.required = false;
       }
     }
 

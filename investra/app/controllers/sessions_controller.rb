@@ -19,8 +19,8 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    session[:user_id] = nil
-    session[:user_email] = nil
+    # Fully clear session and rotate session id to invalidate cookie
+    reset_session
     redirect_to login_path, notice: "Logged out successfully"
   end
 end
