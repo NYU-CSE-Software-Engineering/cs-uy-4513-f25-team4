@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   skip_before_action :require_login, only: [:new, :create]
   before_action :require_login, only: [:show]
+  before_action :require_portfolio_manager!, only: [:manage_team, :assign_as_associate, :remove_associate]
 
   # GET /manage_team
   def manage_team
@@ -25,7 +26,11 @@ class UsersController < ApplicationController
     base_scope = User.where(role: ['Trader', 'trader', 'Associate Trader', 'associate_trader'], manager_id: nil)
     base_scope =
       if @current_user.company
-        base_scope.where(company: [nil, @current_user.company])
+        # Match by company record and by company name (case-insensitive) to handle duplicate company rows
+        company_ids = Company.where("LOWER(name) = ?", @current_user.company.name.to_s.downcase).pluck(:id)
+        company_ids << @current_user.company_id
+        company_ids << nil
+        base_scope.where(company_id: company_ids.uniq)
       else
         base_scope.where(company: nil)
       end
@@ -278,5 +283,11 @@ class UsersController < ApplicationController
     unless session[:user_id]
       redirect_to '/login', alert: 'Please log in'
     end
+  end
+
+  def require_portfolio_manager!
+    role = current_user&.role.to_s.downcase
+    return if role == 'portfolio manager' || role == 'portfolio_manager'
+    redirect_to root_path, alert: 'Not authorized to manage teams' and return
   end
 end
