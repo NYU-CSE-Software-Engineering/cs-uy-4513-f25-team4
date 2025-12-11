@@ -279,4 +279,14 @@ class UsersController < ApplicationController
       redirect_to '/login', alert: 'Please log in'
     end
   end
+
+  def require_manager_role
+    current_role = current_user&.role&.strip
+    allowed_roles = ['Portfolio Manager', 'portfolio_manager', 'System Administrator', 'system_administrator']
+    
+    unless allowed_roles.include?(current_role)
+      flash[:alert] = "You are not authorized to access this page"
+      redirect_to root_path
+    end
+  end
 end
