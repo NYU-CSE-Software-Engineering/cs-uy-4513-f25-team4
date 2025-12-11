@@ -42,12 +42,7 @@ Then('I should be on the registration page') do
 end
 
 # --- Login validation step (only main has it) ---
-Then('I should be logged in as {string}') do |email|
-  user = User.find_by(email: email)
-  expect(page).to have_link('Log Out').or have_button('Log Out')
-  expect(current_path).not_to eq(login_path)
-  expect(current_path).not_to eq(signup_path)
-end
+# Removed duplicate step definition - see user_loginlogout_steps.rb
 
 # --- Roles checks (same logic, no conflict) ---
 Then('I should have the role {string}') do |role_name|

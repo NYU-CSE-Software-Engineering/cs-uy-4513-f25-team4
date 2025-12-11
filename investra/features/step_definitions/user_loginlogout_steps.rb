@@ -112,7 +112,7 @@ Then('I should be logged in as {string}') do |email|
 end
 
 Then('I should be logged in') do
-  expect(page).to have_link('Log Out').or have_button('Log Out')
+  expect(page.has_link?('Log Out') || page.has_button?('Log Out')).to be true
 end
 
 
