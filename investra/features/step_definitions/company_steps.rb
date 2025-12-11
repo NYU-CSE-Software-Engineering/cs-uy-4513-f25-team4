@@ -18,7 +18,7 @@ Given("I am logged in as an admin") do
     expect(page).to have_field("Email", wait: 5)
     fill_in "Email", with: @admin.email, id: "Email"
     fill_in "Password", with: "password", id: "Password"
-    click_button "Log in"
+    click_button "Log In"
   end
 end
 
@@ -38,7 +38,7 @@ Given("I am logged in as a non-admin user") do
     expect(page).to have_field("Email", wait: 5)
     fill_in "Email", with: @user.email, id: "Email"
     fill_in "Password", with: "password", id: "Password"
-    click_button "Log in"
+    click_button "Log In"
   end
 end
 

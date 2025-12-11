@@ -163,7 +163,7 @@ Given("I am a logged-in user") do
   fill_in 'Password', with: 'password'
   
   # Click submit button - Capybara will wait for button to be ready
-  click_button 'Log in'
+  click_button 'Log In'
   
   # Wait for successful login - check we're redirected away from login page
   # Using have_current_path with wait ensures we wait for navigation
