@@ -17,6 +17,12 @@ class SessionsController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
+
+  def destroy
+    # Fully clear session and rotate session id to invalidate cookie
+    reset_session
+    redirect_to login_path, notice: "Logged out successfully"
+  end
   
   private
   
@@ -28,12 +34,6 @@ class SessionsController < ApplicationController
     when 'System Administrator' then admin_dashboard_path
     else stocks_path # Fallback
     end
-  end
-
-  def destroy
-    # Fully clear session and rotate session id to invalidate cookie
-    reset_session
-    redirect_to login_path, notice: "Logged out successfully"
   end
 end
 
