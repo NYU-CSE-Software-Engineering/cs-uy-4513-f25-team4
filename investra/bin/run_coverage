@@ -1,0 +1,25 @@
+#!/bin/bash
+# Run all tests and generate correct combined coverage report
+
+echo "=== Cleaning old coverage ==="
+rm -rf coverage
+
+echo "=== Running RSpec ==="
+RAILS_ENV=test bundle exec rspec
+
+echo "=== Running Cucumber ==="
+RAILS_ENV=test bundle exec cucumber
+
+echo "=== Fixing .last_run.json ==="
+# Extract coverage percentage from index.html and update .last_run.json
+if [ -f "coverage/index.html" ]; then
+  COVERAGE=$(grep -o '[0-9]\{2\}\.[0-9]*%' coverage/index.html | head -1 | tr -d '%')
+  if [ -n "$COVERAGE" ]; then
+    echo "{\"result\":{\"line\":$COVERAGE}}" > coverage/.last_run.json
+    echo "✅ .last_run.json updated to: $COVERAGE%"
+  fi
+fi
+
+echo "=== Final Results ==="
+cat coverage/.last_run.json
+
