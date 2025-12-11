@@ -33,9 +33,7 @@ Then('I should be on the manager dashboard page') do
   expect(current_path).to eq(manager_dashboard_path)
 end
 
-Then('I should be on the admin dashboard page') do
-  expect(current_path).to eq(admin_dashboard_path)
-end
+# Removed duplicate step definition - see user_loginlogout_steps.rb
 
 Then('I should be on the registration page') do
   expect(current_path).to eq(signup_path)
