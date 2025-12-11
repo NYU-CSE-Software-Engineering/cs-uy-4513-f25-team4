@@ -22,6 +22,7 @@ Feature: Market Data viewing and interactions
     And I should see the prediction summary
     And I should see the recent news list with 3 items
 
+  @javascript
   Scenario: User switches the timeframe to update the price trend graph
     Given I am viewing the stock detail page for "AMZN"
     And there are price points for "AMZN" covering the last year, month, and week
