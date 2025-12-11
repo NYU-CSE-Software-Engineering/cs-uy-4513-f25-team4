@@ -5,8 +5,8 @@ Feature: Market Data viewing and interactions
 
   Background:
     Given the following stocks exist:
-      | ticker | company_name     |
-      | AMZN   | Amazon.com Inc   |
+      | symbol | name            | price  |
+      | AMZN   | Amazon.com Inc  | 150.00 |
     And the current time is "2025-10-20 12:00:00 EST"
 
   Scenario: User views a stock detail page with all data available (happy path)
