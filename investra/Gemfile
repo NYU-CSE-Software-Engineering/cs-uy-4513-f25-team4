@@ -65,4 +65,7 @@ group :test do
   gem 'selenium-webdriver'
   gem 'rspec'
   gem 'timecop'
+  gem 'simplecov', require: false
+  gem 'simplecov-html', require: false
+  gem 'simplecov_json_formatter', require: false
 end
