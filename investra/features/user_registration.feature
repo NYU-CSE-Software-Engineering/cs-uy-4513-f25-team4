@@ -121,6 +121,7 @@ Feature: User Registration
     And I fill in "First name" with "Mike"
     And I fill in "Last name" with "Chen"
     And I click "Associate Trader"
+    And I fill in "Company name" with "TestCorp Inc"
     And I press "Sign Up"
     Then I should be on the associate dashboard page
     And I should see "Registration successful"
