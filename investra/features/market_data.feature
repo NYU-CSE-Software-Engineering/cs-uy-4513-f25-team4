@@ -5,8 +5,8 @@ Feature: Market Data viewing and interactions
 
   Background:
     Given the following stocks exist:
-      | ticker | company_name     |
-      | AMZN   | Amazon.com Inc   |
+      | symbol | name            | price  |
+      | AMZN   | Amazon.com Inc  | 150.00 |
     And the current time is "2025-10-20 12:00:00 EST"
 
   Scenario: User views a stock detail page with all data available (happy path)
@@ -22,6 +22,7 @@ Feature: Market Data viewing and interactions
     And I should see the prediction summary
     And I should see the recent news list with 3 items
 
+  @javascript
   Scenario: User switches the timeframe to update the price trend graph
     Given I am viewing the stock detail page for "AMZN"
     And there are price points for "AMZN" covering the last year, month, and week
@@ -53,7 +54,7 @@ Feature: Market Data viewing and interactions
     Given there are price points for "AMZN" covering the last year, month, and week
     And the news feed is empty for "AMZN"
     When I visit the stock detail page for "AMZN"
-    Then I should see "No recent news available"
+    Then I should see "No Recent News Available"
 
   Scenario: User views a newly launched stock with no historical price data (edge case)
     Given a new stock "NEW" exists with ticker "NEW"

@@ -10,7 +10,7 @@ Scenario: User successfully logs in with valid credentials
     And I am on the login page
     When I fill in "Email" with "trader@example.com"
     And I fill in "Password" with "SecurePass123"
-    And I press "Log In"
+    And I press "Log in"
     Then I should be on the trader dashboard page
     And I should see "Login successful"
     And I should be logged in as "trader@example.com"     
@@ -20,7 +20,7 @@ Scenario: Login creates a user session
     And I am on the login page
     When I fill in "Email" with "trader@example.com"
     And I fill in "Password" with "SecurePass123"
-    And I press "Log In"
+    And I press "Log in"
     Then a session should be created for "trader@example.com"
     And I should be logged in
 
@@ -29,7 +29,7 @@ Scenario: Login fails with invalid password
     And I am on the login page
     When I fill in "Email" with "trader@example.com"
     And I fill in "Password" with "WrongPassword"
-    And I press "Log In"
+    And I press "Log in"
     Then I should see "Invalid email or password"
     And I should be on the login page
     And I should not be logged in
@@ -38,17 +38,17 @@ Scenario: Login fails with non-existent email
     Given I am on the login page
     When I fill in "Email" with "nonexistent@example.com"
     And I fill in "Password" with "AnyPassword123"
-    And I press "Log In"
+    And I press "Log in"
     Then I should see "Invalid email or password"
     And I should be on the login page
     And I should not be logged in
 
 Scenario: Trader redirects to personal dashboard after login
-    Given a user exists with email "trader@example.com" and password "SecurePass123" and role " Trader"
+    Given a user exists with email "trader@example.com" and password "SecurePass123" and role "Trader"
     And I am on the login page
     When I fill in "Email" with "trader@example.com"
     And I fill in "Password" with "SecurePass123"
-    And I press "Log In"
+    And I press "Log in"
     Then I should be on the trader dashboard page
     And I should see "My Portfolio"
 
@@ -57,7 +57,7 @@ Scenario: Associate Trader redirects to their dashboard after login
     And I am on the login page
     When I fill in "Email" with "associate@testcorp.com"
     And I fill in "Password" with "SecurePass123"
-    And I press "Log In"
+    And I press "Log in"
     Then I should be on the associate dashboard page
 
 Scenario: Portfolio Manager redirects to manager dashboard after login
@@ -65,7 +65,7 @@ Scenario: Portfolio Manager redirects to manager dashboard after login
     And I am on the login page
     When I fill in "Email" with "manager@testcorp.com"
     And I fill in "Password" with "SecurePass123"
-    And I press "Log In"
+    And I press "Log in"
     Then I should be on the manager dashboard page
 
 Scenario: System Administrator redirects to admin panel after login
@@ -73,7 +73,7 @@ Scenario: System Administrator redirects to admin panel after login
     And I am on the login page
     When I fill in "Email" with "admin@investra.com"
     And I fill in "Password" with "SecurePass123"
-    And I press "Log In"
+    And I press "Log in"
     Then I should be on the admin dashboard page
 
 #Logout
