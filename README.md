@@ -6,6 +6,8 @@ The platform is designed for **individual investors, associate traders, portfoli
 
 This project was developed as part of **CS-UY 4513 – Software Engineering** under the guidance of **Professor Dr. DePasquale**.
 
+Link to our deployed web app [here](https://investra-61e9499b805d.herokuapp.com/login)
+
 ---
 
 ## 👥 Developers
