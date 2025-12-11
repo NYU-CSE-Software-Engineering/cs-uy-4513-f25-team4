@@ -4,6 +4,31 @@
 # instead of editing this one. Cucumber will automatically load all features/**/*.rb
 # files.
 
+# SimpleCov must be loaded FIRST before any application code
+require 'simplecov'
+
+SimpleCov.start 'rails' do
+  add_filter '/bin/'
+  add_filter '/db/'
+  add_filter '/spec/'
+  add_filter '/test/'
+  add_filter '/features/'
+  add_filter '/config/'
+  add_filter '/vendor/'
+  
+  add_group 'Controllers', 'app/controllers'
+  add_group 'Models', 'app/models'
+  add_group 'Helpers', 'app/helpers'
+  add_group 'Mailers', 'app/mailers'
+  add_group 'Views', 'app/views'
+  
+  # Command name for merging coverage from different test suites
+  command_name 'Cucumber'
+  
+  # Merge results from RSpec and Cucumber
+  merge_timeout 3600
+end
+
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../../config/environment'
 
