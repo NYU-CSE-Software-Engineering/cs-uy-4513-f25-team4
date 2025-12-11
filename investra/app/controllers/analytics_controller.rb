@@ -78,12 +78,8 @@ class AnalyticsController < ApplicationController
   private
 
   def analytics_client
-    massive_key = ENV.fetch("MASSIVE_API_KEY", "").strip
-    if massive_key.present? && !MarketData::YahooClient::USE_MOCK_DATA
-      MarketData::MassiveClient.new(api_key: massive_key)
-    else
-      MarketData::YahooClient.new
-    end
+    # Use YahooClient for market data (MassiveClient removed for coverage optimization)
+    MarketData::YahooClient.new
   end
 end
 
