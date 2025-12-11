@@ -214,16 +214,14 @@ class UsersController < ApplicationController
     
     # Handle company for Portfolio Manager and Associate Trader
     if role_name == 'Associate Trader'
-      domain = @user.email.split('@').last
-      company = Company.find_by(name: company_name.presence) || Company.find_by(domain: domain)
-
-      unless company
+      company = company_name.present? ? Company.where("LOWER(name) = ?", company_name.downcase).first : nil
+      if company
+        @user.company = company
+      else
         @user.errors.add(:company, "must be an existing company for Associate Trader")
         @companies = Company.order(:name)
         return render :new, status: :unprocessable_entity, layout: true
       end
-
-      @user.company = company
     elsif role_name == 'Portfolio Manager'
       domain = @user.email.split('@').last
       company = Company.find_by(domain: domain)
@@ -238,14 +236,18 @@ class UsersController < ApplicationController
       @user.company = company if company
     end
 
-    @user.role = role_name
-    if @user.save
+      @user.role = role_name
+      if @user.save
       @user.roles << role unless @user.roles.exists?(id: role.id)
       if role_name == 'Associate Trader' && @user.company_id.present?
-        manager = User.find_by(role: ['Portfolio Manager', 'portfolio_manager'], company_id: @user.company_id)
+        company_ids = Company.where("LOWER(name) = ?", @user.company.name.to_s.downcase).pluck(:id)
+        company_ids << @user.company_id
+        manager_scope = User.where(role: ['Portfolio Manager', 'portfolio_manager'])
+        manager = manager_scope.where(company_id: company_ids.uniq).first
+        manager ||= manager_scope.where("LOWER(email) LIKE ?", "%@#{domain.downcase}").first
         ManagerRequest.create!(user: @user, manager: manager) if manager
       end
-      session[:user_id] = @user.id
+        session[:user_id] = @user.id
       
       dashboard_path = case role_name
       when 'Portfolio Manager'
