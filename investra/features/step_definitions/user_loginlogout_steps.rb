@@ -24,10 +24,10 @@ Given('a user exists with email {string} and password {string} and role {string}
     password: password,
     password_confirmation: password,
     first_name: 'Test',
-    last_name: 'User'
+    last_name: 'User',
+    role: role_name.strip  # Added role attribute for SessionsController redirect
   )
-  # Assign the specified role
-  @test_user.roles << role
+  # The after_commit hook in User model handles assigning to roles association
   @test_password = password
 end
 

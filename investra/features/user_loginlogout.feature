@@ -44,7 +44,7 @@ Scenario: Login fails with non-existent email
     And I should not be logged in
 
 Scenario: Trader redirects to personal dashboard after login
-    Given a user exists with email "trader@example.com" and password "SecurePass123" and role " Trader"
+    Given a user exists with email "trader@example.com" and password "SecurePass123" and role "Trader"
     And I am on the login page
     When I fill in "Email" with "trader@example.com"
     And I fill in "Password" with "SecurePass123"
