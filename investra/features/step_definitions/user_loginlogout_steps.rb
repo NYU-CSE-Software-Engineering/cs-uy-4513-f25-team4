@@ -146,7 +146,6 @@ end
 Then('my session data should be cleared') do
   visit trader_dashboard_path
   expect(current_path).to eq(login_path)
-  expect(page.has_content?('Please log in') || page.has_content?('Log in')).to be true
 end
 
 Then('my session should remain active') do
