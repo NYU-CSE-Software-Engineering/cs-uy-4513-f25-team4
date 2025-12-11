@@ -4,10 +4,10 @@
 When("I click {string}") do |text|
   # First try to click a button
   if page.has_button?(text, wait: 0)
-    click_button(text)
+    first(:button, text, visible: true).click
   # Then try to click a link
   elsif page.has_link?(text, wait: 0)
-    click_link(text)
+    first(:link, text, visible: true).click
   elsif page.has_css?('label', text: text, exact_text: true, wait: 0)
     find('label', text: text, exact_text: true).click
   else
