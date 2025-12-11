@@ -6,6 +6,8 @@ The platform is designed for **individual investors, associate traders, portfoli
 
 This project was developed as part of **CS-UY 4513 – Software Engineering** under the guidance of **Professor Dr. DePasquale**.
 
+📊 **Test Coverage Report (82.64%):** [View Coverage Report](https://nyu-cse-software-engineering.github.io/cs-uy-4513-f25-team4/)
+
 ---
 
 ## 👥 Developers
