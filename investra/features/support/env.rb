@@ -4,9 +4,11 @@
 # instead of editing this one. Cucumber will automatically load all features/**/*.rb
 # files.
 
-# SimpleCov must be loaded FIRST before any application code
-require 'simplecov'
+ENV['RAILS_ENV'] ||= 'test'
 
+# SimpleCov configuration for Cucumber
+require 'simplecov'
+SimpleCov.command_name 'Cucumber'
 SimpleCov.start 'rails' do
   add_filter '/bin/'
   add_filter '/db/'
@@ -16,20 +18,18 @@ SimpleCov.start 'rails' do
   add_filter '/config/'
   add_filter '/vendor/'
   
+  # Filter external API client integrations (third-party wrappers)
+  add_filter '/app/services/market_data/yahoo_client.rb'
+  add_filter '/app/services/market_data/massive_client.rb'
+
   add_group 'Controllers', 'app/controllers'
   add_group 'Models', 'app/models'
   add_group 'Helpers', 'app/helpers'
   add_group 'Mailers', 'app/mailers'
+  add_group 'Services', 'app/services'
   add_group 'Views', 'app/views'
-  
-  # Command name for merging coverage from different test suites
-  command_name 'Cucumber'
-  
-  # Merge results from RSpec and Cucumber
-  merge_timeout 3600
 end
 
-ENV['RAILS_ENV'] ||= 'test'
 require_relative '../../config/environment'
 
 # ✅ Allow running DatabaseCleaner with a remote DATABASE_URL (for Docker)

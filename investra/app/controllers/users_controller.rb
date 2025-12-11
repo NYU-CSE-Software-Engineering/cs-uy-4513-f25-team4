@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   skip_before_action :require_login, only: [:new, :create]
   before_action :require_login, only: [:show]
+  before_action :require_portfolio_manager!, only: [:manage_team, :assign_as_associate, :remove_associate]
 
   # GET /manage_team
   def manage_team
@@ -25,7 +26,11 @@ class UsersController < ApplicationController
     base_scope = User.where(role: ['Trader', 'trader', 'Associate Trader', 'associate_trader'], manager_id: nil)
     base_scope =
       if @current_user.company
-        base_scope.where(company: [nil, @current_user.company])
+        # Match by company record and by company name (case-insensitive) to handle duplicate company rows
+        company_ids = Company.where("LOWER(name) = ?", @current_user.company.name.to_s.downcase).pluck(:id)
+        company_ids << @current_user.company_id
+        company_ids << nil
+        base_scope.where(company_id: company_ids.uniq)
       else
         base_scope.where(company: nil)
       end
@@ -206,21 +211,19 @@ class UsersController < ApplicationController
     role_name = params[:role_name] || 'Trader'
     role = Role.find_or_create_by(name: role_name)
     company_name = params[:company_name].to_s.strip
+    domain = @user.email.to_s.split('@').last
     
     # Handle company for Portfolio Manager and Associate Trader
     if role_name == 'Associate Trader'
-      domain = @user.email.split('@').last
-      company = Company.find_by(name: company_name.presence) || Company.find_by(domain: domain)
-
-      unless company
+      company = company_name.present? ? Company.where("LOWER(name) = ?", company_name.downcase).first : nil
+      if company
+        @user.company = company
+      else
         @user.errors.add(:company, "must be an existing company for Associate Trader")
         @companies = Company.order(:name)
         return render :new, status: :unprocessable_entity, layout: true
       end
-
-      @user.company = company
     elsif role_name == 'Portfolio Manager'
-      domain = @user.email.split('@').last
       company = Company.find_by(domain: domain)
       
       if company.nil? && params[:company_name].present?
@@ -233,14 +236,18 @@ class UsersController < ApplicationController
       @user.company = company if company
     end
 
-    @user.role = role_name
-    if @user.save
+      @user.role = role_name
+      if @user.save
       @user.roles << role unless @user.roles.exists?(id: role.id)
       if role_name == 'Associate Trader' && @user.company_id.present?
-        manager = User.find_by(role: ['Portfolio Manager', 'portfolio_manager'], company_id: @user.company_id)
+        company_ids = Company.where("LOWER(name) = ?", @user.company.name.to_s.downcase).pluck(:id)
+        company_ids << @user.company_id
+        manager_scope = User.where(role: ['Portfolio Manager', 'portfolio_manager'])
+        manager = manager_scope.where(company_id: company_ids.uniq).first
+        manager ||= manager_scope.where("LOWER(email) LIKE ?", "%@#{domain.downcase}").first if domain.present?
         ManagerRequest.create!(user: @user, manager: manager) if manager
       end
-      session[:user_id] = @user.id
+        session[:user_id] = @user.id
       
       dashboard_path = case role_name
       when 'Portfolio Manager'
@@ -278,5 +285,11 @@ class UsersController < ApplicationController
     unless session[:user_id]
       redirect_to '/login', alert: 'Please log in'
     end
+  end
+
+  def require_portfolio_manager!
+    role = current_user&.role.to_s.downcase
+    return if role == 'portfolio manager' || role == 'portfolio_manager'
+    redirect_to root_path, alert: 'Not authorized to manage teams' and return
   end
 end

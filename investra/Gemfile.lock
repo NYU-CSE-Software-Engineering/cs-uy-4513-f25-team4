@@ -452,6 +452,7 @@ DEPENDENCIES
   selenium-webdriver
   simplecov
   simplecov-html
+  simplecov_json_formatter
   solid_cable
   solid_cache
   solid_queue

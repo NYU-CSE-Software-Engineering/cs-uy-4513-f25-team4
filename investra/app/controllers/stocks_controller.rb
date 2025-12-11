@@ -4,11 +4,6 @@ class StocksController < ApplicationController
 
   def index
     @lookup_error = nil
-    if params[:search].present?
-      lookup_result = StockLookupService.new.fetch_and_persist(params[:search])
-      @lookup_error = lookup_result[:error] if lookup_result[:error]
-    end
-
     @stocks = Stock.all
     @stocks = @stocks.where("symbol LIKE ? OR name LIKE ?", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
   end

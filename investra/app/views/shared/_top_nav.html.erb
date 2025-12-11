@@ -78,7 +78,7 @@
   <div class="topbar__actions">
     <% if current_user %>
       <span class="topbar__user"><%= current_user.first_name %></span>
-      <%= button_to "Logout", logout_path, method: :delete, form: { style: "display:inline;" }, class: "button button--ghost" %>
+      <%= button_to "Log Out", logout_path, method: :delete, form: { style: "display:inline;" }, class: "button button--ghost" %>
     <% else %>
       <%= link_to "Login", login_path, class: "button button--ghost" %>
     <% end %>
