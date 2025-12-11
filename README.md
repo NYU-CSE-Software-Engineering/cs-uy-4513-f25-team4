@@ -8,6 +8,8 @@ This project was developed as part of **CS-UY 4513 – Software Engineering** un
 
 Link to our deployed web app [here](https://investra-61e9499b805d.herokuapp.com/login)
 
+📊 **Test Coverage Report (82.64%):** [View on GitHub Pages](https://nyu-cse-software-engineering.github.io/cs-uy-4513-f25-team4/)
+
 ---
 
 ## 👥 Developers
