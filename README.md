@@ -14,14 +14,14 @@ This project was developed as part of **CS-UY 4513 – Software Engineering** un
 
 ## 👥 Team Members and Contributions
 
-| Team Member | Primary Contributions |
-|-------------|----------------------|
-| **Chris Brasil** | User & Identity Management, Authentication System |
-| **Dhruv Gupta** | Trading & Portfolio Management, Order Processing |
-| **Hanqi Liu** | Market Data Integration, API Development |
-| **Hongyi Wu** | Associate Analytics, Dashboard Development |
-| **Michael Bian** | Market Data Features, Test Coverage & CI/CD |
-| **Sania K. Awale** | User Registration, Role Management, BDD Testing |
+| Team Member | Module | Primary Contributions |
+|-------------|--------|----------------------|
+| **Sania K. Awale** | User & Identity Management | User registration, authentication, role-based access control, session management, password hashing |
+| **Chris Brasil** | Portfolio Management | Portfolio view, trade history, stock watchlist, credit line balance, sell simulation |
+| **Dhruv Gupta** | User Analytics | Portfolio trend graphs, profit/loss summaries, diversification pie charts, what-if investment simulator |
+| **Michael Bian** | Market Data | Stock information, real-time prices, price trend graphs, ML predictions, news integration, CI/CD & test coverage |
+| **Hongyi Wu** | Buying & Selling | Stock search, buy/sell transactions, balance management, transaction processing |
+| **Hanqi Liu** | Company Management | Company profiles, IPO listings, financial data upload, external API sync |
 
 ---
 
