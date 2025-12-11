@@ -92,8 +92,8 @@
   end
   
   Then('I should see the price trend graph showing the last {int} days') do |int|
-    # Just verify the chart canvas exists
-    expect(page).to have_css('#price-trend-chart')
+    # Wait for the chart canvas to appear (may take time to load with JavaScript)
+    expect(page).to have_css('#price-trend-chart', wait: 10)
   end
   
   When('I click the {string} button') do |string|
